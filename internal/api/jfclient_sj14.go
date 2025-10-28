@@ -5,6 +5,9 @@ import (
 	"fmt"
 
 	jellyfin "github.com/sj14/jellyfin-go/api"
+
+	"jellarr/internal/mapper"
+	"jellarr/internal/model"
 )
 
 type client struct{ c *jellyfin.APIClient }
@@ -13,32 +16,30 @@ func new(baseURL, apiKey string) JF {
 	cfg := &jellyfin.Configuration{
 		Servers: jellyfin.ServerConfigurations{{URL: baseURL}},
 		DefaultHeader: map[string]string{
-			// per sj14/jellyfin-go README
 			"Authorization": fmt.Sprintf(`MediaBrowser Token="%s"`, apiKey),
 		},
 	}
 	return &client{c: jellyfin.NewAPIClient(cfg)}
 }
 
-func (cl *client) GetSystem(ctx context.Context) (SystemConfig, error) {
-	// Pattern in sj14: <API>.GetX(ctx) -> request; then <API>.GetXExecute(req)
+func (cl *client) GetSystem(ctx context.Context) (model.SystemState, error) {
 	req := cl.c.ConfigurationAPI.GetConfiguration(ctx)
 	cfg, _, err := cl.c.ConfigurationAPI.GetConfigurationExecute(req)
 	if err != nil {
-		return SystemConfig{}, err
+		return model.SystemState{}, err
 	}
-	return SystemConfig{
-		EnableMetrics: cfg.GetEnableMetrics(),
+	return model.SystemState{
+		EnableMetrics:      cfg.GetEnableMetrics(),
+		PluginRepositories: mapper.FromJFRepos(cfg.GetPluginRepositories()),
 	}, nil
 }
 
-func (cl *client) UpdateSystem(ctx context.Context, in SystemConfig) error {
+func (cl *client) UpdateSystem(ctx context.Context, in model.SystemSpec) error {
 	body := jellyfin.ServerConfiguration{
-		EnableMetrics: &in.EnableMetrics,
+		EnableMetrics:      &in.EnableMetrics,
+		PluginRepositories: mapper.ToJFRepos(in.PluginRepositories),
 	}
-	req := cl.c.ConfigurationAPI.UpdateConfiguration(ctx).
-		ServerConfiguration(body)
-
+	req := cl.c.ConfigurationAPI.UpdateConfiguration(ctx).ServerConfiguration(body)
 	_, err := cl.c.ConfigurationAPI.UpdateConfigurationExecute(req)
 	return err
 }

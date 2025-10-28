@@ -1,14 +1,14 @@
 package api
 
-import "context"
+import (
+	"context"
 
-type SystemConfig struct {
-	EnableMetrics bool
-}
+	"jellarr/internal/model"
+)
 
 type JF interface {
-	GetSystem(ctx context.Context) (SystemConfig, error)
-	UpdateSystem(ctx context.Context, in SystemConfig) error
+	GetSystem(ctx context.Context) (model.SystemState, error)
+	UpdateSystem(ctx context.Context, in model.SystemSpec) error
 }
 
 func New(baseURL, apiKey string) JF { return new(baseURL, apiKey) }
