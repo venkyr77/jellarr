@@ -25,27 +25,16 @@
         "aarch64-darwin"
       ];
 
+      flake = {
+        nixosModules.default = ./nix/module;
+      };
+
       perSystem = {system, ...}: let
         pkgs = nixpkgs.legacyPackages.${system};
       in {
         formatter = (treefmt-nix.lib.evalModule pkgs ./treefmt.nix).config.build.wrapper;
 
-        packages.default = pkgs.buildGoModule {
-          pname = "jellarr";
-          version = "0.1.0";
-          src = ./.;
-          subPackages = ["src/cmd/jellarr"];
-          vendorHash = "sha256-m6zzY4lhxmfMxkmaF09/7Hiiwx0MSYO+Rbuj6bW7H4s=";
-          ldflags = ["-s" "-w"];
-          doCheck = true;
-          meta = with pkgs.lib; {
-            description = "Declarative Jellyfin configuration engine (typed Go client)";
-            license = licenses.agpl3Only;
-            homepage = "https://github.com/venkyr77/jellarr";
-            mainProgram = "jellarr";
-            platforms = platforms.linux ++ platforms.darwin;
-          };
-        };
+        packages.default = import ./nix/package.nix {inherit pkgs;};
       };
     };
 }
