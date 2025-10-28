@@ -12,7 +12,8 @@ import (
 )
 
 func main() {
-	cfgPath := "/config/jellarr.yml"
+	cfgPath := "config/config.yml"
+
 	if len(os.Args) > 1 {
 		cfgPath = os.Args[1]
 	}
@@ -22,15 +23,15 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	base := os.Getenv("JELLARR_BASE_URL")
 	key := os.Getenv("JELLARR_API_KEY")
-	if base == "" || key == "" {
-		log.Fatal("set JELLARR_BASE_URL and JELLARR_API_KEY")
+	if key == "" {
+		log.Fatal("set JELLARR_API_KEY")
 	}
 
-	jf := api.New(base, key)
+	jf := api.New(cfg.BaseUrl, key)
 	if err := apply.ApplyAll(context.Background(), jf, cfg); err != nil {
 		log.Fatalf("apply failed: %v", err)
 	}
+
 	fmt.Println("✅ jellarr apply complete")
 }

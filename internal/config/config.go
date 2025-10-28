@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	Version int       `yaml:"version"`
+	BaseUrl string    `yaml:"base_url"`
 	System  SystemCfg `yaml:"system"`
 }
 
