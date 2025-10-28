@@ -3,7 +3,7 @@ package mapper
 import (
 	jellyfin "github.com/sj14/jellyfin-go/api"
 
-	"jellarr/internal/model"
+	"jellarr/src/internal/model"
 )
 
 func ToJFRepos(in []model.PluginRepository) []jellyfin.RepositoryInfo {

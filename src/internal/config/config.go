@@ -5,7 +5,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"jellarr/internal/model"
+	"jellarr/src/internal/model"
 )
 
 type Config struct {

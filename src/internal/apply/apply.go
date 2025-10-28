@@ -3,8 +3,8 @@ package apply
 import (
 	"context"
 
-	"jellarr/internal/api"
-	"jellarr/internal/config"
+	"jellarr/src/internal/api"
+	"jellarr/src/internal/config"
 )
 
 func ApplyAll(ctx context.Context, jf api.JF, cfg *config.Config) error {

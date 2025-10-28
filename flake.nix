@@ -34,7 +34,7 @@
           pname = "jellarr";
           version = "0.1.0";
           src = ./.;
-          subPackages = ["cmd/jellarr"];
+          subPackages = ["src/cmd/jellarr"];
           vendorHash = "sha256-m6zzY4lhxmfMxkmaF09/7Hiiwx0MSYO+Rbuj6bW7H4s=";
           ldflags = ["-s" "-w"];
           doCheck = true;

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sort"
 
-	"jellarr/internal/api"
-	"jellarr/internal/model"
+	"jellarr/src/internal/api"
+	"jellarr/src/internal/model"
 )
 
 func ApplySystem(ctx context.Context, jf api.JF, desired model.SystemSpec) error {
@@ -15,7 +15,7 @@ func ApplySystem(ctx context.Context, jf api.JF, desired model.SystemSpec) error
 		return fmt.Errorf("get system: %w", err)
 	}
 	changed := cur.EnableMetrics != desired.EnableMetrics ||
-		!equalReposUnordered(cur.PluginRepositories, desired.PluginRepositories)
+		!EqualReposUnordered(cur.PluginRepositories, desired.PluginRepositories)
 
 	if changed {
 		fmt.Println("→ updating system config")
@@ -25,14 +25,14 @@ func ApplySystem(ctx context.Context, jf api.JF, desired model.SystemSpec) error
 	return nil
 }
 
-func equalReposUnordered(a, b []model.PluginRepository) bool {
+func EqualReposUnordered(a, b []model.PluginRepository) bool {
 	if len(a) != len(b) {
 		return false
 	}
 	ac := append([]model.PluginRepository(nil), a...)
 	bc := append([]model.PluginRepository(nil), b...)
-	sortRepos(ac)
-	sortRepos(bc)
+	SortRepos(ac)
+	SortRepos(bc)
 	for i := range ac {
 		if ac[i] != bc[i] {
 			return false
@@ -41,7 +41,7 @@ func equalReposUnordered(a, b []model.PluginRepository) bool {
 	return true
 }
 
-func sortRepos(r []model.PluginRepository) {
+func SortRepos(r []model.PluginRepository) {
 	sort.Slice(r, func(i, j int) bool {
 		if r[i].Name != r[j].Name {
 			return r[i].Name < r[j].Name

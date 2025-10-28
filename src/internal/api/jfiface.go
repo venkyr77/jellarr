@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	"jellarr/internal/model"
+	"jellarr/src/internal/model"
 )
 
 type JF interface {
