@@ -21,5 +21,10 @@ _: {
       enable = true;
       priority = 40;
     };
+
+    deno = {
+      enable = true;
+      priority = 50;
+    };
   };
 }
