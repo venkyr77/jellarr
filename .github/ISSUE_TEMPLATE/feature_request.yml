@@ -1,0 +1,55 @@
+name: "Feature Request"
+description: "Propose a new API integration or configuration feature for Jellarr"
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ✨ Feature Summary
+        Describe the new functionality, related Jellyfin endpoints, and expected user impact.
+
+  - type: input
+    id: feature_name
+    attributes:
+      label: Feature name
+      description: Short identifier (e.g., `branding-configuration`)
+      placeholder: branding-configuration
+
+  - type: textarea
+    id: jellyfin_api
+    attributes:
+      label: Jellyfin API endpoints
+      description: |
+        List relevant API endpoints (with method + path) that this feature depends on.
+      placeholder: |
+        - GET /Branding/Configuration
+        - POST /System/Configuration/Branding
+    validations:
+      required: true
+
+  - type: textarea
+    id: config_yaml
+    attributes:
+      label: YAML configuration example
+      description: Example of what the declarative config might look like.
+      placeholder: |
+        branding:
+          loginDisclaimer: "Welcome to Jellyfin"
+          customCss: "/config/custom.css"
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: |
+        Define how we’ll know this feature is complete.
+      placeholder: |
+        - Reads and writes branding configuration via typed client.
+        - Round-trips correctly with no diff when reapplied.
+        - Has unit tests for GET and POST.
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional notes
+      description: Implementation ideas, related code paths, or potential blockers.
