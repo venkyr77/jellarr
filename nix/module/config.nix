@@ -17,7 +17,7 @@ in {
         ];
         description = "Run jellarr (packaged) once";
         preStart = let
-          configFile = pkgs.writeText "jellarr-config.yml" cfg.config;
+          configFile = pkgs.writeText "jellarr-config.yml" (pkgs.lib.generators.toYAML {} cfg.config);
         in ''
           install -D -m 0644 ${configFile} ${cfg.dataDir}/config/config.yml
           chown ${cfg.user}:${cfg.group} ${cfg.dataDir}/config/config.yml

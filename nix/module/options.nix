@@ -1,9 +1,9 @@
 {lib, ...}: {
   options.services.jellarr = {
     config = lib.mkOption {
-      default = "";
-      description = "YAML configuration.";
-      type = lib.types.string;
+      default = {};
+      description = "configuration as attrset which will be converted to YAML.";
+      type = lib.types.attrs;
     };
 
     dataDir = lib.mkOption {
