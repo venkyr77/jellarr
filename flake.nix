@@ -40,7 +40,10 @@
 
         formatter = (treefmt-nix.lib.evalModule pkgs ./treefmt.nix).config.build.wrapper;
 
-        packages.default = import ./nix/package.nix {inherit pkgs;};
+        packages.default = import ./nix/package.nix {
+          inherit pkgs;
+          inherit (pkgs) lib;
+        };
       };
     };
 }

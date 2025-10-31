@@ -1,24 +1,52 @@
-{pkgs}:
-pkgs.buildGoModule {
+{
+  lib,
+  pkgs,
+  ...
+}:
+pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
+  buildPhase = ''
+    runHook preBuild
+    pnpm build
+    runHook postBuild
+  '';
+
   checkPhase = ''
     runHook preCheck
-    export HOME="$TMPDIR"
-    export GOCACHE="$TMPDIR/go-cache"
-    go test ./src/cmd/jellarr/... ./src/tests/...
+    pnpm test
     runHook postCheck
   '';
-  doCheck = true;
-  ldflags = ["-s" "-w"];
-  meta = with pkgs.lib; {
-    description = "Declarative Jellyfin configuration engine (typed Go client)";
+
+  installPhase = ''
+    runHook preInstall
+    install -Dm644 -t $out/share bundle.cjs
+    makeWrapper ${lib.getExe pkgs.nodejs_24} $out/bin/jellarr \
+      --add-flags "$out/share/bundle.cjs"
+    runHook postInstall
+  '';
+
+  meta = {
+    description = "Declarative Jellyfin configuration engine (TypeScript, bundled)";
     homepage = "https://github.com/venkyr77/jellarr";
-    license = licenses.agpl3Only;
+    license = lib.licenses.agpl3Only;
     mainProgram = "jellarr";
-    platforms = platforms.linux ++ platforms.darwin;
+    platforms = lib.platforms.all;
   };
+
+  nativeBuildInputs = [
+    pkgs.makeBinaryWrapper
+    pkgs.nodejs_24
+    pkgs.pnpm.configHook
+  ];
+
   pname = "jellarr";
+
+  pnpmDeps = pkgs.pnpm.fetchDeps {
+    fetcherVersion = 1;
+    hash = "sha256-xhTEHi8UVeYD/OtTQMtFYk6SqX43+Tx73tCOoyCwOyw=";
+    inherit (finalAttrs) pname src version;
+  };
+
   src = ../.;
-  subPackages = ["src/cmd/jellarr"];
-  vendorHash = "sha256-aIUKXAmLtq3bXesEVndQxLAFKmDmIWiEYhM1P6+IMKg=";
+
   version = "0.1.0";
-}
+})

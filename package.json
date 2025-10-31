@@ -1,0 +1,26 @@
+{
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "@vitest/coverage-v8": "^4.0.6",
+    "esbuild": "^0.25.11",
+    "eslint": "^9.38.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.6"
+  },
+  "dependencies": {
+    "commander": "^14.0.2",
+    "dotenv": "^17.2.3",
+    "openapi-fetch": "^0.15.0",
+    "undici": "^7.16.0",
+    "yaml": "^2.8.1",
+    "zod": "^4.1.12"
+  },
+  "scripts": {
+    "build": "tsx esbuild.ts",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "typegen": "npx openapi-typescript https://api.jellyfin.org/openapi/jellyfin-openapi-stable.json -o ./generated/schema.d.ts"
+  }
+}

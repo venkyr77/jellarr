@@ -1,0 +1,4 @@
+version: 1
+base_url: "http://10.0.0.76:8096"
+system:
+  enableMetrics: true
