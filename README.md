@@ -86,9 +86,9 @@ You can consume **Jellarr** directly from its flake:
             enable = true;
             user = "jellyfin";
             group = "jellyfin";
-            config = ''
-              base_url: "http://localhost:8096"
-            '';
+            config = {
+              base_url = "http://localhost:8096";
+            };
           };
         })
       ];
