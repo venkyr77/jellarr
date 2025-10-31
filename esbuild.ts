@@ -1,8 +1,7 @@
-// esbuild.cjs
-const esbuild = require("esbuild");
+import { build } from "esbuild";
 
 async function main() {
-  await esbuild.build({
+  await build({
     entryPoints: ["./src/cli.ts"],
     bundle: true,
     sourcemap: "inline",
