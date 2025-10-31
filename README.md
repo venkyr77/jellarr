@@ -70,6 +70,11 @@ This enables Prometheus metrics (`/metrics`) on your Jellyfin server.
 
 ## ❄️ Using via Nix Flake
 
+> ⚠️ **Important:** Make sure `JELLARR_API_KEY` is provided (e.g., via an
+> environment variable, SOPS template, or systemd environment file). See
+> [🔐 Secret Management (API Key)](#-secret-management-api-key) below for secure
+> options.
+
 You can consume **Jellarr** directly from its flake:
 
 ```nix
@@ -97,16 +102,79 @@ You can consume **Jellarr** directly from its flake:
 }
 ```
 
-Or run it directly (make sure to create `/config/config.yml` inside the
-container or host):
+Or run it directly:
 
 ```bash
-mkdir -p ./config
-cat > ./config/config.yml <<'EOF'
-base_url: "http://localhost:8096"
-EOF
+JELLARR_API_KEY=xyz nix run github:venkyr77/jellarr --configFile ./config.yml
+```
 
-JELLARR_API_KEY=xyz nix run github:venkyr77/jellarr
+---
+
+## 🔐 Secret Management (API Key)
+
+You can securely provide the `JELLARR_API_KEY` using **sops-nix**.
+
+### Option 1: Using sops-nix environmentFile (recommended)
+
+```nix
+{
+  sops = {
+    secrets.jellarr-api-key.sopsFile = "path to jellyfin api key environment file";
+
+    templates.jellarr-ev = {
+      content = ''
+        JELLARR_API_KEY=${config.sops.placeholder.jellarr-api-key}
+      '';
+      inherit (config.services.jellarr) group;
+      owner = config.services.jellarr.user;
+    };
+  };
+
+  services.jellarr = {
+    enable = true;
+    user = "jellyfin";
+    group = "jellyfin";
+    config.base_url = "http://localhost:8096";
+    environmentFile = config.sops.templates.jellarr-ev.path;
+  };
+}
+```
+
+This setup:
+
+- Stores your API key in an encrypted file managed by **sops**.
+- Renders a secure environment file owned by the Jellarr service user.
+- Keeps your API key out of your Git history.
+
+### Option 2: Inline systemd Environment (simple, less secure)
+
+If you’re testing locally and prefer not to use sops yet:
+
+```nix
+{
+  services.jellarr = {
+    enable = true;
+    user = "jellyfin";
+    group = "jellyfin";
+    config.base_url = "http://localhost:8096";
+  };
+
+  systemd.services.jellarr.environment = {
+    JELLARR_API_KEY = "paste-your-api-key-here";
+  };
+}
+```
+
+⚠️ Avoid committing plaintext secrets — prefer sops for production use.
+
+---
+
+### CLI Flag
+
+If you need to point Jellarr to a different config file:
+
+```bash
+jellarr --configFile /etc/jellarr/config.yml
 ```
 
 ---

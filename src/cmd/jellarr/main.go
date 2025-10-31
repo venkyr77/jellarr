@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -11,12 +12,21 @@ import (
 	"jellarr/src/internal/config"
 )
 
-var applyAll = apply.ApplyAll
+var (
+	cfgPath  = "config/config.yml"
+	applyAll = apply.ApplyAll
+)
 
-var cfgPath = "config/config.yml"
+func getConfigFilePath() string {
+	fs := flag.NewFlagSet("jellarr", flag.ContinueOnError)
+	cfg := cfgPath
+	fs.StringVar(&cfg, "configFile", cfgPath, "path to config file")
+	fs.Parse(os.Args[1:])
+	return cfg
+}
 
 func run() error {
-	cfg, err := config.Load(cfgPath)
+	cfg, err := config.Load(getConfigFilePath())
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
