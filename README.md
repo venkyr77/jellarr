@@ -15,7 +15,7 @@ Instead of editing XML or clicking through the web UI, you describe the desired
 state and run:
 
 ```bash
-jellarr ./config.yml
+JELLARR_API_KEY=your_api_key jellarr --configFile ./config.yml
 ```
 
 Jellarr compares the current server configuration with your YAML and updates
@@ -42,28 +42,28 @@ This enables Prometheus metrics (`/metrics`) on your Jellyfin server.
 1. **Set your Jellyfin API key and URL**
 
    ```bash
-   export JELLARR_BASE_URL=http://localhost:8096
-   export JELLARR_API_KEY=<your_api_key>
+   export JELLARR_API_KEY=your_api_key
    ```
 
 2. **Run Jellarr**
 
    ```bash
-   go run ./cmd/jellarr ./sample-config.yml
+   go run ./src/cmd/jellarr --configFile ./config.yml
    ```
 
    You’ll see output such as:
 
    ```
-   → updating system config
-   🛡️ jellarr apply complete
+   ✓ system config already up to date
+   ✅ jellarr apply complete
    ```
 
    or
 
    ```
-   ✓ system config up to date
-   🛡️ jellarr apply complete
+   → updating system config
+   ✓ updated system config
+   ✅ jellarr apply complete
    ```
 
 ---
@@ -105,7 +105,7 @@ You can consume **Jellarr** directly from its flake:
 Or run it directly:
 
 ```bash
-JELLARR_API_KEY=xyz nix run github:venkyr77/jellarr --configFile ./config.yml
+JELLARR_API_KEY=your_api_key nix run github:venkyr77/jellarr --configFile ./config.yml
 ```
 
 ---
@@ -171,10 +171,11 @@ If you’re testing locally and prefer not to use sops yet:
 
 ### CLI Flag
 
-If you need to point Jellarr to a different config file:
+If you need to point Jellarr to a different config file; for example
+`/etc/jellarr/config.yml`:
 
 ```bash
-jellarr --configFile /etc/jellarr/config.yml
+JELLARR_API_KEY=your_api_key jellarr --configFile /etc/jellarr/config.yml
 ```
 
 ---
