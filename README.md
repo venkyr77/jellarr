@@ -195,13 +195,21 @@ JELLARR_API_KEY=your_api_key jellarr --configFile /etc/jellarr/config.yml
 Run tests locally:
 
 ```bash
-go test ./...
+go test ./src/cmd/jellarr/... ./src/tests/...
+
+# or via nix
+
+nix flake check --all-systems
 ```
 
 Format code:
 
 ```bash
-gofmt -s -w .
+gofmt -w .
+
+# or via nix
+
+nix fmt
 ```
 
 ---

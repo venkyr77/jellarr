@@ -29,9 +29,15 @@
         nixosModules.default = ./nix/module;
       };
 
-      perSystem = {system, ...}: let
+      perSystem = {
+        config,
+        system,
+        ...
+      }: let
         pkgs = nixpkgs.legacyPackages.${system};
       in {
+        checks.package-can-build = config.packages.default;
+
         formatter = (treefmt-nix.lib.evalModule pkgs ./treefmt.nix).config.build.wrapper;
 
         packages.default = import ./nix/package.nix {inherit pkgs;};
