@@ -18,10 +18,21 @@ in {
         description = "Run jellarr (packaged) once";
         preStart = let
           configFile = pkgs.writeText "jellarr-config.yml" (pkgs.lib.generators.toYAML {} cfg.config);
-        in ''
-          install -D -m 0644 ${configFile} ${cfg.dataDir}/config/config.yml
-          chown ${cfg.user}:${cfg.group} ${cfg.dataDir}/config/config.yml
-        '';
+        in
+          # sh
+          ''
+            install -D -m 0644 ${configFile} ${cfg.dataDir}/config/config.yml
+            chown ${cfg.user}:${cfg.group} ${cfg.dataDir}/config/config.yml
+
+            for i in $(seq 1 120); do
+              ${pkgs.curl}/bin/curl -sf ${cfg.config.base_url}/System/Info/Public >/dev/null && exit 0
+              sleep 1
+            done
+
+            echo "Jellyfin not running or not ready at ${cfg.config.base_url}"
+
+            exit 1
+          '';
         serviceConfig = {
           EnvironmentFile = lib.optional (cfg.environmentFile != null) cfg.environmentFile;
           ExecStart = lib.getExe pkg;
