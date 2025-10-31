@@ -11,45 +11,142 @@ import (
 	"jellarr/src/internal/config"
 )
 
-func TestLoad_HappyPath_Gomega(t *testing.T) {
+func TestLoadHappyPath(t *testing.T) {
 	// Arrange
 	g := NewWithT(t)
 
+	p := writeTmpYml(t, `
+version: 1
+base_url: "http://localhost:8096"
+system:
+  enableMetrics: true
+  pluginRepositories:
+    - name: "Repo"
+      url: "https://repo"
+      enabled: true
+  trickplayOptions:
+    enableHwAcceleration: true
+`)
 	// Act
-	cfg, err := config.Load("../../../../sample-config.yml")
+	cfg, err := config.Load(p)
 
 	// Assert
 	g.Expect(err).NotTo(HaveOccurred())
 
 	g.Expect(*cfg).To(MatchFields(IgnoreExtras, Fields{
 		"Version": Equal(1),
-		"BaseUrl": Equal("http://10.0.0.78:8096"),
+		"BaseUrl": Equal("http://localhost:8096"),
 		"System": MatchAllFields(Fields{
-			"EnableMetrics": BeTrue(),
+			"EnableMetrics": PointTo(BeTrue()),
 			"PluginRepositories": ConsistOf(
 				MatchAllFields(Fields{
-					"Name":    Equal("Jellyfin Official"),
-					"URL":     Equal("https://repo.jellyfin.org/releases/plugin/manifest.json"),
+					"Name":    Equal("Repo"),
+					"URL":     Equal("https://repo"),
 					"Enabled": BeTrue(),
 				}),
 			),
+			"TrickplayOptions": PointTo(MatchAllFields(Fields{
+				"EnableHwAcceleration": BeTrue(),
+			})),
 		}),
 	}))
 }
 
-func TestLoad_BadYAML(t *testing.T) {
+func WhenNoEnableMetricsInConfigThenEnableMetricsInSystemSpecIsNil(t *testing.T) {
+	// Arrange
+	g := NewWithT(t)
+
+	p := writeTmpYml(t, `
+version: 1
+base_url: "http://localhost:8096"
+system:
+  pluginRepositories:
+    - name: "Repo"
+      url: "https://repo"
+      enabled: true
+  trickplayOptions:
+    enableHwAcceleration: true
+`)
+
+	// Act
+	cfg, err := config.Load(p)
+
+	// Assert
+	g.Expect(err).NotTo(HaveOccurred())
+
+	g.Expect(cfg.System.EnableMetrics).To(BeNil())
+	g.Expect(cfg.System.PluginRepositories).NotTo(BeNil())
+	g.Expect(cfg.System.TrickplayOptions).NotTo(BeNil())
+}
+
+func WhenNoPluginRepositoriesInConfigThenPluginRepositoriesInSystemSpecIsNil(t *testing.T) {
+	// Arrange
+	g := NewWithT(t)
+
+	p := writeTmpYml(t, `
+version: 1
+base_url: "http://localhost:8096"
+system:
+  enableMetrics: true
+  trickplayOptions:
+    enableHwAcceleration: true
+`)
+
+	// Act
+	cfg, err := config.Load(p)
+
+	// Assert
+	g.Expect(err).NotTo(HaveOccurred())
+
+	g.Expect(cfg.System.EnableMetrics).NotTo(BeNil())
+	g.Expect(cfg.System.PluginRepositories).To(BeNil())
+	g.Expect(cfg.System.TrickplayOptions).NotTo(BeNil())
+}
+
+func WhenNoTrickplayOptionsInConfigThenTrickplayOptionsInSystemSpecIsNil(t *testing.T) {
+	// Arrange
+	g := NewWithT(t)
+
+	p := writeTmpYml(t, `
+version: 1
+base_url: "http://localhost:8096"
+system:
+  enableMetrics: true
+  pluginRepositories:
+    - name: "Repo"
+      url: "https://repo"
+      enabled: true
+`)
+
+	// Act
+	cfg, err := config.Load(p)
+
+	// Assert
+	g.Expect(err).NotTo(HaveOccurred())
+
+	g.Expect(cfg.System.EnableMetrics).NotTo(BeNil())
+	g.Expect(cfg.System.PluginRepositories).NotTo(BeNil())
+	g.Expect(cfg.System.TrickplayOptions).To(BeNil())
+}
+
+func WhenBadYAMLThenLoadErrors(t *testing.T) {
 	//Arrange
 	g := NewWithT(t)
 
-	tmp := t.TempDir()
-	path := filepath.Join(tmp, "bad.yml")
-
-	err := os.WriteFile(path, []byte("system: [1,2"), 0o644)
-	g.Expect(err).NotTo(HaveOccurred())
+	p := writeTmpYml(t, "system: [1,2")
 
 	// Act
-	_, err = config.Load(path)
+	_, err := config.Load(p)
 
 	// Assert
 	g.Expect(err).To(HaveOccurred())
+}
+
+func writeTmpYml(t *testing.T, yml string) string {
+	dir := t.TempDir()
+	p := filepath.Join(dir, "cfg.yml")
+	if err := os.WriteFile(p, []byte(yml), 0o644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	return p
 }

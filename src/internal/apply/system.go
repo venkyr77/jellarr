@@ -14,15 +14,32 @@ func ApplySystem(ctx context.Context, jf api.JF, desired model.SystemSpec) error
 	if err != nil {
 		return fmt.Errorf("get system: %w", err)
 	}
-	changed := cur.EnableMetrics != desired.EnableMetrics ||
-		!EqualReposUnordered(cur.PluginRepositories, desired.PluginRepositories)
+
+	changed := false
+
+	if desired.EnableMetrics != nil && cur.EnableMetrics != *desired.EnableMetrics {
+		changed = true
+	}
+
+	if desired.PluginRepositories != nil && !EqualReposUnordered(cur.PluginRepositories, desired.PluginRepositories) {
+		changed = true
+	}
+
+	if desired.TrickplayOptions != nil && !AreTrickplayOptionsEqual(cur.TrickplayOptions, *desired.TrickplayOptions) {
+		changed = true
+	}
 
 	if changed {
 		fmt.Println("→ updating system config")
-		return jf.UpdateSystem(ctx, desired)
+		if err := jf.UpdateSystem(ctx, desired); err != nil {
+			return fmt.Errorf("update system failed: %w", err)
+		}
+		fmt.Println("✓ updated system config")
+		return nil
+	} else {
+		fmt.Println("✓ system config already up to date")
+		return nil
 	}
-	fmt.Println("✓ system config up to date")
-	return nil
 }
 
 func EqualReposUnordered(a, b []model.PluginRepository) bool {
@@ -54,4 +71,8 @@ func SortRepos(r []model.PluginRepository) {
 		}
 		return false
 	})
+}
+
+func AreTrickplayOptionsEqual(a, b model.TrickplayOptions) bool {
+	return a.EnableHwAcceleration == b.EnableHwAcceleration
 }

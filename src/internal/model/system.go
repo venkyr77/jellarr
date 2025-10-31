@@ -6,12 +6,18 @@ type PluginRepository struct {
 	Enabled bool   `yaml:"enabled"`
 }
 
+type TrickplayOptions struct {
+	EnableHwAcceleration bool `yaml:"enableHwAcceleration"`
+}
+
 type SystemSpec struct {
-	EnableMetrics      bool               `yaml:"enableMetrics"`
+	EnableMetrics      *bool              `yaml:"enableMetrics,omitempty"`
 	PluginRepositories []PluginRepository `yaml:"pluginRepositories,omitempty"`
+	TrickplayOptions   *TrickplayOptions  `yaml:"trickplayOptions,omitempty"`
 }
 
 type SystemState struct {
 	EnableMetrics      bool
 	PluginRepositories []PluginRepository
+	TrickplayOptions   TrickplayOptions
 }

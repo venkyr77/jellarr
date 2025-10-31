@@ -6,3 +6,5 @@ system:
     - name: "Jellyfin Official"
       url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
       enabled: true
+  trickplayOptions:
+    enableHwAcceleration: true

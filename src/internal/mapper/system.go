@@ -32,3 +32,15 @@ func FromJFRepos(in []jellyfin.RepositoryInfo) []model.PluginRepository {
 	}
 	return out
 }
+
+func FromJFTrickplayOptions(in jellyfin.TrickplayOptions) model.TrickplayOptions {
+	return model.TrickplayOptions{
+		EnableHwAcceleration: in.GetEnableHwAcceleration(),
+	}
+}
+
+func ToJFTrickplayOptions(in model.TrickplayOptions) *jellyfin.TrickplayOptions {
+	return &jellyfin.TrickplayOptions{
+		EnableHwAcceleration: &in.EnableHwAcceleration,
+	}
+}

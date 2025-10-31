@@ -21,7 +21,9 @@ func (m *mockJF) UpdateSystem(ctx context.Context, in model.SystemSpec) error {
 	return nil
 }
 
-func TestApplySystem_NoChange(t *testing.T) {
+func ptr[T any](v T) *T { return &v }
+
+func WhenNoChangesThenApplySystemDoesNotApplyAnyChanges(t *testing.T) {
 	// Arrange
 	g := NewWithT(t)
 
@@ -31,13 +33,19 @@ func TestApplySystem_NoChange(t *testing.T) {
 			PluginRepositories: []model.PluginRepository{
 				{Name: "A", URL: "u1", Enabled: true},
 			},
+			TrickplayOptions: model.TrickplayOptions{
+				EnableHwAcceleration: true,
+			},
 		},
 	}
 
 	desired := model.SystemSpec{
-		EnableMetrics: true,
+		EnableMetrics: ptr(true),
 		PluginRepositories: []model.PluginRepository{
 			{Name: "A", URL: "u1", Enabled: true},
+		},
+		TrickplayOptions: &model.TrickplayOptions{
+			EnableHwAcceleration: true,
 		},
 	}
 
@@ -49,7 +57,7 @@ func TestApplySystem_NoChange(t *testing.T) {
 	g.Expect(m.updatedSpec).To(BeNil(), "should not update when desired == current")
 }
 
-func TestApplySystem_Change(t *testing.T) {
+func WhenChangesThenApplySystemAppliesChanges(t *testing.T) {
 	// Arrange
 	g := NewWithT(t)
 
@@ -59,14 +67,20 @@ func TestApplySystem_Change(t *testing.T) {
 			PluginRepositories: []model.PluginRepository{
 				{Name: "A", URL: "u1", Enabled: true},
 			},
+			TrickplayOptions: model.TrickplayOptions{
+				EnableHwAcceleration: true,
+			},
 		},
 	}
 
 	desired := model.SystemSpec{
-		EnableMetrics: true,
+		EnableMetrics: ptr(true),
 		PluginRepositories: []model.PluginRepository{
 			{Name: "A", URL: "u1", Enabled: true},
 			{Name: "B", URL: "u2", Enabled: false},
+		},
+		TrickplayOptions: &model.TrickplayOptions{
+			EnableHwAcceleration: true,
 		},
 	}
 
@@ -98,4 +112,20 @@ func TestEqualReposUnordered(t *testing.T) {
 	// Act & Assert
 	g.Expect(apply.EqualReposUnordered(a, b)).To(BeTrue(), "same sets should be equal regardless of order")
 	g.Expect(apply.EqualReposUnordered(a, c)).To(BeFalse(), "different sets should not be equal")
+}
+
+func TestAreTrickplayOptionsEqual(t *testing.T) {
+	// Arrange
+	g := NewWithT(t)
+
+	// Act & Assert
+	g.Expect(apply.AreTrickplayOptionsEqual(
+		model.TrickplayOptions{EnableHwAcceleration: true},
+		model.TrickplayOptions{EnableHwAcceleration: true},
+	)).To(BeTrue())
+
+	g.Expect(apply.AreTrickplayOptionsEqual(
+		model.TrickplayOptions{EnableHwAcceleration: true},
+		model.TrickplayOptions{EnableHwAcceleration: false},
+	)).To(BeFalse())
 }

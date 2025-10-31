@@ -28,7 +28,7 @@ func TestSystemSpecYAML(t *testing.T) {
 
 	// Assert
 	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(root.System.EnableMetrics).To(BeTrue())
+	g.Expect(root.System.EnableMetrics).To(PointTo(BeTrue()))
 	g.Expect(root.System.PluginRepositories).To(ConsistOf(
 		MatchAllFields(Fields{
 			"Name":    Equal("Jellyfin Official"),

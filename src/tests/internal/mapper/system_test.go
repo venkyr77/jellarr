@@ -43,7 +43,7 @@ func TestRepoRoundTripWithEmptyValues(t *testing.T) {
 	g.Expect(back).To(Equal(in))
 }
 
-func TestFromJFRepos_NullsHandled(t *testing.T) {
+func TestFromJFReposHandlesNull(t *testing.T) {
 	// Arrange
 	g := NewWithT(t)
 
@@ -60,7 +60,7 @@ func TestFromJFRepos_NullsHandled(t *testing.T) {
 	}))
 }
 
-func TestToJFRepos_EmptyValues(t *testing.T) {
+func TestToJFReposHandlesEmptyValues(t *testing.T) {
 	// Arrange
 	g := NewWithT(t)
 
@@ -91,4 +91,34 @@ func TestToJFRepos_EmptyValues(t *testing.T) {
 
 		"Enabled": PointTo(BeFalse()),
 	}))
+}
+
+func TestTrickplayOptionsRoundTripHappyPath(t *testing.T) {
+	// Arrange
+	g := NewWithT(t)
+
+	in := model.TrickplayOptions{
+		EnableHwAcceleration: true,
+	}
+
+	// Act
+	jf := mapper.ToJFTrickplayOptions(in)
+	back := mapper.FromJFTrickplayOptions(*jf)
+
+	// Assert
+	g.Expect(back).To(Equal(in))
+}
+
+func TestTrickplayOptionsRoundTripWithEmptyValues(t *testing.T) {
+	// Arrange
+	g := NewWithT(t)
+
+	in := model.TrickplayOptions{}
+
+	// Act
+	jf := mapper.ToJFTrickplayOptions(in)
+	back := mapper.FromJFTrickplayOptions(*jf)
+
+	// Assert
+	g.Expect(back).To(Equal(in))
 }

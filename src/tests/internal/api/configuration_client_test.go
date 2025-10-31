@@ -53,21 +53,22 @@ func (m *mockClient) UpdateConfigurationExecute(_ jellyfin.ApiUpdateConfiguratio
 
 func ptr[T any](v T) *T { return &v }
 
-func TestGetSystem_Success(t *testing.T) {
+func TestGetSystemHappyPath(t *testing.T) {
 	// Arrange
 	g := NewWithT(t)
-	enable := true
-	repos := []jellyfin.RepositoryInfo{
-		{
-			Name:    *jellyfin.NewNullableString(ptr("Repo")),
-			Url:     *jellyfin.NewNullableString(ptr("https://repo")),
-			Enabled: ptr(true),
-		},
-	}
 	m := &mockClient{
 		cfg: &jellyfin.ServerConfiguration{
-			EnableMetrics:      &enable,
-			PluginRepositories: repos,
+			EnableMetrics: ptr(true),
+			PluginRepositories: []jellyfin.RepositoryInfo{
+				{
+					Name:    *jellyfin.NewNullableString(ptr("Repo")),
+					Url:     *jellyfin.NewNullableString(ptr("https://repo")),
+					Enabled: ptr(true),
+				},
+			},
+			TrickplayOptions: &jellyfin.TrickplayOptions{
+				EnableHwAcceleration: ptr(true),
+			},
 		},
 	}
 
@@ -88,11 +89,14 @@ func TestGetSystem_Success(t *testing.T) {
 					"Enabled": BeTrue(),
 				}),
 			),
+			"TrickplayOptions": MatchAllFields(Fields{
+				"EnableHwAcceleration": BeTrue(),
+			}),
 		}),
 	)
 }
 
-func TestGetSystem_ErrorBubbles(t *testing.T) {
+func WhenGetConfigurationErrorsThenGetSystemErrors(t *testing.T) {
 	// Arrange
 	g := NewWithT(t)
 	m := &mockClient{err: errors.New("boom")}
@@ -107,14 +111,17 @@ func TestGetSystem_ErrorBubbles(t *testing.T) {
 	g.Expect(m.getCalled).To(BeTrue())
 }
 
-func TestUpdateSystem_Success(t *testing.T) {
+func TestUpdateSystemHappyPath(t *testing.T) {
 	// Arrange
 	g := NewWithT(t)
 	m := &mockClient{}
 	spec := model.SystemSpec{
-		EnableMetrics: true,
+		EnableMetrics: ptr(true),
 		PluginRepositories: []model.PluginRepository{
 			{Name: "A", URL: "https://repo", Enabled: true},
+		},
+		TrickplayOptions: &model.TrickplayOptions{
+			EnableHwAcceleration: true,
 		},
 	}
 
@@ -127,14 +134,17 @@ func TestUpdateSystem_Success(t *testing.T) {
 	g.Expect(m.updateCalled).To(BeTrue())
 }
 
-func TestUpdateSystem_ErrorBubbles(t *testing.T) {
+func WhenUpdateConfigurationErrorsThenUpdateSystemErrors(t *testing.T) {
 	// Arrange
 	g := NewWithT(t)
 	m := &mockClient{err: errors.New("fail")}
 	spec := model.SystemSpec{
-		EnableMetrics: true,
+		EnableMetrics: ptr(true),
 		PluginRepositories: []model.PluginRepository{
 			{Name: "A", URL: "https://repo", Enabled: true},
+		},
+		TrickplayOptions: &model.TrickplayOptions{
+			EnableHwAcceleration: true,
 		},
 	}
 
