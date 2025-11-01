@@ -12,8 +12,8 @@ export async function runPipeline(path: string): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
   const cfg: RootConfig = YAML.parse(raw) as RootConfig;
 
-  const apiKey: string | undefined = process.env.JELLYFIN_API_KEY;
-  if (!apiKey) throw new Error("JELLYFIN_API_KEY required");
+  const apiKey: string | undefined = process.env.JELLARR_API_KEY;
+  if (!apiKey) throw new Error("JELLARR_API_KEY required");
 
   const jf: JFClient = makeClient(cfg.base_url, apiKey);
 

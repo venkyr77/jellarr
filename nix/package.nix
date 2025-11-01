@@ -16,6 +16,8 @@ pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  CI = "true";
+
   installPhase = ''
     runHook preInstall
     install -Dm644 -t $out/share bundle.cjs

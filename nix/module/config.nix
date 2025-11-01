@@ -6,7 +6,7 @@
 }: let
   cfg = config.services.jellarr;
 
-  pkg = import ../package.nix {inherit pkgs;};
+  pkg = import ../package.nix {inherit lib pkgs;};
 in {
   config = lib.mkIf cfg.enable {
     systemd = {
