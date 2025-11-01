@@ -1,19 +1,24 @@
 #!/usr/bin/env node
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import { runPipeline } from "../pipeline";
 
 interface Options {
-  config: string;
+  configFile: string;
 }
 
 const program: Command = new Command();
 
 program
-  .name("jellarr-ts")
-  .description("Minimal Jellyfin config applier")
-  .option("-c, --config <path>", "YAML config file", "config.yml")
+  .name("jellarr")
+  .description("Declarative Jellyfin configuration applier")
+  .addOption(
+    new Option("--configFile <path>", "path to config file").default(
+      "config/config.yml",
+    ),
+  )
   .action(async (opts: Options): Promise<void> => {
-    await runPipeline(opts.config);
+    await runPipeline(opts.configFile);
+    console.log("✅ jellarr apply complete");
   });
 
 program.parseAsync().catch((err: unknown): void => {

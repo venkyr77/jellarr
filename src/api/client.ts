@@ -15,7 +15,7 @@ export function makeClient(
       headers.set("X-Emby-Token", apiKey);
       headers.set(
         "X-Emby-Authorization",
-        'MediaBrowser Client="jellarr-ts", Device="cli", Version="0.0.1"',
+        'MediaBrowser Client="jellarr", Device="cli", Version="0.1.0"',
       );
       return new Request(request, { headers });
     },
