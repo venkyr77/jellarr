@@ -1,0 +1,50 @@
+import { promises as fs } from "fs";
+import YAML from "yaml";
+import createClient from "openapi-fetch";
+import { makeClient } from "./client";
+import type { paths } from "../generated/schema";
+import type { components } from "../generated/schema";
+import { apply, type SystemCfg } from "./system";
+
+type JFClient = ReturnType<typeof createClient<paths>>;
+type ServerConfiguration = components["schemas"]["ServerConfiguration"];
+
+interface Config {
+  version: number;
+  base_url: string;
+  system: SystemCfg;
+}
+
+export async function runPipeline(path: string): Promise<void> {
+  const raw: string = await fs.readFile(path, "utf8");
+  const cfg: Config = YAML.parse(raw) as Config;
+
+  const apiKey: string | undefined = process.env.JELLYFIN_API_KEY;
+  if (!apiKey) throw new Error("JELLYFIN_API_KEY required");
+
+  const jf: JFClient = makeClient(cfg.base_url, apiKey);
+
+  // eslint-disable-next-line @typescript-eslint/typedef
+  const read = await jf.GET("/System/Configuration");
+  if (read.error) {
+    throw new Error(`Failed to get config: ${read.response.status.toString()}`);
+  }
+  const current: ServerConfiguration = read.data as ServerConfiguration;
+
+  const updated: ServerConfiguration = apply(current, cfg.system);
+
+  const isSame: boolean = JSON.stringify(updated) === JSON.stringify(current);
+  if (isSame) {
+    console.log("✓ system config already up to date");
+    return;
+  }
+
+  console.log("→ updating system config");
+
+  // eslint-disable-next-line @typescript-eslint/typedef
+  const write = await jf.POST("/System/Configuration", { body: updated });
+  if (write.error) {
+    throw new Error(`Update failed: ${write.response.status.toString()}`);
+  }
+  console.log("✓ updated system config");
+}
