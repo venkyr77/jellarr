@@ -2,7 +2,7 @@ import { build } from "esbuild";
 
 async function main() {
   await build({
-    entryPoints: ["./src/cli.ts"],
+    entryPoints: ["./src/cli/index.ts"],
     bundle: true,
     sourcemap: "inline",
     platform: "node",

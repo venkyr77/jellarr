@@ -1,7 +1,10 @@
 import createClient from "openapi-fetch";
-import type { paths } from "../generated/schema";
+import type { paths } from "../../generated/schema";
 
-export function makeClient(baseUrl: string, apiKey: string) {
+export function makeClient(
+  baseUrl: string,
+  apiKey: string,
+): ReturnType<typeof createClient<paths>> {
   const client: ReturnType<typeof createClient<paths>> = createClient<paths>({
     baseUrl: baseUrl.replace(/\/+$/, ""),
   });

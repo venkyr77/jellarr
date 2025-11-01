@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { runPipeline } from "./pipeline";
+import { runPipeline } from "../pipeline";
 
 interface Options {
   config: string;

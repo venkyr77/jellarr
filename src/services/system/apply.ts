@@ -1,75 +1,16 @@
-import { logger } from "./logger";
-import type { components } from "../generated/schema";
-
-type ServerConfiguration = components["schemas"]["ServerConfiguration"];
-type JFPluginRepo = NonNullable<
-  ServerConfiguration["PluginRepositories"]
->[number];
-type JFTrickplay = NonNullable<ServerConfiguration["TrickplayOptions"]>;
-
-export interface PluginRepositoryCfg {
-  name: string;
-  url: string;
-  enabled: boolean;
-}
-
-export interface TrickplayOptionsCfg {
-  enableHwAcceleration?: boolean | null;
-  enableHwEncoding?: boolean | null;
-}
-
-export interface SystemCfg {
-  enableMetrics?: boolean;
-  pluginRepositories?: PluginRepositoryCfg[];
-  trickplayOptions?: TrickplayOptionsCfg;
-}
-
-function fromJFRepos(
-  inRepos: JFPluginRepo[] | undefined,
-): PluginRepositoryCfg[] {
-  if (!inRepos) return [];
-  return inRepos.map(
-    (r: JFPluginRepo): PluginRepositoryCfg => ({
-      name: r.Name ?? "",
-      url: r.Url ?? "",
-      enabled: Boolean(r.Enabled),
-    }),
-  );
-}
-
-function toJFRepos(inRepos: PluginRepositoryCfg[]): JFPluginRepo[] {
-  return inRepos.map(
-    (r: PluginRepositoryCfg): JFPluginRepo => ({
-      Name: r.name,
-      Url: r.url,
-      Enabled: r.enabled,
-    }),
-  );
-}
-
-function equalReposUnordered(
-  a: PluginRepositoryCfg[],
-  b: PluginRepositoryCfg[],
-): boolean {
-  if (a.length !== b.length) return false;
-
-  const key: (r: PluginRepositoryCfg) => string = (
-    r: PluginRepositoryCfg,
-  ): string => `${r.name}::${r.url}`;
-
-  const am: Map<string, PluginRepositoryCfg> = new Map(
-    a.map((r: PluginRepositoryCfg): [string, PluginRepositoryCfg] => [
-      key(r),
-      r,
-    ]),
-  );
-
-  for (const r of b) {
-    const other: PluginRepositoryCfg | undefined = am.get(key(r));
-    if (!other || other.enabled !== r.enabled) return false;
-  }
-  return true;
-}
+import { logger } from "../../lib/logger";
+import type {
+  JFTrickplay,
+  PluginRepositoryCfg,
+  ServerConfiguration,
+  SystemCfg,
+  TrickplayOptionsCfg,
+} from "../../domain/system/types";
+import {
+  equalReposUnordered,
+  fromJFRepos,
+  toJFRepos,
+} from "../../mappers/system";
 
 function hasEnableMetricsChanged(
   current: ServerConfiguration,
@@ -161,10 +102,14 @@ export function apply(
     const next: JFTrickplay = { ...cur };
 
     if ("enableHwAcceleration" in cfg) {
-      next.EnableHwAcceleration = cfg.enableHwAcceleration ?? null;
+      const v: boolean | null | undefined = cfg.enableHwAcceleration;
+      const vOut: boolean | undefined = v === null ? undefined : v;
+      next.EnableHwAcceleration = vOut;
     }
     if ("enableHwEncoding" in cfg) {
-      next.EnableHwEncoding = cfg.enableHwEncoding ?? null;
+      const v: boolean | null | undefined = cfg.enableHwEncoding;
+      const vOut: boolean | undefined = v === null ? undefined : v;
+      next.EnableHwEncoding = vOut;
     }
 
     out.TrickplayOptions = next;

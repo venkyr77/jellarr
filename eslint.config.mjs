@@ -25,6 +25,16 @@ export default defineConfig(
           variableDeclaration: true,
         },
       ],
+
+      "@typescript-eslint/explicit-function-return-type": [
+        "error",
+        {
+          allowExpressions: false,
+          allowTypedFunctionExpressions: true,
+          allowHigherOrderFunctions: true,
+          allowDirectConstAssertionInArrowFunctions: true,
+        },
+      ],
     },
   },
   [globalIgnores(["**bundle.cjs", "esbuild.ts", "eslint.config.mjs"])],

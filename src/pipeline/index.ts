@@ -1,23 +1,16 @@
 import { promises as fs } from "fs";
 import YAML from "yaml";
-import createClient from "openapi-fetch";
-import { makeClient } from "./client";
-import type { paths } from "../generated/schema";
-import type { components } from "../generated/schema";
-import { apply, type SystemCfg } from "./system";
+import type createClient from "openapi-fetch";
+import type { paths } from "../../generated/schema";
+import { makeClient } from "../api/client";
+import type { RootConfig, ServerConfiguration } from "../domain/system/types";
+import { apply } from "../services/system/apply";
 
 type JFClient = ReturnType<typeof createClient<paths>>;
-type ServerConfiguration = components["schemas"]["ServerConfiguration"];
-
-interface Config {
-  version: number;
-  base_url: string;
-  system: SystemCfg;
-}
 
 export async function runPipeline(path: string): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
-  const cfg: Config = YAML.parse(raw) as Config;
+  const cfg: RootConfig = YAML.parse(raw) as RootConfig;
 
   const apiKey: string | undefined = process.env.JELLYFIN_API_KEY;
   if (!apiKey) throw new Error("JELLYFIN_API_KEY required");
