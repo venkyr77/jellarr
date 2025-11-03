@@ -6,9 +6,11 @@ import {
   SystemConfigSchema,
   PluginRepositoryConfigSchema,
   TrickplayOptionsConfigSchema,
+  EncodingConfigSchema,
   type ValidatedPluginRepositoryConfig,
   type ValidatedTrickplayOptionsConfig,
   type ValidatedSystemConfig,
+  type ValidatedEncodingConfig,
   type ValidatedRootConfig,
 } from "../../src/validation/config";
 
@@ -352,6 +354,138 @@ describe("validation/config — RootConfigSchema", () => {
       const strictError: z.core.$ZodIssue | undefined =
         result.error.issues.find((err) => err.code === "unrecognized_keys");
       expect(strictError?.code).toBe("unrecognized_keys");
+    }
+  });
+});
+
+describe("validation/config — EncodingConfigSchema", () => {
+  it("should validate empty encoding config", () => {
+    // Arrange
+    const validConfig: z.input<typeof EncodingConfigSchema> = {};
+
+    // Act
+    const result: ZodSafeParseResult<ValidatedEncodingConfig> =
+      EncodingConfigSchema.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual({});
+    }
+  });
+
+  it("should validate encoding config with enableHardwareEncoding true", () => {
+    // Arrange
+    const validConfig: z.input<typeof EncodingConfigSchema> = {
+      enableHardwareEncoding: true,
+    };
+
+    // Act
+    const result: ZodSafeParseResult<ValidatedEncodingConfig> =
+      EncodingConfigSchema.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
+  it("should validate encoding config with enableHardwareEncoding false", () => {
+    // Arrange
+    const validConfig: z.input<typeof EncodingConfigSchema> = {
+      enableHardwareEncoding: false,
+    };
+
+    // Act
+    const result: ZodSafeParseResult<ValidatedEncodingConfig> =
+      EncodingConfigSchema.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
+  it("should reject non-boolean enableHardwareEncoding", () => {
+    // Arrange
+    const invalidConfig: z.input<typeof EncodingConfigSchema> = {
+      // @ts-expect-error intentional bad type for test
+      enableHardwareEncoding: "true",
+    };
+
+    // Act
+    const result: ZodSafeParseResult<ValidatedEncodingConfig> =
+      EncodingConfigSchema.safeParse(invalidConfig);
+
+    // Assert
+    expect(result.success).toBe(false);
+  });
+
+  it("should reject extra fields due to strict mode", () => {
+    // Arrange
+    const invalidConfig: z.input<typeof EncodingConfigSchema> = {
+      enableHardwareEncoding: true,
+      // @ts-expect-error intentional extra field for test
+      unknownField: "should not be allowed",
+    };
+
+    // Act
+    const result: ZodSafeParseResult<ValidatedEncodingConfig> =
+      EncodingConfigSchema.safeParse(invalidConfig);
+
+    // Assert
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toBeDefined();
+      expect(result.error.issues.length).toBeGreaterThan(0);
+      const strictError: z.core.$ZodIssue | undefined =
+        result.error.issues.find((err) => err.code === "unrecognized_keys");
+      expect(strictError?.code).toBe("unrecognized_keys");
+    }
+  });
+});
+
+describe("validation/config — RootConfigSchema with encoding", () => {
+  it("should validate root config with encoding section", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigSchema> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+      encoding: {
+        enableHardwareEncoding: true,
+      },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<ValidatedRootConfig> =
+      RootConfigSchema.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
+  it("should validate root config without encoding section", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigSchema> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+    };
+
+    // Act
+    const result: ZodSafeParseResult<ValidatedRootConfig> =
+      RootConfigSchema.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
     }
   });
 });

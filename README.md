@@ -225,18 +225,52 @@ nix build .#
 
 ---
 
+## 🎯 Current Features
+
+**System Configuration:**
+
+- ✅ **Metrics**: Enable/disable Prometheus metrics endpoint (`/metrics`)
+- ✅ **Plugin Repositories**: Manage plugin sources with name, URL, and enabled
+  status
+- ✅ **Trickplay Options**: Configure hardware acceleration and encoding for
+  trickplay generation
+
+**Encoding Configuration:**
+
+- ✅ **Hardware Encoding**: Enable/disable hardware-accelerated encoding for
+  transcoding operations
+
+**Architecture:**
+
+- ✅ **Strict Validation**: Zod schemas prevent invalid configurations
+- ✅ **Selective Updates**: Only modifies explicitly specified fields
+- ✅ **Type Safety**: Full TypeScript with generated Jellyfin API types
+- ✅ **Integration Testing**: Comprehensive test suite (it1-it9) validating core
+  behavior
+
 ## 🗺️ Roadmap
 
-- [x] TypeScript migration with strict Zod validation
-- [x] System configuration (`EnableMetrics`, `PluginRepositories`,
-      `TrickplayOptions`)
-- [x] Comprehensive integration testing framework
-- [x] Nix build system with proper dependency management
-- [ ] Libraries (create/update/delete)
-- [ ] Users and authentication configuration
-- [ ] Deep equality checking for configuration changes
-- [ ] Structured error handling and logging
-- [ ] Release automation and Docker image
+**High Priority:**
+
+- [ ] **Encoding Configuration**: Transcoding settings, hardware acceleration,
+      codec preferences
+- [ ] **Deep Equality Checking**: Replace JSON.stringify with proper deep
+      comparison
+- [ ] **Structured Error Handling**: Better error types and API response details
+
+**Medium Priority:**
+
+- [ ] **Libraries Configuration**: Create, update, and delete media libraries
+- [ ] **Users & Authentication**: User management and access control settings
+- [ ] **Playback Configuration**: Default audio/subtitle languages, quality
+      settings
+
+**Future Features:**
+
+- [ ] **Plugin Configuration**: Install and configure specific plugins
+- [ ] **Network & Security**: HTTPS, remote access, and security policies
+- [ ] **Notification Settings**: Configure webhooks and notification providers
+- [ ] **Release Automation**: CI/CD pipeline and Docker image
 
 ---
 

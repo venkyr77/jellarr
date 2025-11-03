@@ -1,4 +1,5 @@
 import type { ServerConfigurationSchema } from "../types/schema/system";
+import type { EncodingConfigurationSchema } from "../types/schema/encoding";
 import type { JellyfinClient } from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";
@@ -39,6 +40,38 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /System/Configuration failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getEncodingConfiguration(): Promise<EncodingConfigurationSchema> {
+      // eslint-disable-next-line @typescript-eslint/typedef
+      const res = await client.GET("/System/Configuration/{key}", {
+        params: { path: { key: "encoding" } },
+      });
+
+      if (res.error) {
+        throw new Error(
+          `GET /System/Configuration/encoding failed: ${res.response.status.toString()}`,
+        );
+      }
+
+      return res.data as EncodingConfigurationSchema;
+    },
+
+    async updateEncodingConfiguration(
+      body: Partial<EncodingConfigurationSchema>,
+    ): Promise<void> {
+      // eslint-disable-next-line @typescript-eslint/typedef
+      const res = await client.POST("/System/Configuration/{key}", {
+        params: { path: { key: "encoding" } },
+        body,
+        headers: { "content-type": "application/json" },
+      });
+
+      if (res.error) {
+        throw new Error(
+          `POST /System/Configuration/encoding failed: ${res.response.status.toString()}`,
         );
       }
     },

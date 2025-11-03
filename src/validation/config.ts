@@ -32,15 +32,25 @@ export const SystemConfigSchema: z.ZodObject<{
   })
   .strict();
 
+export const EncodingConfigSchema: z.ZodObject<{
+  enableHardwareEncoding: z.ZodOptional<z.ZodBoolean>;
+}> = z
+  .object({
+    enableHardwareEncoding: z.boolean().optional(),
+  })
+  .strict();
+
 export const RootConfigSchema: z.ZodObject<{
   version: z.ZodNumber;
   base_url: ReturnType<typeof z.url>;
   system: typeof SystemConfigSchema;
+  encoding: z.ZodOptional<typeof EncodingConfigSchema>;
 }> = z
   .object({
     version: z.number().int().positive("Version must be a positive integer"),
     base_url: z.url({ message: "Base URL must be a valid URL" }),
     system: SystemConfigSchema,
+    encoding: EncodingConfigSchema.optional(),
   })
   .strict();
 
@@ -51,4 +61,5 @@ export type ValidatedTrickplayOptionsConfig = z.infer<
   typeof TrickplayOptionsConfigSchema
 >;
 export type ValidatedSystemConfig = z.infer<typeof SystemConfigSchema>;
+export type ValidatedEncodingConfig = z.infer<typeof EncodingConfigSchema>;
 export type ValidatedRootConfig = z.infer<typeof RootConfigSchema>;

@@ -47,7 +47,7 @@ When user says "buildfull", execute this complete build and validation sequence:
 2. **Build and validate**:
 
    ```bash
-   pnpm install && pnpm build && pnpm eslint && pnpm test
+   pnpm install && pnpm build && tsc --noEmit && pnpm eslint && pnpm test
    nix fmt && git add -A
    ```
 
@@ -130,6 +130,7 @@ enableMetrics                         → EnableMetrics
 pluginRepositories                    → PluginRepositories
 trickplayOptions.enableHwAcceleration → TrickplayOptions.EnableHwAcceleration
 trickplayOptions.enableHwEncoding     → TrickplayOptions.EnableHwEncoding
+encoding.enableHardwareEncoding       → EnableHardwareEncoding
 ```
 
 ### Test Execution Pattern
@@ -161,7 +162,7 @@ trickplayOptions.enableHwEncoding     → TrickplayOptions.EnableHwEncoding
 4. **Run jellarr** and verify results unchanged for omitted fields
 5. **Clean up** temp files: `rm tmp_config_itN.yml`
 
-### Validated Integration Tests (it1-it9)
+### Validated Integration Tests (it1-it10)
 
 | Test | Field Type | Scenario                                    | Server State                                                             | Config                                                                 | Expected Result                                                  | Status |
 | ---- | ---------- | ------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------- | ---------------------------------------------------------------- | ------ |
@@ -174,6 +175,7 @@ trickplayOptions.enableHwEncoding     → TrickplayOptions.EnableHwEncoding
 | it7  | Object     | Partial update (true,false→false,undefined) | TrickplayOptions: {EnableHwAcceleration: true, EnableHwEncoding: false}  | trickplayOptions: {enableHwAcceleration: false}                        | EnableHwAcceleration: false, EnableHwEncoding: false (preserved) | ✅     |
 | it8  | Object     | Partial update (false,true→undefined,false) | TrickplayOptions: {EnableHwAcceleration: false, EnableHwEncoding: true}  | trickplayOptions: {enableHwEncoding: false}                            | EnableHwAcceleration: false (preserved), EnableHwEncoding: false | ✅     |
 | it9  | Object     | Full update (false,false→true,true)         | TrickplayOptions: {EnableHwAcceleration: false, EnableHwEncoding: false} | trickplayOptions: {enableHwAcceleration: true, enableHwEncoding: true} | Both fields: true                                                | ✅     |
+| it10 | Scalar     | Preserve false (encoding)                   | EnableHardwareEncoding: false                                            | encoding: {}                                                           | EnableHardwareEncoding: false                                    | ✅     |
 
 **Core Validation**: All tests confirm jellarr implements true declarative
 behavior - only explicitly configured fields are modified, ensuring safe
