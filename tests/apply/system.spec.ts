@@ -236,7 +236,7 @@ describe("apply/system — table driven", () => {
         patch: {},
       },
     },
-  ])("when $name", ({ current, desired, expected }): void => {
+  ])("$name", ({ current, desired, expected }): void => {
     // Act
     const updated: ServerConfigurationSchema = applySystem(current, desired);
 

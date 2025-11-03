@@ -159,7 +159,7 @@ describe("mappers/system — mapSystemConfigurationConfigToSchema", () => {
       desired: {},
       expected: {},
     },
-  ])("when $name", ({ desired, expected }): void => {
+  ])("$name", ({ desired, expected }): void => {
     // Arrange
     const inCfg: SystemConfig = desired;
 
