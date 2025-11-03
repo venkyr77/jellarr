@@ -1,8 +1,9 @@
 # Jellarr
 
 **Jellarr** is a declarative configuration tool for
-[Jellyfin](https://jellyfin.org) built in TypeScript. It applies configuration to a Jellyfin server
-using its public API — safely, idempotently, and version-controlled via YAML.
+[Jellyfin](https://jellyfin.org) built in TypeScript. It applies configuration
+to a Jellyfin server using its public API — safely, idempotently, and
+version-controlled via YAML.
 
 ---
 
@@ -184,7 +185,7 @@ JELLARR_API_KEY=your_api_key nix run .# -- --configFile /etc/jellarr/config.yml
 ## 🧠 Design
 
 - **TypeScript architecture:** Pipeline pattern with strict Zod validation
-- **OpenAPI integration:** Generated types from Jellyfin's OpenAPI specification  
+- **OpenAPI integration:** Generated types from Jellyfin's OpenAPI specification
 - **Declarative config:** YAML → Zod validation → Jellyfin API
 - **Idempotent apply:** Compares current and desired state before updating
 - **Selective updates:** Only modifies explicitly configured fields
@@ -227,7 +228,8 @@ nix build .#
 ## 🗺️ Roadmap
 
 - [x] TypeScript migration with strict Zod validation
-- [x] System configuration (`EnableMetrics`, `PluginRepositories`, `TrickplayOptions`)
+- [x] System configuration (`EnableMetrics`, `PluginRepositories`,
+      `TrickplayOptions`)
 - [x] Comprehensive integration testing framework
 - [x] Nix build system with proper dependency management
 - [ ] Libraries (create/update/delete)
