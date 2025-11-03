@@ -1,136 +1,257 @@
 import { describe, it, expect } from "vitest";
 import { applySystem } from "../../src/apply/system";
-import {
-  type ServerConfigurationSchema,
-  type TrickplayOptionsSchema,
-} from "../../src/types/schema/system";
-import {
-  type PluginRepositoryConfig,
-  type SystemConfig,
-} from "../../src/types/config/system";
+import type { SystemConfig } from "../../src/types/config/system";
+import type { ServerConfigurationSchema } from "../../src/types/schema/system";
 
-function makeConfig(
-  partial?: Partial<ServerConfigurationSchema>,
-): ServerConfigurationSchema {
-  const base: ServerConfigurationSchema = {
-    EnableMetrics: false,
-    PluginRepositories: [],
-    TrickplayOptions: undefined,
-  } as ServerConfigurationSchema;
-  return { ...base, ...(partial ?? {}) } as ServerConfigurationSchema;
-}
+type Case = {
+  name: string;
+  current: ServerConfigurationSchema;
+  desired: SystemConfig;
+  expected: {
+    schema: ServerConfigurationSchema;
+    patch: Partial<ServerConfigurationSchema>;
+  };
+};
 
-describe("services/system/apply", () => {
-  it("whenDesiredEmpty_thenApplyReturnsCurrentUnchanged()", () => {
-    // Arrange
-    const current: ServerConfigurationSchema = makeConfig({
-      EnableMetrics: true,
-    });
-    const desired: SystemConfig = {};
-
-    // Act
-    const updated: ServerConfigurationSchema = applySystem(current, desired);
-
-    // Assert
-    expect(updated).toEqual(current);
-  });
-
-  it("whenEnableMetricsDiffers_thenApplyUpdatesOnlyEnableMetrics()", () => {
-    // Arrange
-    const current: ServerConfigurationSchema = makeConfig({
+const cases: Case[] = [
+  {
+    name: "EnableMetrics false → true",
+    current: {
       EnableMetrics: false,
-    });
-    const desired: SystemConfig = { enableMetrics: true };
-
-    // Act
-    const updated: ServerConfigurationSchema = applySystem(current, desired);
-
-    // Assert
-    expect(updated.EnableMetrics).toBe(true);
-    expect(updated.PluginRepositories).toEqual(current.PluginRepositories);
-    expect(updated.TrickplayOptions).toEqual(current.TrickplayOptions);
-  });
-
-  it("whenPluginRepositoriesProvided_thenApplyReplacesRepos()", () => {
-    // Arrange
-    const current: ServerConfigurationSchema = makeConfig({
+      PluginRepositories: [],
+      TrickplayOptions: undefined,
+    },
+    desired: { enableMetrics: true },
+    expected: {
+      schema: {
+        EnableMetrics: true,
+        PluginRepositories: [],
+        TrickplayOptions: undefined,
+      },
+      patch: { EnableMetrics: true },
+    },
+  },
+  {
+    name: "EnableMetrics true → false",
+    current: {
+      EnableMetrics: true,
+      PluginRepositories: [],
+      TrickplayOptions: undefined,
+    },
+    desired: { enableMetrics: false },
+    expected: {
+      schema: {
+        EnableMetrics: false,
+        PluginRepositories: [],
+        TrickplayOptions: undefined,
+      },
+      patch: { EnableMetrics: false },
+    },
+  },
+  {
+    name: "PluginRepositories differ",
+    current: {
+      EnableMetrics: false,
       PluginRepositories: [{ Name: "A", Url: "https://a", Enabled: true }],
-    });
-    const repos: PluginRepositoryConfig[] = [
-      { name: "B", url: "https://b", enabled: true },
-      { name: "A", url: "https://a", enabled: true },
-    ];
-    const desired: SystemConfig = { pluginRepositories: repos };
-
-    // Act
-    const updated: ServerConfigurationSchema = applySystem(current, desired);
-
-    // Assert
-    expect(updated.PluginRepositories).toEqual([
-      { Name: "B", Url: "https://b", Enabled: true },
-      { Name: "A", Url: "https://a", Enabled: true },
-    ]);
-  });
-
-  describe("trickplay tri-state (true/false/null)", () => {
-    it("whenBothBooleansProvided_thenApplySetsBothFields()", () => {
-      // Arrange
-      const current: ServerConfigurationSchema = makeConfig({
-        TrickplayOptions: {} as TrickplayOptionsSchema,
-      });
-      const desired: SystemConfig = {
-        trickplayOptions: {
-          enableHwAcceleration: true,
-          enableHwEncoding: false,
+      TrickplayOptions: undefined,
+    },
+    desired: {
+      pluginRepositories: [
+        { name: "B", url: "https://b", enabled: true },
+        { name: "A", url: "https://a", enabled: true },
+      ],
+    },
+    expected: {
+      schema: {
+        EnableMetrics: false,
+        PluginRepositories: [
+          { Name: "B", Url: "https://b", Enabled: true },
+          { Name: "A", Url: "https://a", Enabled: true },
+        ],
+        TrickplayOptions: undefined,
+      },
+      patch: {
+        PluginRepositories: [
+          { Name: "B", Url: "https://b", Enabled: true },
+          { Name: "A", Url: "https://a", Enabled: true },
+        ],
+      },
+    },
+  },
+  {
+    name: "Trickplay: enableHwAcceleration null → omit key; keep other fields",
+    current: {
+      EnableMetrics: false,
+      PluginRepositories: [],
+      TrickplayOptions: {
+        EnableHwAcceleration: true,
+        EnableHwEncoding: true,
+      },
+    },
+    desired: {
+      trickplayOptions: { enableHwAcceleration: null, enableHwEncoding: true },
+    },
+    expected: {
+      schema: {
+        EnableMetrics: false,
+        PluginRepositories: [],
+        TrickplayOptions: {
+          EnableHwAcceleration: undefined,
+          EnableHwEncoding: true,
         },
-      };
-
-      // Act
-      const updated: ServerConfigurationSchema = applySystem(current, desired);
-
-      // Assert
-      expect(updated.TrickplayOptions?.EnableHwAcceleration).toBe(true);
-      expect(updated.TrickplayOptions?.EnableHwEncoding).toBe(false);
-    });
-
-    it("whenAccelerationIsNull_thenApplyOmitsAccelerationKey()", () => {
-      // Arrange
-      const current: ServerConfigurationSchema = makeConfig({
+      },
+      patch: {
+        TrickplayOptions: {
+          EnableHwAcceleration: undefined,
+          EnableHwEncoding: true,
+        },
+      },
+    },
+  },
+  {
+    name: "Trickplay: enableHwEncoding null → omit key; keep other fields",
+    current: {
+      EnableMetrics: false,
+      PluginRepositories: [],
+      TrickplayOptions: {
+        EnableHwAcceleration: true,
+        EnableHwEncoding: true,
+      },
+    },
+    desired: {
+      trickplayOptions: { enableHwAcceleration: true, enableHwEncoding: null },
+    },
+    expected: {
+      schema: {
+        EnableMetrics: false,
+        PluginRepositories: [],
+        TrickplayOptions: {
+          EnableHwAcceleration: true,
+          EnableHwEncoding: undefined,
+        },
+      },
+      patch: {
+        TrickplayOptions: {
+          EnableHwAcceleration: true,
+          EnableHwEncoding: undefined,
+        },
+      },
+    },
+  },
+  {
+    name: "Trickplay: enableHwAcceleration has change; only it is updated",
+    current: {
+      EnableMetrics: false,
+      PluginRepositories: [],
+      TrickplayOptions: {
+        EnableHwAcceleration: false,
+        EnableHwEncoding: true,
+      },
+    },
+    desired: { trickplayOptions: { enableHwAcceleration: true } },
+    expected: {
+      schema: {
+        EnableMetrics: false,
+        PluginRepositories: [],
         TrickplayOptions: {
           EnableHwAcceleration: true,
           EnableHwEncoding: true,
         },
-      });
-      const desired: SystemConfig = {
-        trickplayOptions: { enableHwAcceleration: null },
-      };
-
-      // Act
-      const updated: ServerConfigurationSchema = applySystem(current, desired);
-
-      // Assert
-      expect(updated.TrickplayOptions?.EnableHwAcceleration).toBeUndefined();
-      expect(updated.TrickplayOptions?.EnableHwEncoding).toBe(true);
-    });
-
-    it("whenOnlyAccelerationProvided_thenApplyLeavesEncodingUntouched()", () => {
-      // Arrange
-      const current: ServerConfigurationSchema = makeConfig({
+      },
+      patch: { TrickplayOptions: { EnableHwAcceleration: true } },
+    },
+  },
+  {
+    name: "Trickplay: enableHwEncoding has change; only it is updated",
+    current: {
+      EnableMetrics: false,
+      PluginRepositories: [],
+      TrickplayOptions: {
+        EnableHwAcceleration: true,
+        EnableHwEncoding: false,
+      },
+    },
+    desired: { trickplayOptions: { enableHwEncoding: true } },
+    expected: {
+      schema: {
+        EnableMetrics: false,
+        PluginRepositories: [],
         TrickplayOptions: {
-          EnableHwAcceleration: false,
+          EnableHwAcceleration: true,
           EnableHwEncoding: true,
         },
-      });
-      const desired: SystemConfig = {
-        trickplayOptions: { enableHwAcceleration: true },
-      };
+      },
+      patch: { TrickplayOptions: { EnableHwEncoding: true } },
+    },
+  },
+  {
+    name: "Trickplay: all fields have change → all fields are updated",
+    current: {
+      EnableMetrics: false,
+      PluginRepositories: [],
+      TrickplayOptions: {
+        EnableHwAcceleration: false,
+        EnableHwEncoding: false,
+      },
+    },
+    desired: {
+      trickplayOptions: {
+        enableHwAcceleration: true,
+        enableHwEncoding: true,
+      },
+    },
+    expected: {
+      schema: {
+        EnableMetrics: false,
+        PluginRepositories: [],
+        TrickplayOptions: {
+          EnableHwAcceleration: true,
+          EnableHwEncoding: true,
+        },
+      },
+      patch: {
+        TrickplayOptions: {
+          EnableHwAcceleration: true,
+          EnableHwEncoding: true,
+        },
+      },
+    },
+  },
+  {
+    name: "No desired changes → identical output",
+    current: {
+      EnableMetrics: true,
+      PluginRepositories: [{ Name: "A", Url: "https://a", Enabled: true }],
+      TrickplayOptions: {
+        EnableHwAcceleration: true,
+        EnableHwEncoding: true,
+      },
+    },
+    desired: {},
+    expected: {
+      schema: {
+        EnableMetrics: true,
+        PluginRepositories: [{ Name: "A", Url: "https://a", Enabled: true }],
+        TrickplayOptions: {
+          EnableHwAcceleration: true,
+          EnableHwEncoding: true,
+        },
+      },
+      patch: {},
+    },
+  },
+];
 
-      // Act
-      const updated: ServerConfigurationSchema = applySystem(current, desired);
+describe("apply/system — table driven", () => {
+  it.each(cases)("when $name", ({ current, desired, expected }): void => {
+    // Act
+    const updated: ServerConfigurationSchema = applySystem(current, desired);
 
-      // Assert
-      expect(updated.TrickplayOptions?.EnableHwAcceleration).toBe(true);
-      expect(updated.TrickplayOptions?.EnableHwEncoding).toBe(true);
-    });
+    // Assert
+    expect(updated).toEqual(expected.schema);
+
+    if (Object.keys(expected.patch).length > 0) {
+      expect(updated).not.toBe(current);
+    }
   });
 });

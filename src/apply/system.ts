@@ -1,8 +1,7 @@
 import { logger } from "../lib/logger";
 import {
-  arePluginRepositoryConfigsEqual,
   fromPluginRepositorySchemas,
-  toPluginRepositorySchemas,
+  mapSystemConfigurationConfigToSchema,
 } from "../mappers/system";
 import {
   type PluginRepositoryConfig,
@@ -19,13 +18,36 @@ function hasEnableMetricsChanged(
   desired: SystemConfig,
 ): boolean {
   if (desired.enableMetrics === undefined) return false;
+
   const cur: boolean = Boolean(current.EnableMetrics);
   const next: boolean = desired.enableMetrics;
-  if (cur !== next) {
-    logger.info(`EnableMetrics changed: ${String(cur)} → ${String(next)}`);
-    return true;
+
+  return cur !== next;
+}
+
+function arePluginRepositoryConfigsEqual(
+  a: PluginRepositoryConfig[],
+  b: PluginRepositoryConfig[],
+): boolean {
+  if (a.length !== b.length) return false;
+
+  const key: (r: PluginRepositoryConfig) => string = (
+    r: PluginRepositoryConfig,
+  ): string => `${r.name}::${r.url}`;
+
+  const am: Map<string, PluginRepositoryConfig> = new Map(
+    a.map((r: PluginRepositoryConfig): [string, PluginRepositoryConfig] => [
+      key(r),
+      r,
+    ]),
+  );
+
+  for (const r of b) {
+    const other: PluginRepositoryConfig | undefined = am.get(key(r));
+    if (!other || other.enabled !== r.enabled) return false;
   }
-  return false;
+
+  return true;
 }
 
 function hasPluginRepositoriesChanged(
@@ -33,14 +55,11 @@ function hasPluginRepositoriesChanged(
   desired: SystemConfig,
 ): boolean {
   if (desired.pluginRepositories === undefined) return false;
-  const cur: PluginRepositoryConfig[] = fromPluginRepositorySchemas(
-    current.PluginRepositories,
+
+  return !arePluginRepositoryConfigsEqual(
+    fromPluginRepositorySchemas(current.PluginRepositories),
+    desired.pluginRepositories,
   );
-  if (!arePluginRepositoryConfigsEqual(cur, desired.pluginRepositories)) {
-    logger.info("PluginRepositories changed");
-    return true;
-  }
-  return false;
 }
 
 function hasTrickplayOptionsChanged(
@@ -48,6 +67,7 @@ function hasTrickplayOptionsChanged(
   desired: SystemConfig,
 ): boolean {
   const cfg: TrickplayOptionsConfig | undefined = desired.trickplayOptions;
+
   if (!cfg) return false;
 
   const cur: TrickplayOptionsSchema = current.TrickplayOptions ?? {};
@@ -56,9 +76,6 @@ function hasTrickplayOptionsChanged(
     const before: boolean | null = cur.EnableHwAcceleration ?? null;
     const after: boolean | null = cfg.enableHwAcceleration ?? null;
     if (before !== after) {
-      logger.info(
-        `Trickplay.EnableHwAcceleration changed: ${String(before)} → ${String(after)}`,
-      );
       return true;
     }
   }
@@ -67,9 +84,6 @@ function hasTrickplayOptionsChanged(
     const before: boolean | null = cur.EnableHwEncoding ?? null;
     const after: boolean | null = cfg.enableHwEncoding ?? null;
     if (before !== after) {
-      logger.info(
-        `Trickplay.EnableHwEncoding changed: ${String(before)} → ${String(after)}`,
-      );
       return true;
     }
   }
@@ -81,44 +95,40 @@ export function applySystem(
   current: ServerConfigurationSchema,
   desired: SystemConfig,
 ): ServerConfigurationSchema {
-  const out: ServerConfigurationSchema = { ...current };
+  const patch: Partial<ServerConfigurationSchema> =
+    mapSystemConfigurationConfigToSchema(desired);
 
-  if (
-    desired.enableMetrics !== undefined &&
-    hasEnableMetricsChanged(current, desired)
-  ) {
-    out.EnableMetrics = desired.enableMetrics;
-  }
-
-  if (
-    desired.pluginRepositories !== undefined &&
-    hasPluginRepositoriesChanged(current, desired)
-  ) {
-    out.PluginRepositories = toPluginRepositorySchemas(
-      desired.pluginRepositories,
+  if (hasEnableMetricsChanged(current, desired)) {
+    logger.info(
+      `EnableMetrics changed: ${String(current.EnableMetrics)} → ${String(desired.enableMetrics)}`,
     );
   }
 
-  if (
-    desired.trickplayOptions !== undefined &&
-    hasTrickplayOptionsChanged(current, desired)
-  ) {
+  if (hasPluginRepositoriesChanged(current, desired)) {
+    logger.info(
+      `PluginRepositories changed: ${JSON.stringify(fromPluginRepositorySchemas(current.PluginRepositories))} → ${JSON.stringify(desired.pluginRepositories)}`,
+    );
+  }
+
+  if (hasTrickplayOptionsChanged(current, desired)) {
+    logger.info(
+      `TrickplayOptions changed: ${JSON.stringify(current.TrickplayOptions)} → ${JSON.stringify(desired.trickplayOptions)}`,
+    );
+  }
+
+  const out: ServerConfigurationSchema = { ...current };
+
+  if (typeof patch.EnableMetrics !== "undefined") {
+    out.EnableMetrics = patch.EnableMetrics;
+  }
+
+  if (typeof patch.PluginRepositories !== "undefined") {
+    out.PluginRepositories = patch.PluginRepositories;
+  }
+
+  if (typeof patch.TrickplayOptions !== "undefined") {
     const cur: TrickplayOptionsSchema = current.TrickplayOptions ?? {};
-    const cfg: TrickplayOptionsConfig = desired.trickplayOptions;
-    const next: TrickplayOptionsSchema = { ...cur };
-
-    if ("enableHwAcceleration" in cfg) {
-      const v: boolean | null | undefined = cfg.enableHwAcceleration;
-      const vOut: boolean | undefined = v === null ? undefined : v;
-      next.EnableHwAcceleration = vOut;
-    }
-    if ("enableHwEncoding" in cfg) {
-      const v: boolean | null | undefined = cfg.enableHwEncoding;
-      const vOut: boolean | undefined = v === null ? undefined : v;
-      next.EnableHwEncoding = vOut;
-    }
-
-    out.TrickplayOptions = next;
+    out.TrickplayOptions = { ...cur, ...patch.TrickplayOptions };
   }
 
   return out;

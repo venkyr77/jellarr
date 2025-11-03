@@ -1,5 +1,13 @@
-import { type PluginRepositoryConfig } from "../types/config/system";
-import { type PluginRepositorySchema } from "../types/schema/system";
+import {
+  type SystemConfig,
+  type TrickplayOptionsConfig,
+  type PluginRepositoryConfig,
+} from "../types/config/system";
+import {
+  type ServerConfigurationSchema,
+  type TrickplayOptionsSchema,
+  type PluginRepositorySchema,
+} from "../types/schema/system";
 
 export function fromPluginRepositorySchemas(
   inRepos: PluginRepositorySchema[] | undefined,
@@ -26,26 +34,37 @@ export function toPluginRepositorySchemas(
   );
 }
 
-export function arePluginRepositoryConfigsEqual(
-  a: PluginRepositoryConfig[],
-  b: PluginRepositoryConfig[],
-): boolean {
-  if (a.length !== b.length) return false;
+export function mapSystemConfigurationConfigToSchema(
+  desired: SystemConfig,
+): Partial<ServerConfigurationSchema> {
+  const out: Partial<ServerConfigurationSchema> = {};
 
-  const key: (r: PluginRepositoryConfig) => string = (
-    r: PluginRepositoryConfig,
-  ): string => `${r.name}::${r.url}`;
-
-  const am: Map<string, PluginRepositoryConfig> = new Map(
-    a.map((r: PluginRepositoryConfig): [string, PluginRepositoryConfig] => [
-      key(r),
-      r,
-    ]),
-  );
-
-  for (const r of b) {
-    const other: PluginRepositoryConfig | undefined = am.get(key(r));
-    if (!other || other.enabled !== r.enabled) return false;
+  if (typeof desired.enableMetrics !== "undefined") {
+    out.EnableMetrics = desired.enableMetrics;
   }
-  return true;
+
+  if (typeof desired.pluginRepositories !== "undefined") {
+    out.PluginRepositories = toPluginRepositorySchemas(
+      desired.pluginRepositories,
+    );
+  }
+
+  if (typeof desired.trickplayOptions !== "undefined") {
+    const cfg: TrickplayOptionsConfig = desired.trickplayOptions;
+    const next: TrickplayOptionsSchema = {};
+
+    if ("enableHwAcceleration" in cfg) {
+      const v: boolean | null | undefined = cfg.enableHwAcceleration;
+      next.EnableHwAcceleration = v === null ? undefined : v;
+    }
+
+    if ("enableHwEncoding" in cfg) {
+      const v: boolean | null | undefined = cfg.enableHwEncoding;
+      next.EnableHwEncoding = v === null ? undefined : v;
+    }
+
+    out.TrickplayOptions = next;
+  }
+
+  return out;
 }

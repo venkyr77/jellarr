@@ -1,72 +1,197 @@
 import { describe, it, expect } from "vitest";
 import {
-  arePluginRepositoryConfigsEqual,
   fromPluginRepositorySchemas,
   toPluginRepositorySchemas,
+  mapSystemConfigurationConfigToSchema,
 } from "../../src/mappers/system";
-import { type PluginRepositoryConfig } from "../../src/types/config/system";
-import { type PluginRepositorySchema } from "../../src/types/schema/system";
+import type {
+  PluginRepositoryConfig,
+  SystemConfig,
+} from "../../src/types/config/system";
+import type {
+  PluginRepositorySchema,
+  ServerConfigurationSchema,
+} from "../../src/types/schema/system";
 
-describe("mappers/system", () => {
-  it("whenJellyfinReposGiven_thenFromJFReposMapsToCfgShape()", () => {
-    // Arrange
-    const jf: PluginRepositorySchema[] = [
+type FromReposCase = {
+  name: string;
+  input: PluginRepositorySchema[] | null | undefined;
+  expected: PluginRepositoryConfig[];
+};
+
+type ToReposCase = {
+  name: string;
+  input: PluginRepositoryConfig[] | null | undefined;
+  expected: PluginRepositorySchema[];
+};
+
+type MapSystemCase = {
+  name: string;
+  desired: SystemConfig;
+  expected: Partial<ServerConfigurationSchema>;
+};
+
+const fromReposCases: FromReposCase[] = [
+  {
+    name: "empty list → empty list",
+    input: [],
+    expected: [],
+  },
+  {
+    name: "maps multiple repos preserving order and fields",
+    input: [
       { Name: "A", Url: "https://a", Enabled: true },
       { Name: "B", Url: "https://b", Enabled: false },
-    ];
-
-    // Act
-    const out: PluginRepositoryConfig[] = fromPluginRepositorySchemas(jf);
-
-    // Assert
-    expect(out).toEqual<PluginRepositoryConfig[]>([
+    ],
+    expected: [
       { name: "A", url: "https://a", enabled: true },
       { name: "B", url: "https://b", enabled: false },
-    ]);
-  });
+    ],
+  },
+  {
+    name: "null/undefined input → empty list",
+    input: undefined,
+    expected: [],
+  },
+];
 
-  it("whenCfgReposGiven_thenToJFReposMapsToJellyfinShape()", () => {
-    // Arrange
-    const cfg: PluginRepositoryConfig[] = [
+const toReposCases: ToReposCase[] = [
+  {
+    name: "empty list → empty list",
+    input: [],
+    expected: [],
+  },
+  {
+    name: "maps multiple repos preserving order and fields",
+    input: [
       { name: "A", url: "https://a", enabled: true },
       { name: "B", url: "https://b", enabled: false },
-    ];
-
-    // Act
-    const out: PluginRepositorySchema[] = toPluginRepositorySchemas(cfg);
-
-    // Assert
-    expect(out).toEqual<PluginRepositorySchema[]>([
+    ],
+    expected: [
       { Name: "A", Url: "https://a", Enabled: true },
       { Name: "B", Url: "https://b", Enabled: false },
-    ]);
-  });
+    ],
+  },
+  {
+    name: "null/undefined input → empty list",
+    input: undefined,
+    expected: [],
+  },
+];
 
-  it("whenReposReordered_thenEqualReposUnorderedReturnsTrue()", () => {
+const mapSystemCases: MapSystemCase[] = [
+  {
+    name: "only enableMetrics set → patch with EnableMetrics",
+    desired: { enableMetrics: true },
+    expected: { EnableMetrics: true },
+  },
+  {
+    name: "only pluginRepositories set → patch with mapped PluginRepositories",
+    desired: {
+      pluginRepositories: [
+        { name: "B", url: "https://b", enabled: true },
+        { name: "A", url: "https://a", enabled: false },
+      ],
+    },
+    expected: {
+      PluginRepositories: [
+        { Name: "B", Url: "https://b", Enabled: true },
+        { Name: "A", Url: "https://a", Enabled: false },
+      ],
+    },
+  },
+  {
+    name: "Trickplay: all fields present → patch with all the fields",
+    desired: {
+      trickplayOptions: {
+        enableHwAcceleration: true,
+        enableHwEncoding: false,
+      },
+    },
+    expected: {
+      TrickplayOptions: {
+        EnableHwAcceleration: true,
+        EnableHwEncoding: false,
+      },
+    },
+  },
+  {
+    name: "Trickplay: enableHwAcceleration null → omit key; keep other fields",
+    desired: {
+      trickplayOptions: {
+        enableHwAcceleration: null,
+        enableHwEncoding: true,
+      },
+    },
+    expected: {
+      TrickplayOptions: {
+        EnableHwAcceleration: undefined,
+        EnableHwEncoding: true,
+      },
+    },
+  },
+  {
+    name: "Trickplay: enableHwEncoding null → omit key; keep other fields",
+    desired: {
+      trickplayOptions: {
+        enableHwAcceleration: true,
+        enableHwEncoding: null,
+      },
+    },
+    expected: {
+      TrickplayOptions: {
+        EnableHwAcceleration: true,
+        EnableHwEncoding: undefined,
+      },
+    },
+  },
+  {
+    name: "empty desired → empty patch",
+    desired: {},
+    expected: {},
+  },
+];
+
+describe("mappers/system — fromPluginRepositorySchemas", () => {
+  it.each(fromReposCases)("when $name", ({ input, expected }): void => {
     // Arrange
-    const a: PluginRepositoryConfig[] = [
-      { name: "A", url: "https://a", enabled: true },
-      { name: "B", url: "https://b", enabled: false },
-    ];
-    const b: PluginRepositoryConfig[] = [
-      { name: "B", url: "https://b", enabled: false },
-      { name: "A", url: "https://a", enabled: true },
-    ];
+    const jfRepos: PluginRepositorySchema[] | null | undefined = input;
 
-    // Act & Assert
-    expect(arePluginRepositoryConfigsEqual(a, b)).toBe(true);
+    // Act
+    const out: PluginRepositoryConfig[] = fromPluginRepositorySchemas(
+      jfRepos ?? [],
+    );
+
+    // Assert
+    expect(out).toEqual(expected);
   });
+});
 
-  it("whenRepoEnabledFlagDiffers_thenEqualReposUnorderedReturnsFalse()", () => {
+describe("mappers/system — toPluginRepositorySchemas", () => {
+  it.each(toReposCases)("when $name", ({ input, expected }): void => {
     // Arrange
-    const a: PluginRepositoryConfig[] = [
-      { name: "A", url: "https://a", enabled: true },
-    ];
-    const b: PluginRepositoryConfig[] = [
-      { name: "A", url: "https://a", enabled: false },
-    ];
+    const cfgRepos: PluginRepositoryConfig[] | null | undefined = input;
 
-    // Act & Assert
-    expect(arePluginRepositoryConfigsEqual(a, b)).toBe(false);
+    // Act
+    const out: PluginRepositorySchema[] = toPluginRepositorySchemas(
+      cfgRepos ?? [],
+    );
+
+    // Assert
+    expect(out).toEqual(expected);
+  });
+});
+
+describe("mappers/system — mapSystemConfigurationConfigToSchema", () => {
+  it.each(mapSystemCases)("when $name", ({ desired, expected }): void => {
+    // Arrange
+    const inCfg: SystemConfig = desired;
+
+    // Act
+    const patch: Partial<ServerConfigurationSchema> =
+      mapSystemConfigurationConfigToSchema(inCfg);
+
+    // Assert
+    expect(patch).toEqual(expected);
   });
 });
