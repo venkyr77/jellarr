@@ -54,13 +54,11 @@ export function mapSystemConfigurationConfigToSchema(
     const next: TrickplayOptionsSchema = {};
 
     if ("enableHwAcceleration" in cfg) {
-      const v: boolean | null | undefined = cfg.enableHwAcceleration;
-      next.EnableHwAcceleration = v === null ? undefined : v;
+      next.EnableHwAcceleration = cfg.enableHwAcceleration;
     }
 
     if ("enableHwEncoding" in cfg) {
-      const v: boolean | null | undefined = cfg.enableHwEncoding;
-      next.EnableHwEncoding = v === null ? undefined : v;
+      next.EnableHwEncoding = cfg.enableHwEncoding;
     }
 
     out.TrickplayOptions = next;

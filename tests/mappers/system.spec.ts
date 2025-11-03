@@ -125,36 +125,6 @@ describe("mappers/system — mapSystemConfigurationConfigToSchema", () => {
       },
     },
     {
-      name: "mapSystemConfigurationConfigToSchema_t4",
-      desired: {
-        trickplayOptions: {
-          enableHwAcceleration: null,
-          enableHwEncoding: true,
-        },
-      },
-      expected: {
-        TrickplayOptions: {
-          EnableHwAcceleration: undefined,
-          EnableHwEncoding: true,
-        },
-      },
-    },
-    {
-      name: "mapSystemConfigurationConfigToSchema_t5",
-      desired: {
-        trickplayOptions: {
-          enableHwAcceleration: true,
-          enableHwEncoding: null,
-        },
-      },
-      expected: {
-        TrickplayOptions: {
-          EnableHwAcceleration: true,
-          EnableHwEncoding: undefined,
-        },
-      },
-    },
-    {
       name: "mapSystemConfigurationConfigToSchema_t6",
       desired: {},
       expected: {},

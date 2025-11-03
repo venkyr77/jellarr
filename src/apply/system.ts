@@ -118,7 +118,7 @@ export function applySystem(
 
   const out: ServerConfigurationSchema = { ...current };
 
-  if (typeof patch.EnableMetrics !== "undefined") {
+  if ("EnableMetrics" in patch) {
     out.EnableMetrics = patch.EnableMetrics;
   }
 

@@ -74,72 +74,6 @@ describe("apply/system — table driven", () => {
         EnableMetrics: false,
         PluginRepositories: [],
         TrickplayOptions: {
-          EnableHwAcceleration: true,
-          EnableHwEncoding: true,
-        },
-      },
-      desired: {
-        trickplayOptions: {
-          enableHwAcceleration: null,
-          enableHwEncoding: true,
-        },
-      },
-      expected: {
-        schema: {
-          EnableMetrics: false,
-          PluginRepositories: [],
-          TrickplayOptions: {
-            EnableHwAcceleration: undefined,
-            EnableHwEncoding: true,
-          },
-        },
-        patch: {
-          TrickplayOptions: {
-            EnableHwAcceleration: undefined,
-            EnableHwEncoding: true,
-          },
-        },
-      },
-    },
-    {
-      name: "t5",
-      current: {
-        EnableMetrics: false,
-        PluginRepositories: [],
-        TrickplayOptions: {
-          EnableHwAcceleration: true,
-          EnableHwEncoding: true,
-        },
-      },
-      desired: {
-        trickplayOptions: {
-          enableHwAcceleration: true,
-          enableHwEncoding: null,
-        },
-      },
-      expected: {
-        schema: {
-          EnableMetrics: false,
-          PluginRepositories: [],
-          TrickplayOptions: {
-            EnableHwAcceleration: true,
-            EnableHwEncoding: undefined,
-          },
-        },
-        patch: {
-          TrickplayOptions: {
-            EnableHwAcceleration: true,
-            EnableHwEncoding: undefined,
-          },
-        },
-      },
-    },
-    {
-      name: "t6",
-      current: {
-        EnableMetrics: false,
-        PluginRepositories: [],
-        TrickplayOptions: {
           EnableHwAcceleration: false,
           EnableHwEncoding: true,
         },
@@ -158,7 +92,7 @@ describe("apply/system — table driven", () => {
       },
     },
     {
-      name: "t7",
+      name: "t5",
       current: {
         EnableMetrics: false,
         PluginRepositories: [],
@@ -181,7 +115,7 @@ describe("apply/system — table driven", () => {
       },
     },
     {
-      name: "t8",
+      name: "t6",
       current: {
         EnableMetrics: false,
         PluginRepositories: [],
@@ -214,7 +148,7 @@ describe("apply/system — table driven", () => {
       },
     },
     {
-      name: "t9",
+      name: "t7",
       current: {
         EnableMetrics: true,
         PluginRepositories: [{ Name: "A", Url: "https://a", Enabled: true }],

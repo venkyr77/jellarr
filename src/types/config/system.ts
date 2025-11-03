@@ -5,8 +5,8 @@ export interface PluginRepositoryConfig {
 }
 
 export interface TrickplayOptionsConfig {
-  enableHwAcceleration?: boolean | null;
-  enableHwEncoding?: boolean | null;
+  enableHwAcceleration?: boolean;
+  enableHwEncoding?: boolean;
 }
 
 export interface SystemConfig {
