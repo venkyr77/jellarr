@@ -17,13 +17,17 @@ _: {
       priority = 30;
     };
 
-    gofmt = {
+    prettier = {
       enable = true;
       priority = 40;
+      settings.editorconfig = true;
     };
 
     deno = {
       enable = true;
+      includes = [
+        "*.md"
+      ];
       priority = 50;
     };
   };
