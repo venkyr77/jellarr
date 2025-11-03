@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { applyEncoding } from "../../src/apply/encoding";
-import { type EncodingConfig } from "../../src/types/config/encoding";
-import { type EncodingConfigurationSchema } from "../../src/types/schema/encoding";
+import { type EncodingOptionsConfig } from "../../src/types/config/encoding";
+import { type EncodingOptionsSchema } from "../../src/types/schema/encoding";
 import * as loggerModule from "../../src/lib/logger";
 
 // Mock the logger
@@ -21,21 +21,18 @@ describe("apply/encoding", () => {
   describe("applyEncoding", () => {
     it("should update EnableHardwareEncoding when enableHardwareEncoding changes from false to true", () => {
       // Arrange
-      const current: EncodingConfigurationSchema = {
+      const current: EncodingOptionsSchema = {
         EnableHardwareEncoding: false,
         EncodingThreadCount: -1,
         TranscodingTempPath: "/tmp",
-      } as EncodingConfigurationSchema;
+      } as EncodingOptionsSchema;
 
-      const desired: EncodingConfig = {
+      const desired: EncodingOptionsConfig = {
         enableHardwareEncoding: true,
       };
 
       // Act
-      const result: EncodingConfigurationSchema = applyEncoding(
-        current,
-        desired,
-      );
+      const result: EncodingOptionsSchema = applyEncoding(current, desired);
 
       // Assert
       expect(result.EnableHardwareEncoding).toBe(true);
@@ -45,20 +42,17 @@ describe("apply/encoding", () => {
 
     it("should update EnableHardwareEncoding when enableHardwareEncoding changes from true to false", () => {
       // Arrange
-      const current: EncodingConfigurationSchema = {
+      const current: EncodingOptionsSchema = {
         EnableHardwareEncoding: true,
         EncodingThreadCount: 4,
-      } as EncodingConfigurationSchema;
+      } as EncodingOptionsSchema;
 
-      const desired: EncodingConfig = {
+      const desired: EncodingOptionsConfig = {
         enableHardwareEncoding: false,
       };
 
       // Act
-      const result: EncodingConfigurationSchema = applyEncoding(
-        current,
-        desired,
-      );
+      const result: EncodingOptionsSchema = applyEncoding(current, desired);
 
       // Assert
       expect(result.EnableHardwareEncoding).toBe(false);
@@ -67,18 +61,15 @@ describe("apply/encoding", () => {
 
     it("should not modify EnableHardwareEncoding when enableHardwareEncoding is undefined", () => {
       // Arrange
-      const current: EncodingConfigurationSchema = {
+      const current: EncodingOptionsSchema = {
         EnableHardwareEncoding: true,
         EncodingThreadCount: 2,
-      } as EncodingConfigurationSchema;
+      } as EncodingOptionsSchema;
 
-      const desired: EncodingConfig = {};
+      const desired: EncodingOptionsConfig = {};
 
       // Act
-      const result: EncodingConfigurationSchema = applyEncoding(
-        current,
-        desired,
-      );
+      const result: EncodingOptionsSchema = applyEncoding(current, desired);
 
       // Assert
       expect(result.EnableHardwareEncoding).toBe(true); // Should remain unchanged
@@ -87,20 +78,17 @@ describe("apply/encoding", () => {
 
     it("should not modify EnableHardwareEncoding when value is the same", () => {
       // Arrange
-      const current: EncodingConfigurationSchema = {
+      const current: EncodingOptionsSchema = {
         EnableHardwareEncoding: true,
         EncodingThreadCount: 1,
-      } as EncodingConfigurationSchema;
+      } as EncodingOptionsSchema;
 
-      const desired: EncodingConfig = {
+      const desired: EncodingOptionsConfig = {
         enableHardwareEncoding: true,
       };
 
       // Act
-      const result: EncodingConfigurationSchema = applyEncoding(
-        current,
-        desired,
-      );
+      const result: EncodingOptionsSchema = applyEncoding(current, desired);
 
       // Assert
       expect(result.EnableHardwareEncoding).toBe(true);
@@ -109,11 +97,11 @@ describe("apply/encoding", () => {
 
     it("should log when EnableHardwareEncoding changes", () => {
       // Arrange
-      const current: EncodingConfigurationSchema = {
+      const current: EncodingOptionsSchema = {
         EnableHardwareEncoding: false,
-      } as EncodingConfigurationSchema;
+      } as EncodingOptionsSchema;
 
-      const desired: EncodingConfig = {
+      const desired: EncodingOptionsConfig = {
         enableHardwareEncoding: true,
       };
 
@@ -133,11 +121,11 @@ describe("apply/encoding", () => {
 
     it("should not log when EnableHardwareEncoding does not change", () => {
       // Arrange
-      const current: EncodingConfigurationSchema = {
+      const current: EncodingOptionsSchema = {
         EnableHardwareEncoding: true,
-      } as EncodingConfigurationSchema;
+      } as EncodingOptionsSchema;
 
-      const desired: EncodingConfig = {
+      const desired: EncodingOptionsConfig = {
         enableHardwareEncoding: true,
       };
 
@@ -155,11 +143,11 @@ describe("apply/encoding", () => {
 
     it("should not log when enableHardwareEncoding is undefined", () => {
       // Arrange
-      const current: EncodingConfigurationSchema = {
+      const current: EncodingOptionsSchema = {
         EnableHardwareEncoding: true,
-      } as EncodingConfigurationSchema;
+      } as EncodingOptionsSchema;
 
-      const desired: EncodingConfig = {};
+      const desired: EncodingOptionsConfig = {};
 
       const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
         loggerModule.logger,

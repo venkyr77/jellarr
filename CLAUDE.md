@@ -25,7 +25,7 @@ design principle validated through comprehensive integration testing.
 
 - **Build**: `npm run build` - Compiles TypeScript using esbuild
 - **Development**: `npm run dev` - Runs the CLI directly with tsx
-- **Test**: `npm run test` - Runs Vitest test suite (42 tests total)
+- **Test**: `npm run test` - Runs Vitest test suite (64 tests total)
 - **Type checking**: `npm run typecheck` - Runs TypeScript compiler in check
   mode
 - **Generate types**: `npm run typegen` - Generates TypeScript types from
@@ -227,6 +227,61 @@ operation alongside other management tools.
 5. **Follow build practices**: Use "buildfull" for clean builds, always validate
    with tests
 6. **Respect authentication**: Always ask for API key, never store it
+
+## Naming Convention Rules
+
+**CRITICAL**: Follow this exact naming pattern for all OpenAPI schema
+integrations.
+
+For any OpenAPI schema `components["schemas"]["XyzAbc"]`, create:
+
+1. **`XyzAbcSchema`** - Direct type mapping from OpenAPI schema
+
+   ```typescript
+   export type XyzAbcSchema = components["schemas"]["XyzAbc"];
+   ```
+
+2. **`XyzAbcConfig`** - User-facing config interface
+
+   ```typescript
+   export interface XyzAbcConfig {
+     someField?: boolean;
+   }
+   ```
+
+3. **`XyzAbcConfigSchema`** - Zod validation schema for config
+
+   ```typescript
+   export const XyzAbcConfigSchema = z
+     .object({
+       someField: z.boolean().optional(),
+     })
+     .strict();
+   ```
+
+4. **`mapXyzAbcConfigToSchema`** - Mapper function from config to schema
+
+   ```typescript
+   export function mapXyzAbcConfigToSchema(
+     desired: XyzAbcConfig,
+   ): Partial<XyzAbcSchema> { ... }
+   ```
+
+5. **Variable names** - Must match the type name
+   ```typescript
+   const currentXyzAbcSchema: XyzAbcSchema = ...;
+   const updatedXyzAbcSchema: XyzAbcSchema = ...;
+   ```
+
+**Example**: For `components["schemas"]["EncodingOptions"]`:
+
+- ✅ `EncodingOptionsSchema`, `EncodingOptionsConfig`,
+  `EncodingOptionsConfigSchema`
+- ✅ `mapEncodingOptionsConfigToSchema`
+- ✅ `currentEncodingOptionsSchema`, `updatedEncodingOptionsSchema`
+
+**Never deviate from this pattern** - it ensures consistent, predictable naming
+across the entire codebase.
 
 ## Important Reminders
 

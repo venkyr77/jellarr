@@ -1,19 +1,19 @@
 import { describe, it, expect } from "vitest";
-import { mapEncodingConfigurationConfigToSchema } from "../../src/mappers/encoding";
-import { type EncodingConfig } from "../../src/types/config/encoding";
-import { type EncodingConfigurationSchema } from "../../src/types/schema/encoding";
+import { mapEncodingOptionsConfigToSchema } from "../../src/mappers/encoding";
+import { type EncodingOptionsConfig } from "../../src/types/config/encoding";
+import { type EncodingOptionsSchema } from "../../src/types/schema/encoding";
 
 describe("mappers/encoding", () => {
-  describe("mapEncodingConfigurationConfigToSchema", () => {
+  describe("mapEncodingOptionsConfigToSchema", () => {
     it("should map enableHardwareEncoding to EnableHardwareEncoding", () => {
       // Arrange
-      const config: EncodingConfig = {
+      const config: EncodingOptionsConfig = {
         enableHardwareEncoding: true,
       };
 
       // Act
-      const result: Partial<EncodingConfigurationSchema> =
-        mapEncodingConfigurationConfigToSchema(config);
+      const result: Partial<EncodingOptionsSchema> =
+        mapEncodingOptionsConfigToSchema(config);
 
       // Assert
       expect(result).toEqual({
@@ -23,13 +23,13 @@ describe("mappers/encoding", () => {
 
     it("should map enableHardwareEncoding false to EnableHardwareEncoding false", () => {
       // Arrange
-      const config: EncodingConfig = {
+      const config: EncodingOptionsConfig = {
         enableHardwareEncoding: false,
       };
 
       // Act
-      const result: Partial<EncodingConfigurationSchema> =
-        mapEncodingConfigurationConfigToSchema(config);
+      const result: Partial<EncodingOptionsSchema> =
+        mapEncodingOptionsConfigToSchema(config);
 
       // Assert
       expect(result).toEqual({
@@ -39,11 +39,11 @@ describe("mappers/encoding", () => {
 
     it("should return empty object when enableHardwareEncoding is undefined", () => {
       // Arrange
-      const config: EncodingConfig = {};
+      const config: EncodingOptionsConfig = {};
 
       // Act
-      const result: Partial<EncodingConfigurationSchema> =
-        mapEncodingConfigurationConfigToSchema(config);
+      const result: Partial<EncodingOptionsSchema> =
+        mapEncodingOptionsConfigToSchema(config);
 
       // Assert
       expect(result).toEqual({});
@@ -51,11 +51,11 @@ describe("mappers/encoding", () => {
 
     it("should not include EnableHardwareEncoding when field is not provided", () => {
       // Arrange
-      const config: EncodingConfig = {};
+      const config: EncodingOptionsConfig = {};
 
       // Act
-      const result: Partial<EncodingConfigurationSchema> =
-        mapEncodingConfigurationConfigToSchema(config);
+      const result: Partial<EncodingOptionsSchema> =
+        mapEncodingOptionsConfigToSchema(config);
 
       // Assert
       expect(result).not.toHaveProperty("EnableHardwareEncoding");

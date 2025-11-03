@@ -1,5 +1,5 @@
 import type { ServerConfigurationSchema } from "../types/schema/system";
-import type { EncodingConfigurationSchema } from "../types/schema/encoding";
+import type { EncodingOptionsSchema } from "../types/schema/encoding";
 import type { JellyfinClient } from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";
@@ -44,7 +44,7 @@ export function createJellyfinClient(
       }
     },
 
-    async getEncodingConfiguration(): Promise<EncodingConfigurationSchema> {
+    async getEncodingConfiguration(): Promise<EncodingOptionsSchema> {
       // eslint-disable-next-line @typescript-eslint/typedef
       const res = await client.GET("/System/Configuration/{key}", {
         params: { path: { key: "encoding" } },
@@ -56,11 +56,11 @@ export function createJellyfinClient(
         );
       }
 
-      return res.data as EncodingConfigurationSchema;
+      return res.data as EncodingOptionsSchema;
     },
 
     async updateEncodingConfiguration(
-      body: Partial<EncodingConfigurationSchema>,
+      body: Partial<EncodingOptionsSchema>,
     ): Promise<void> {
       // eslint-disable-next-line @typescript-eslint/typedef
       const res = await client.POST("/System/Configuration/{key}", {

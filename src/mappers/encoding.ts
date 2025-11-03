@@ -1,10 +1,10 @@
-import { type EncodingConfig } from "../types/config/encoding";
-import { type EncodingConfigurationSchema } from "../types/schema/encoding";
+import { type EncodingOptionsConfig } from "../types/config/encoding";
+import { type EncodingOptionsSchema } from "../types/schema/encoding";
 
-export function mapEncodingConfigurationConfigToSchema(
-  desired: EncodingConfig,
-): Partial<EncodingConfigurationSchema> {
-  const out: Partial<EncodingConfigurationSchema> = {};
+export function mapEncodingOptionsConfigToSchema(
+  desired: EncodingOptionsConfig,
+): Partial<EncodingOptionsSchema> {
+  const out: Partial<EncodingOptionsSchema> = {};
 
   if (typeof desired.enableHardwareEncoding !== "undefined") {
     out.EnableHardwareEncoding = desired.enableHardwareEncoding;

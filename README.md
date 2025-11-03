@@ -252,10 +252,10 @@ nix build .#
 
 **High Priority:**
 
-- [ ] **Encoding Configuration**: Transcoding settings, hardware acceleration,
-      codec preferences
-- [ ] **Deep Equality Checking**: Replace JSON.stringify with proper deep
-      comparison
+- [x] **Encoding Configuration**: Basic transcoding settings
+      (enableHardwareEncoding)
+- [x] **Deep Equality Checking**: Replaced JSON.stringify with fast-equals
+      library
 - [ ] **Structured Error Handling**: Better error types and API response details
 
 **Medium Priority:**

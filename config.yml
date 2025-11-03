@@ -8,3 +8,6 @@ system:
       enabled: true
   trickplayOptions:
     enableHwAcceleration: true
+    enableHwEncoding: true
+encoding:
+  enableHardwareEncoding: true

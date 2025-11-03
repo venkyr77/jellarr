@@ -1,11 +1,11 @@
 import { logger } from "../lib/logger";
-import { mapEncodingConfigurationConfigToSchema } from "../mappers/encoding";
-import { type EncodingConfig } from "../types/config/encoding";
-import { type EncodingConfigurationSchema } from "../types/schema/encoding";
+import { mapEncodingOptionsConfigToSchema } from "../mappers/encoding";
+import { type EncodingOptionsConfig } from "../types/config/encoding";
+import { type EncodingOptionsSchema } from "../types/schema/encoding";
 
 function hasEnableHardwareEncodingChanged(
-  current: EncodingConfigurationSchema,
-  desired: EncodingConfig,
+  current: EncodingOptionsSchema,
+  desired: EncodingOptionsConfig,
 ): boolean {
   if (desired.enableHardwareEncoding === undefined) return false;
 
@@ -16,11 +16,11 @@ function hasEnableHardwareEncodingChanged(
 }
 
 export function applyEncoding(
-  current: EncodingConfigurationSchema,
-  desired: EncodingConfig,
-): EncodingConfigurationSchema {
-  const patch: Partial<EncodingConfigurationSchema> =
-    mapEncodingConfigurationConfigToSchema(desired);
+  current: EncodingOptionsSchema,
+  desired: EncodingOptionsConfig,
+): EncodingOptionsSchema {
+  const patch: Partial<EncodingOptionsSchema> =
+    mapEncodingOptionsConfigToSchema(desired);
 
   if (hasEnableHardwareEncodingChanged(current, desired)) {
     logger.info(
@@ -28,7 +28,7 @@ export function applyEncoding(
     );
   }
 
-  const out: EncodingConfigurationSchema = { ...current };
+  const out: EncodingOptionsSchema = { ...current };
 
   if ("EnableHardwareEncoding" in patch) {
     out.EnableHardwareEncoding = patch.EnableHardwareEncoding;

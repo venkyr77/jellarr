@@ -1,3 +1,3 @@
-export interface EncodingConfig {
+export interface EncodingOptionsConfig {
   enableHardwareEncoding?: boolean;
 }

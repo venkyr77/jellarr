@@ -6,11 +6,11 @@ import {
   SystemConfigSchema,
   PluginRepositoryConfigSchema,
   TrickplayOptionsConfigSchema,
-  EncodingConfigSchema,
+  EncodingOptionsConfigSchema,
   type ValidatedPluginRepositoryConfig,
   type ValidatedTrickplayOptionsConfig,
   type ValidatedSystemConfig,
-  type ValidatedEncodingConfig,
+  type ValidatedEncodingOptionsConfig,
   type ValidatedRootConfig,
 } from "../../src/validation/config";
 
@@ -358,14 +358,14 @@ describe("validation/config — RootConfigSchema", () => {
   });
 });
 
-describe("validation/config — EncodingConfigSchema", () => {
+describe("validation/config — EncodingOptionsConfigSchema", () => {
   it("should validate empty encoding config", () => {
     // Arrange
-    const validConfig: z.input<typeof EncodingConfigSchema> = {};
+    const validConfig: z.input<typeof EncodingOptionsConfigSchema> = {};
 
     // Act
-    const result: ZodSafeParseResult<ValidatedEncodingConfig> =
-      EncodingConfigSchema.safeParse(validConfig);
+    const result: ZodSafeParseResult<ValidatedEncodingOptionsConfig> =
+      EncodingOptionsConfigSchema.safeParse(validConfig);
 
     // Assert
     expect(result.success).toBe(true);
@@ -376,13 +376,13 @@ describe("validation/config — EncodingConfigSchema", () => {
 
   it("should validate encoding config with enableHardwareEncoding true", () => {
     // Arrange
-    const validConfig: z.input<typeof EncodingConfigSchema> = {
+    const validConfig: z.input<typeof EncodingOptionsConfigSchema> = {
       enableHardwareEncoding: true,
     };
 
     // Act
-    const result: ZodSafeParseResult<ValidatedEncodingConfig> =
-      EncodingConfigSchema.safeParse(validConfig);
+    const result: ZodSafeParseResult<ValidatedEncodingOptionsConfig> =
+      EncodingOptionsConfigSchema.safeParse(validConfig);
 
     // Assert
     expect(result.success).toBe(true);
@@ -393,13 +393,13 @@ describe("validation/config — EncodingConfigSchema", () => {
 
   it("should validate encoding config with enableHardwareEncoding false", () => {
     // Arrange
-    const validConfig: z.input<typeof EncodingConfigSchema> = {
+    const validConfig: z.input<typeof EncodingOptionsConfigSchema> = {
       enableHardwareEncoding: false,
     };
 
     // Act
-    const result: ZodSafeParseResult<ValidatedEncodingConfig> =
-      EncodingConfigSchema.safeParse(validConfig);
+    const result: ZodSafeParseResult<ValidatedEncodingOptionsConfig> =
+      EncodingOptionsConfigSchema.safeParse(validConfig);
 
     // Assert
     expect(result.success).toBe(true);
@@ -410,14 +410,14 @@ describe("validation/config — EncodingConfigSchema", () => {
 
   it("should reject non-boolean enableHardwareEncoding", () => {
     // Arrange
-    const invalidConfig: z.input<typeof EncodingConfigSchema> = {
+    const invalidConfig: z.input<typeof EncodingOptionsConfigSchema> = {
       // @ts-expect-error intentional bad type for test
       enableHardwareEncoding: "true",
     };
 
     // Act
-    const result: ZodSafeParseResult<ValidatedEncodingConfig> =
-      EncodingConfigSchema.safeParse(invalidConfig);
+    const result: ZodSafeParseResult<ValidatedEncodingOptionsConfig> =
+      EncodingOptionsConfigSchema.safeParse(invalidConfig);
 
     // Assert
     expect(result.success).toBe(false);
@@ -425,15 +425,15 @@ describe("validation/config — EncodingConfigSchema", () => {
 
   it("should reject extra fields due to strict mode", () => {
     // Arrange
-    const invalidConfig: z.input<typeof EncodingConfigSchema> = {
+    const invalidConfig: z.input<typeof EncodingOptionsConfigSchema> = {
       enableHardwareEncoding: true,
       // @ts-expect-error intentional extra field for test
       unknownField: "should not be allowed",
     };
 
     // Act
-    const result: ZodSafeParseResult<ValidatedEncodingConfig> =
-      EncodingConfigSchema.safeParse(invalidConfig);
+    const result: ZodSafeParseResult<ValidatedEncodingOptionsConfig> =
+      EncodingOptionsConfigSchema.safeParse(invalidConfig);
 
     // Assert
     expect(result.success).toBe(false);
