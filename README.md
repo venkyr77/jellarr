@@ -1,7 +1,7 @@
 # Jellarr
 
 **Jellarr** is a declarative configuration tool for
-[Jellyfin](https://jellyfin.org). It applies configuration to a Jellyfin server
+[Jellyfin](https://jellyfin.org) built in TypeScript. It applies configuration to a Jellyfin server
 using its public API — safely, idempotently, and version-controlled via YAML.
 
 ---
@@ -15,7 +15,7 @@ Instead of editing XML or clicking through the web UI, you describe the desired
 state and run:
 
 ```bash
-JELLARR_API_KEY=your_api_key jellarr --configFile ./config.yml
+JELLARR_API_KEY=your_api_key nix run .# -- --configFile ./config.yml
 ```
 
 Jellarr compares the current server configuration with your YAML and updates
@@ -29,6 +29,7 @@ only what’s needed.
 
 ```yaml
 version: 1
+base_url: "http://10.0.0.76:8096"
 system:
   enableMetrics: true
 ```
@@ -48,7 +49,7 @@ This enables Prometheus metrics (`/metrics`) on your Jellyfin server.
 2. **Run Jellarr**
 
    ```bash
-   go run ./src/cmd/jellarr --configFile ./config.yml
+   nix run .# -- --configFile ./config.yml
    ```
 
    You’ll see output such as:
@@ -105,7 +106,7 @@ You can consume **Jellarr** directly from its flake:
 Or run it directly:
 
 ```bash
-JELLARR_API_KEY=your_api_key nix run github:venkyr77/jellarr --configFile ./config.yml
+JELLARR_API_KEY=your_api_key nix run github:venkyr77/jellarr -- --configFile ./config.yml
 ```
 
 ---
@@ -175,18 +176,19 @@ If you need to point Jellarr to a different config file; for example
 `/etc/jellarr/config.yml`:
 
 ```bash
-JELLARR_API_KEY=your_api_key jellarr --configFile /etc/jellarr/config.yml
+JELLARR_API_KEY=your_api_key nix run .# -- --configFile /etc/jellarr/config.yml
 ```
 
 ---
 
 ## 🧠 Design
 
-- **Typed client:** built on
-  [`sj14/jellyfin-go`](https://github.com/sj14/jellyfin-go)
-- **Declarative config:** YAML → Go structs → Jellyfin API
-- **Idempotent apply:** compares current and desired state before updating
-- **Extensible:** future support for libraries, users, and plugins
+- **TypeScript architecture:** Pipeline pattern with strict Zod validation
+- **OpenAPI integration:** Generated types from Jellyfin's OpenAPI specification  
+- **Declarative config:** YAML → Zod validation → Jellyfin API
+- **Idempotent apply:** Compares current and desired state before updating
+- **Selective updates:** Only modifies explicitly configured fields
+- **Extensible:** Support for plugin repositories and trickplay options
 
 ---
 
@@ -195,33 +197,44 @@ JELLARR_API_KEY=your_api_key jellarr --configFile /etc/jellarr/config.yml
 Run tests locally:
 
 ```bash
-go test ./src/cmd/jellarr/... ./src/tests/...
+pnpm test        # 42 tests with Vitest
+pnpm typecheck   # TypeScript validation
+pnpm eslint      # Code linting
 
 # or via nix
-
 nix flake check --all-systems
 ```
 
 Format code:
 
 ```bash
-gofmt -w .
-
-# or via nix
-
 nix fmt
+```
+
+Full build validation:
+
+```bash
+rm -rf node_modules ./result
+nix-collect-garbage -d
+pnpm install && pnpm build && pnpm eslint && pnpm test
+nix fmt && git add -A
+# Update Nix hash if dependencies changed
+nix build .#
 ```
 
 ---
 
 ## 🗺️ Roadmap
 
-- [x] System configuration (`EnableMetrics`)
+- [x] TypeScript migration with strict Zod validation
+- [x] System configuration (`EnableMetrics`, `PluginRepositories`, `TrickplayOptions`)
+- [x] Comprehensive integration testing framework
+- [x] Nix build system with proper dependency management
 - [ ] Libraries (create/update/delete)
-- [ ] Users
-- [ ] Plugin configuration
+- [ ] Users and authentication configuration
+- [ ] Deep equality checking for configuration changes
+- [ ] Structured error handling and logging
 - [ ] Release automation and Docker image
-- [ ] Nix and CI integration
 
 ---
 
