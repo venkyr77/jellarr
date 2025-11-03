@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { applySystem } from "../../src/apply/system";
 import {
-  ServerConfigurationSchema,
-  TrickplayOptionsSchema,
+  type ServerConfigurationSchema,
+  type TrickplayOptionsSchema,
 } from "../../src/types/schema/system";
 import {
-  PluginRepositoryConfig,
-  SystemConfig,
+  type PluginRepositoryConfig,
+  type SystemConfig,
 } from "../../src/types/config/system";
 
 function makeConfig(

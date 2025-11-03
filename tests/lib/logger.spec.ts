@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, Mock } from "vitest";
+import { describe, it, expect, vi, type Mock } from "vitest";
 import { logger } from "../../src/lib/logger";
 
 describe("lib/logger", () => {

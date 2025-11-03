@@ -1,6 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, vi, Mock } from "vitest";
-import { makeJF } from "../../src/api/jf";
-import type { JF } from "../../src/api/iface";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  type Mock,
+} from "vitest";
+import { createJellyfinClient } from "../../src/api/jellyfin_client";
+import type { JellyfinClient } from "../../src/api/jellyfin.types";
 import type { ServerConfigurationSchema } from "../../src/types/schema/system";
 
 const baseUrl: string = "http://localhost:8096/";
@@ -50,8 +58,12 @@ describe("api/jf System façade", () => {
     mockFetchJson(payload);
 
     // Act
-    const jf: JF = makeJF(baseUrl, apiKey);
-    const out: ServerConfigurationSchema = await jf.getSystem();
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const out: ServerConfigurationSchema =
+      await jellyfinClient.getSystemConfiguration();
 
     // Assert
     expect(out).toEqual(payload);
@@ -70,8 +82,11 @@ describe("api/jf System façade", () => {
     mockFetchJson({});
 
     // Act
-    const jf: JF = makeJF(baseUrl, apiKey);
-    await jf.updateSystem({ EnableMetrics: false });
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await jellyfinClient.updateSystemConfiguration({ EnableMetrics: false });
 
     // Assert
     const req: Request = getLastRequest();
@@ -89,8 +104,11 @@ describe("api/jf System façade", () => {
     mockFetchNoContent(204);
 
     // Act
-    const jf: JF = makeJF(baseUrl, apiKey);
-    await jf.updateSystem({});
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await jellyfinClient.updateSystemConfiguration({});
 
     // Assert
     const req: Request = getLastRequest();
@@ -105,10 +123,13 @@ describe("api/jf System façade", () => {
       .mockResolvedValue(new Response("boom", { status: 500 }));
 
     // Act
-    const jf: JF = makeJF(baseUrl, apiKey);
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
 
     // Assert
-    await expect(jf.getSystem()).rejects.toThrow(
+    await expect(jellyfinClient.getSystemConfiguration()).rejects.toThrow(
       /GET \/System\/Configuration failed/i,
     );
   });
@@ -120,10 +141,13 @@ describe("api/jf System façade", () => {
       .mockResolvedValue(new Response("boom", { status: 400 }));
 
     // Act
-    const jf: JF = makeJF(baseUrl, apiKey);
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
 
     // Assert
-    await expect(jf.updateSystem({})).rejects.toThrow(
+    await expect(jellyfinClient.updateSystemConfiguration({})).rejects.toThrow(
       /POST \/System\/Configuration failed/i,
     );
   });

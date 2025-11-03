@@ -1,4 +1,4 @@
-import { SystemConfig } from "./system";
+import { type SystemConfig } from "./system";
 
 export interface RootConfig {
   version: number;

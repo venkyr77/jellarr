@@ -1,19 +1,22 @@
 import type { ServerConfigurationSchema } from "../types/schema/system";
-import type { JF } from "./iface";
+import type { JellyfinClient } from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";
 import type createClient from "openapi-fetch";
 
-export function makeJF(baseUrl: string, apiKey: string): JF {
-  const cl: ReturnType<typeof createClient<paths>> = makeClient(
+export function createJellyfinClient(
+  baseUrl: string,
+  apiKey: string,
+): JellyfinClient {
+  const client: ReturnType<typeof createClient<paths>> = makeClient(
     baseUrl,
     apiKey,
   );
 
   return {
-    async getSystem(): Promise<ServerConfigurationSchema> {
+    async getSystemConfiguration(): Promise<ServerConfigurationSchema> {
       // eslint-disable-next-line @typescript-eslint/typedef
-      const res = await cl.GET("/System/Configuration");
+      const res = await client.GET("/System/Configuration");
 
       if (res.error) {
         throw new Error(
@@ -24,11 +27,11 @@ export function makeJF(baseUrl: string, apiKey: string): JF {
       return res.data as ServerConfigurationSchema;
     },
 
-    async updateSystem(
+    async updateSystemConfiguration(
       body: Partial<ServerConfigurationSchema>,
     ): Promise<void> {
       // eslint-disable-next-line @typescript-eslint/typedef
-      const res = await cl.POST("/System/Configuration", {
+      const res = await client.POST("/System/Configuration", {
         body,
         headers: { "content-type": "application/json" },
       });

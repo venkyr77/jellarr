@@ -5,13 +5,13 @@ import {
   toPluginRepositorySchemas,
 } from "../mappers/system";
 import {
-  PluginRepositoryConfig,
-  SystemConfig,
-  TrickplayOptionsConfig,
+  type PluginRepositoryConfig,
+  type SystemConfig,
+  type TrickplayOptionsConfig,
 } from "../types/config/system";
 import {
-  ServerConfigurationSchema,
-  TrickplayOptionsSchema,
+  type ServerConfigurationSchema,
+  type TrickplayOptionsSchema,
 } from "../types/schema/system";
 
 function hasEnableMetricsChanged(

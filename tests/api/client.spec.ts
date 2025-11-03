@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, Mock } from "vitest";
+import { describe, it, expect, vi, type Mock } from "vitest";
 import { makeClient } from "../../src/api/client";
 import { type paths } from "../../generated/schema";
-import createClient from "openapi-fetch";
+import type createClient from "openapi-fetch";
 
 describe("api/client", () => {
   it("whenClientCreated_thenHeadersInjectedOnEachRequest()", async () => {

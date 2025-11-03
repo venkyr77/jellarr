@@ -14,6 +14,24 @@ export default defineConfig(
   },
   {
     rules: {
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        {
+          fixStyle: "inline-type-imports",
+          prefer: "type-imports",
+        },
+      ],
+
+      "@typescript-eslint/explicit-function-return-type": [
+        "error",
+        {
+          allowDirectConstAssertionInArrowFunctions: true,
+          allowExpressions: false,
+          allowHigherOrderFunctions: true,
+          allowTypedFunctionExpressions: true,
+        },
+      ],
+
       "@typescript-eslint/no-explicit-any": "error",
 
       "@typescript-eslint/typedef": [
@@ -23,16 +41,6 @@ export default defineConfig(
           parameter: true,
           propertyDeclaration: true,
           variableDeclaration: true,
-        },
-      ],
-
-      "@typescript-eslint/explicit-function-return-type": [
-        "error",
-        {
-          allowExpressions: false,
-          allowTypedFunctionExpressions: true,
-          allowHigherOrderFunctions: true,
-          allowDirectConstAssertionInArrowFunctions: true,
         },
       ],
     },

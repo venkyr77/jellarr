@@ -1,5 +1,5 @@
-import { PluginRepositoryConfig } from "../types/config/system";
-import { PluginRepositorySchema } from "../types/schema/system";
+import { type PluginRepositoryConfig } from "../types/config/system";
+import { type PluginRepositorySchema } from "../types/schema/system";
 
 export function fromPluginRepositorySchemas(
   inRepos: PluginRepositorySchema[] | undefined,

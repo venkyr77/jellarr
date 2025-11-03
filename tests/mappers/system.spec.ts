@@ -4,8 +4,8 @@ import {
   fromPluginRepositorySchemas,
   toPluginRepositorySchemas,
 } from "../../src/mappers/system";
-import { PluginRepositoryConfig } from "../../src/types/config/system";
-import { PluginRepositorySchema } from "../../src/types/schema/system";
+import { type PluginRepositoryConfig } from "../../src/types/config/system";
+import { type PluginRepositorySchema } from "../../src/types/schema/system";
 
 describe("mappers/system", () => {
   it("whenJellyfinReposGiven_thenFromJFReposMapsToCfgShape()", () => {
