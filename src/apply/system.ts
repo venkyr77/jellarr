@@ -1,20 +1,22 @@
-import { logger } from "../../lib/logger";
-import type {
-  JFTrickplay,
-  PluginRepositoryCfg,
-  ServerConfiguration,
-  SystemCfg,
-  TrickplayOptionsCfg,
-} from "../../domain/system/types";
+import { logger } from "../lib/logger";
 import {
-  equalReposUnordered,
-  fromJFRepos,
-  toJFRepos,
-} from "../../mappers/system";
+  arePluginRepositoryConfigsEqual,
+  fromPluginRepositorySchemas,
+  toPluginRepositorySchemas,
+} from "../mappers/system";
+import {
+  PluginRepositoryConfig,
+  SystemConfig,
+  TrickplayOptionsConfig,
+} from "../types/config/system";
+import {
+  ServerConfigurationSchema,
+  TrickplayOptionsSchema,
+} from "../types/schema/system";
 
 function hasEnableMetricsChanged(
-  current: ServerConfiguration,
-  desired: SystemCfg,
+  current: ServerConfigurationSchema,
+  desired: SystemConfig,
 ): boolean {
   if (desired.enableMetrics === undefined) return false;
   const cur: boolean = Boolean(current.EnableMetrics);
@@ -27,12 +29,14 @@ function hasEnableMetricsChanged(
 }
 
 function hasPluginRepositoriesChanged(
-  current: ServerConfiguration,
-  desired: SystemCfg,
+  current: ServerConfigurationSchema,
+  desired: SystemConfig,
 ): boolean {
   if (desired.pluginRepositories === undefined) return false;
-  const cur: PluginRepositoryCfg[] = fromJFRepos(current.PluginRepositories);
-  if (!equalReposUnordered(cur, desired.pluginRepositories)) {
+  const cur: PluginRepositoryConfig[] = fromPluginRepositorySchemas(
+    current.PluginRepositories,
+  );
+  if (!arePluginRepositoryConfigsEqual(cur, desired.pluginRepositories)) {
     logger.info("PluginRepositories changed");
     return true;
   }
@@ -40,13 +44,13 @@ function hasPluginRepositoriesChanged(
 }
 
 function hasTrickplayOptionsChanged(
-  current: ServerConfiguration,
-  desired: SystemCfg,
+  current: ServerConfigurationSchema,
+  desired: SystemConfig,
 ): boolean {
-  const cfg: TrickplayOptionsCfg | undefined = desired.trickplayOptions;
+  const cfg: TrickplayOptionsConfig | undefined = desired.trickplayOptions;
   if (!cfg) return false;
 
-  const cur: JFTrickplay = current.TrickplayOptions ?? {};
+  const cur: TrickplayOptionsSchema = current.TrickplayOptions ?? {};
 
   if ("enableHwAcceleration" in cfg) {
     const before: boolean | null = cur.EnableHwAcceleration ?? null;
@@ -73,11 +77,11 @@ function hasTrickplayOptionsChanged(
   return false;
 }
 
-export function apply(
-  current: ServerConfiguration,
-  desired: SystemCfg,
-): ServerConfiguration {
-  const out: ServerConfiguration = { ...current };
+export function applySystem(
+  current: ServerConfigurationSchema,
+  desired: SystemConfig,
+): ServerConfigurationSchema {
+  const out: ServerConfigurationSchema = { ...current };
 
   if (
     desired.enableMetrics !== undefined &&
@@ -90,16 +94,18 @@ export function apply(
     desired.pluginRepositories !== undefined &&
     hasPluginRepositoriesChanged(current, desired)
   ) {
-    out.PluginRepositories = toJFRepos(desired.pluginRepositories);
+    out.PluginRepositories = toPluginRepositorySchemas(
+      desired.pluginRepositories,
+    );
   }
 
   if (
     desired.trickplayOptions !== undefined &&
     hasTrickplayOptionsChanged(current, desired)
   ) {
-    const cur: JFTrickplay = current.TrickplayOptions ?? {};
-    const cfg: TrickplayOptionsCfg = desired.trickplayOptions;
-    const next: JFTrickplay = { ...cur };
+    const cur: TrickplayOptionsSchema = current.TrickplayOptions ?? {};
+    const cfg: TrickplayOptionsConfig = desired.trickplayOptions;
+    const next: TrickplayOptionsSchema = { ...cur };
 
     if ("enableHwAcceleration" in cfg) {
       const v: boolean | null | undefined = cfg.enableHwAcceleration;

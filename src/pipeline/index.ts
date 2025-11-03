@@ -3,8 +3,9 @@ import YAML from "yaml";
 import type createClient from "openapi-fetch";
 import type { paths } from "../../generated/schema";
 import { makeClient } from "../api/client";
-import type { RootConfig, ServerConfiguration } from "../domain/system/types";
-import { apply } from "../services/system/apply";
+import { applySystem } from "../apply/system";
+import { RootConfig } from "../types/config/root";
+import { ServerConfigurationSchema } from "../types/schema/system";
 
 type JFClient = ReturnType<typeof createClient<paths>>;
 
@@ -22,9 +23,10 @@ export async function runPipeline(path: string): Promise<void> {
   if (read.error) {
     throw new Error(`Failed to get config: ${read.response.status.toString()}`);
   }
-  const current: ServerConfiguration = read.data as ServerConfiguration;
+  const current: ServerConfigurationSchema =
+    read.data as ServerConfigurationSchema;
 
-  const updated: ServerConfiguration = apply(current, cfg.system);
+  const updated: ServerConfigurationSchema = applySystem(current, cfg.system);
 
   const isSame: boolean = JSON.stringify(updated) === JSON.stringify(current);
   if (isSame) {

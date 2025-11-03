@@ -1,11 +1,12 @@
-import type { JFPluginRepo, PluginRepositoryCfg } from "../domain/system/types";
+import { PluginRepositoryConfig } from "../types/config/system";
+import { PluginRepositorySchema } from "../types/schema/system";
 
-export function fromJFRepos(
-  inRepos: JFPluginRepo[] | undefined,
-): PluginRepositoryCfg[] {
+export function fromPluginRepositorySchemas(
+  inRepos: PluginRepositorySchema[] | undefined,
+): PluginRepositoryConfig[] {
   if (!inRepos) return [];
   return inRepos.map(
-    (r: JFPluginRepo): PluginRepositoryCfg => ({
+    (r: PluginRepositorySchema): PluginRepositoryConfig => ({
       name: r.Name ?? "",
       url: r.Url ?? "",
       enabled: Boolean(r.Enabled),
@@ -13,9 +14,11 @@ export function fromJFRepos(
   );
 }
 
-export function toJFRepos(inRepos: PluginRepositoryCfg[]): JFPluginRepo[] {
+export function toPluginRepositorySchemas(
+  inRepos: PluginRepositoryConfig[],
+): PluginRepositorySchema[] {
   return inRepos.map(
-    (r: PluginRepositoryCfg): JFPluginRepo => ({
+    (r: PluginRepositoryConfig): PluginRepositorySchema => ({
       Name: r.name,
       Url: r.url,
       Enabled: r.enabled,
@@ -23,25 +26,25 @@ export function toJFRepos(inRepos: PluginRepositoryCfg[]): JFPluginRepo[] {
   );
 }
 
-export function equalReposUnordered(
-  a: PluginRepositoryCfg[],
-  b: PluginRepositoryCfg[],
+export function arePluginRepositoryConfigsEqual(
+  a: PluginRepositoryConfig[],
+  b: PluginRepositoryConfig[],
 ): boolean {
   if (a.length !== b.length) return false;
 
-  const key: (r: PluginRepositoryCfg) => string = (
-    r: PluginRepositoryCfg,
+  const key: (r: PluginRepositoryConfig) => string = (
+    r: PluginRepositoryConfig,
   ): string => `${r.name}::${r.url}`;
 
-  const am: Map<string, PluginRepositoryCfg> = new Map(
-    a.map((r: PluginRepositoryCfg): [string, PluginRepositoryCfg] => [
+  const am: Map<string, PluginRepositoryConfig> = new Map(
+    a.map((r: PluginRepositoryConfig): [string, PluginRepositoryConfig] => [
       key(r),
       r,
     ]),
   );
 
   for (const r of b) {
-    const other: PluginRepositoryCfg | undefined = am.get(key(r));
+    const other: PluginRepositoryConfig | undefined = am.get(key(r));
     if (!other || other.enabled !== r.enabled) return false;
   }
   return true;

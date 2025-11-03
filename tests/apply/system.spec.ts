@@ -1,31 +1,35 @@
 import { describe, it, expect } from "vitest";
-import { apply } from "../../../src/services/system/apply";
-import type {
-  SystemCfg,
-  ServerConfiguration,
-  JFTrickplay,
-  PluginRepositoryCfg,
-} from "../../../src/domain/system/types";
+import { applySystem } from "../../src/apply/system";
+import {
+  ServerConfigurationSchema,
+  TrickplayOptionsSchema,
+} from "../../src/types/schema/system";
+import {
+  PluginRepositoryConfig,
+  SystemConfig,
+} from "../../src/types/config/system";
 
 function makeConfig(
-  partial?: Partial<ServerConfiguration>,
-): ServerConfiguration {
-  const base: ServerConfiguration = {
+  partial?: Partial<ServerConfigurationSchema>,
+): ServerConfigurationSchema {
+  const base: ServerConfigurationSchema = {
     EnableMetrics: false,
     PluginRepositories: [],
     TrickplayOptions: undefined,
-  } as ServerConfiguration;
-  return { ...base, ...(partial ?? {}) } as ServerConfiguration;
+  } as ServerConfigurationSchema;
+  return { ...base, ...(partial ?? {}) } as ServerConfigurationSchema;
 }
 
 describe("services/system/apply", () => {
   it("whenDesiredEmpty_thenApplyReturnsCurrentUnchanged()", () => {
     // Arrange
-    const current: ServerConfiguration = makeConfig({ EnableMetrics: true });
-    const desired: SystemCfg = {};
+    const current: ServerConfigurationSchema = makeConfig({
+      EnableMetrics: true,
+    });
+    const desired: SystemConfig = {};
 
     // Act
-    const updated: ServerConfiguration = apply(current, desired);
+    const updated: ServerConfigurationSchema = applySystem(current, desired);
 
     // Assert
     expect(updated).toEqual(current);
@@ -33,11 +37,13 @@ describe("services/system/apply", () => {
 
   it("whenEnableMetricsDiffers_thenApplyUpdatesOnlyEnableMetrics()", () => {
     // Arrange
-    const current: ServerConfiguration = makeConfig({ EnableMetrics: false });
-    const desired: SystemCfg = { enableMetrics: true };
+    const current: ServerConfigurationSchema = makeConfig({
+      EnableMetrics: false,
+    });
+    const desired: SystemConfig = { enableMetrics: true };
 
     // Act
-    const updated: ServerConfiguration = apply(current, desired);
+    const updated: ServerConfigurationSchema = applySystem(current, desired);
 
     // Assert
     expect(updated.EnableMetrics).toBe(true);
@@ -47,17 +53,17 @@ describe("services/system/apply", () => {
 
   it("whenPluginRepositoriesProvided_thenApplyReplacesRepos()", () => {
     // Arrange
-    const current: ServerConfiguration = makeConfig({
+    const current: ServerConfigurationSchema = makeConfig({
       PluginRepositories: [{ Name: "A", Url: "https://a", Enabled: true }],
     });
-    const repos: PluginRepositoryCfg[] = [
+    const repos: PluginRepositoryConfig[] = [
       { name: "B", url: "https://b", enabled: true },
       { name: "A", url: "https://a", enabled: true },
     ];
-    const desired: SystemCfg = { pluginRepositories: repos };
+    const desired: SystemConfig = { pluginRepositories: repos };
 
     // Act
-    const updated: ServerConfiguration = apply(current, desired);
+    const updated: ServerConfigurationSchema = applySystem(current, desired);
 
     // Assert
     expect(updated.PluginRepositories).toEqual([
@@ -69,10 +75,10 @@ describe("services/system/apply", () => {
   describe("trickplay tri-state (true/false/null)", () => {
     it("whenBothBooleansProvided_thenApplySetsBothFields()", () => {
       // Arrange
-      const current: ServerConfiguration = makeConfig({
-        TrickplayOptions: {} as JFTrickplay,
+      const current: ServerConfigurationSchema = makeConfig({
+        TrickplayOptions: {} as TrickplayOptionsSchema,
       });
-      const desired: SystemCfg = {
+      const desired: SystemConfig = {
         trickplayOptions: {
           enableHwAcceleration: true,
           enableHwEncoding: false,
@@ -80,7 +86,7 @@ describe("services/system/apply", () => {
       };
 
       // Act
-      const updated: ServerConfiguration = apply(current, desired);
+      const updated: ServerConfigurationSchema = applySystem(current, desired);
 
       // Assert
       expect(updated.TrickplayOptions?.EnableHwAcceleration).toBe(true);
@@ -89,18 +95,18 @@ describe("services/system/apply", () => {
 
     it("whenAccelerationIsNull_thenApplyOmitsAccelerationKey()", () => {
       // Arrange
-      const current: ServerConfiguration = makeConfig({
+      const current: ServerConfigurationSchema = makeConfig({
         TrickplayOptions: {
           EnableHwAcceleration: true,
           EnableHwEncoding: true,
         },
       });
-      const desired: SystemCfg = {
+      const desired: SystemConfig = {
         trickplayOptions: { enableHwAcceleration: null },
       };
 
       // Act
-      const updated: ServerConfiguration = apply(current, desired);
+      const updated: ServerConfigurationSchema = applySystem(current, desired);
 
       // Assert
       expect(updated.TrickplayOptions?.EnableHwAcceleration).toBeUndefined();
@@ -109,18 +115,18 @@ describe("services/system/apply", () => {
 
     it("whenOnlyAccelerationProvided_thenApplyLeavesEncodingUntouched()", () => {
       // Arrange
-      const current: ServerConfiguration = makeConfig({
+      const current: ServerConfigurationSchema = makeConfig({
         TrickplayOptions: {
           EnableHwAcceleration: false,
           EnableHwEncoding: true,
         },
       });
-      const desired: SystemCfg = {
+      const desired: SystemConfig = {
         trickplayOptions: { enableHwAcceleration: true },
       };
 
       // Act
-      const updated: ServerConfiguration = apply(current, desired);
+      const updated: ServerConfigurationSchema = applySystem(current, desired);
 
       // Assert
       expect(updated.TrickplayOptions?.EnableHwAcceleration).toBe(true);

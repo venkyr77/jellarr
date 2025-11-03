@@ -1,27 +1,25 @@
 import { describe, it, expect } from "vitest";
 import {
-  fromJFRepos,
-  toJFRepos,
-  equalReposUnordered,
+  arePluginRepositoryConfigsEqual,
+  fromPluginRepositorySchemas,
+  toPluginRepositorySchemas,
 } from "../../src/mappers/system";
-import type {
-  JFPluginRepo,
-  PluginRepositoryCfg,
-} from "../../src/domain/system/types";
+import { PluginRepositoryConfig } from "../../src/types/config/system";
+import { PluginRepositorySchema } from "../../src/types/schema/system";
 
 describe("mappers/system", () => {
   it("whenJellyfinReposGiven_thenFromJFReposMapsToCfgShape()", () => {
     // Arrange
-    const jf: JFPluginRepo[] = [
+    const jf: PluginRepositorySchema[] = [
       { Name: "A", Url: "https://a", Enabled: true },
       { Name: "B", Url: "https://b", Enabled: false },
     ];
 
     // Act
-    const out: PluginRepositoryCfg[] = fromJFRepos(jf);
+    const out: PluginRepositoryConfig[] = fromPluginRepositorySchemas(jf);
 
     // Assert
-    expect(out).toEqual<PluginRepositoryCfg[]>([
+    expect(out).toEqual<PluginRepositoryConfig[]>([
       { name: "A", url: "https://a", enabled: true },
       { name: "B", url: "https://b", enabled: false },
     ]);
@@ -29,16 +27,16 @@ describe("mappers/system", () => {
 
   it("whenCfgReposGiven_thenToJFReposMapsToJellyfinShape()", () => {
     // Arrange
-    const cfg: PluginRepositoryCfg[] = [
+    const cfg: PluginRepositoryConfig[] = [
       { name: "A", url: "https://a", enabled: true },
       { name: "B", url: "https://b", enabled: false },
     ];
 
     // Act
-    const out: JFPluginRepo[] = toJFRepos(cfg);
+    const out: PluginRepositorySchema[] = toPluginRepositorySchemas(cfg);
 
     // Assert
-    expect(out).toEqual<JFPluginRepo[]>([
+    expect(out).toEqual<PluginRepositorySchema[]>([
       { Name: "A", Url: "https://a", Enabled: true },
       { Name: "B", Url: "https://b", Enabled: false },
     ]);
@@ -46,29 +44,29 @@ describe("mappers/system", () => {
 
   it("whenReposReordered_thenEqualReposUnorderedReturnsTrue()", () => {
     // Arrange
-    const a: PluginRepositoryCfg[] = [
+    const a: PluginRepositoryConfig[] = [
       { name: "A", url: "https://a", enabled: true },
       { name: "B", url: "https://b", enabled: false },
     ];
-    const b: PluginRepositoryCfg[] = [
+    const b: PluginRepositoryConfig[] = [
       { name: "B", url: "https://b", enabled: false },
       { name: "A", url: "https://a", enabled: true },
     ];
 
     // Act & Assert
-    expect(equalReposUnordered(a, b)).toBe(true);
+    expect(arePluginRepositoryConfigsEqual(a, b)).toBe(true);
   });
 
   it("whenRepoEnabledFlagDiffers_thenEqualReposUnorderedReturnsFalse()", () => {
     // Arrange
-    const a: PluginRepositoryCfg[] = [
+    const a: PluginRepositoryConfig[] = [
       { name: "A", url: "https://a", enabled: true },
     ];
-    const b: PluginRepositoryCfg[] = [
+    const b: PluginRepositoryConfig[] = [
       { name: "A", url: "https://a", enabled: false },
     ];
 
     // Act & Assert
-    expect(equalReposUnordered(a, b)).toBe(false);
+    expect(arePluginRepositoryConfigsEqual(a, b)).toBe(false);
   });
 });
