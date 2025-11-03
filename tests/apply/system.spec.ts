@@ -1,156 +1,76 @@
 import { describe, it, expect } from "vitest";
 import { applySystem } from "../../src/apply/system";
-import type { SystemConfig } from "../../src/types/config/system";
 import type { ServerConfigurationSchema } from "../../src/types/schema/system";
 
-type Case = {
-  name: string;
-  current: ServerConfigurationSchema;
-  desired: SystemConfig;
-  expected: {
-    schema: ServerConfigurationSchema;
-    patch: Partial<ServerConfigurationSchema>;
-  };
-};
-
-const cases: Case[] = [
-  {
-    name: "EnableMetrics false → true",
-    current: {
-      EnableMetrics: false,
-      PluginRepositories: [],
-      TrickplayOptions: undefined,
+describe("apply/system — table driven", () => {
+  it.each([
+    {
+      name: "t1",
+      current: {
+        EnableMetrics: false,
+        PluginRepositories: [],
+        TrickplayOptions: undefined,
+      },
+      desired: { enableMetrics: true },
+      expected: {
+        schema: {
+          EnableMetrics: true,
+          PluginRepositories: [],
+          TrickplayOptions: undefined,
+        },
+        patch: { EnableMetrics: true },
+      },
     },
-    desired: { enableMetrics: true },
-    expected: {
-      schema: {
+    {
+      name: "t2",
+      current: {
         EnableMetrics: true,
         PluginRepositories: [],
         TrickplayOptions: undefined,
       },
-      patch: { EnableMetrics: true },
+      desired: { enableMetrics: false },
+      expected: {
+        schema: {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: undefined,
+        },
+        patch: { EnableMetrics: false },
+      },
     },
-  },
-  {
-    name: "EnableMetrics true → false",
-    current: {
-      EnableMetrics: true,
-      PluginRepositories: [],
-      TrickplayOptions: undefined,
-    },
-    desired: { enableMetrics: false },
-    expected: {
-      schema: {
+    {
+      name: "t3",
+      current: {
         EnableMetrics: false,
-        PluginRepositories: [],
+        PluginRepositories: [{ Name: "A", Url: "https://a", Enabled: true }],
         TrickplayOptions: undefined,
       },
-      patch: { EnableMetrics: false },
-    },
-  },
-  {
-    name: "PluginRepositories differ",
-    current: {
-      EnableMetrics: false,
-      PluginRepositories: [{ Name: "A", Url: "https://a", Enabled: true }],
-      TrickplayOptions: undefined,
-    },
-    desired: {
-      pluginRepositories: [
-        { name: "B", url: "https://b", enabled: true },
-        { name: "A", url: "https://a", enabled: true },
-      ],
-    },
-    expected: {
-      schema: {
-        EnableMetrics: false,
-        PluginRepositories: [
-          { Name: "B", Url: "https://b", Enabled: true },
-          { Name: "A", Url: "https://a", Enabled: true },
-        ],
-        TrickplayOptions: undefined,
-      },
-      patch: {
-        PluginRepositories: [
-          { Name: "B", Url: "https://b", Enabled: true },
-          { Name: "A", Url: "https://a", Enabled: true },
+      desired: {
+        pluginRepositories: [
+          { name: "B", url: "https://b", enabled: true },
+          { name: "A", url: "https://a", enabled: true },
         ],
       },
-    },
-  },
-  {
-    name: "Trickplay: enableHwAcceleration null → omit key; keep other fields",
-    current: {
-      EnableMetrics: false,
-      PluginRepositories: [],
-      TrickplayOptions: {
-        EnableHwAcceleration: true,
-        EnableHwEncoding: true,
-      },
-    },
-    desired: {
-      trickplayOptions: { enableHwAcceleration: null, enableHwEncoding: true },
-    },
-    expected: {
-      schema: {
-        EnableMetrics: false,
-        PluginRepositories: [],
-        TrickplayOptions: {
-          EnableHwAcceleration: undefined,
-          EnableHwEncoding: true,
+      expected: {
+        schema: {
+          EnableMetrics: false,
+          PluginRepositories: [
+            { Name: "B", Url: "https://b", Enabled: true },
+            { Name: "A", Url: "https://a", Enabled: true },
+          ],
+          TrickplayOptions: undefined,
         },
-      },
-      patch: {
-        TrickplayOptions: {
-          EnableHwAcceleration: undefined,
-          EnableHwEncoding: true,
+        patch: {
+          PluginRepositories: [
+            { Name: "B", Url: "https://b", Enabled: true },
+            { Name: "A", Url: "https://a", Enabled: true },
+          ],
         },
       },
     },
-  },
-  {
-    name: "Trickplay: enableHwEncoding null → omit key; keep other fields",
-    current: {
-      EnableMetrics: false,
-      PluginRepositories: [],
-      TrickplayOptions: {
-        EnableHwAcceleration: true,
-        EnableHwEncoding: true,
-      },
-    },
-    desired: {
-      trickplayOptions: { enableHwAcceleration: true, enableHwEncoding: null },
-    },
-    expected: {
-      schema: {
-        EnableMetrics: false,
-        PluginRepositories: [],
-        TrickplayOptions: {
-          EnableHwAcceleration: true,
-          EnableHwEncoding: undefined,
-        },
-      },
-      patch: {
-        TrickplayOptions: {
-          EnableHwAcceleration: true,
-          EnableHwEncoding: undefined,
-        },
-      },
-    },
-  },
-  {
-    name: "Trickplay: enableHwAcceleration has change; only it is updated",
-    current: {
-      EnableMetrics: false,
-      PluginRepositories: [],
-      TrickplayOptions: {
-        EnableHwAcceleration: false,
-        EnableHwEncoding: true,
-      },
-    },
-    desired: { trickplayOptions: { enableHwAcceleration: true } },
-    expected: {
-      schema: {
+    {
+      name: "t4",
+      current: {
         EnableMetrics: false,
         PluginRepositories: [],
         TrickplayOptions: {
@@ -158,22 +78,32 @@ const cases: Case[] = [
           EnableHwEncoding: true,
         },
       },
-      patch: { TrickplayOptions: { EnableHwAcceleration: true } },
-    },
-  },
-  {
-    name: "Trickplay: enableHwEncoding has change; only it is updated",
-    current: {
-      EnableMetrics: false,
-      PluginRepositories: [],
-      TrickplayOptions: {
-        EnableHwAcceleration: true,
-        EnableHwEncoding: false,
+      desired: {
+        trickplayOptions: {
+          enableHwAcceleration: null,
+          enableHwEncoding: true,
+        },
+      },
+      expected: {
+        schema: {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: undefined,
+            EnableHwEncoding: true,
+          },
+        },
+        patch: {
+          TrickplayOptions: {
+            EnableHwAcceleration: undefined,
+            EnableHwEncoding: true,
+          },
+        },
       },
     },
-    desired: { trickplayOptions: { enableHwEncoding: true } },
-    expected: {
-      schema: {
+    {
+      name: "t5",
+      current: {
         EnableMetrics: false,
         PluginRepositories: [],
         TrickplayOptions: {
@@ -181,55 +111,111 @@ const cases: Case[] = [
           EnableHwEncoding: true,
         },
       },
-      patch: { TrickplayOptions: { EnableHwEncoding: true } },
-    },
-  },
-  {
-    name: "Trickplay: all fields have change → all fields are updated",
-    current: {
-      EnableMetrics: false,
-      PluginRepositories: [],
-      TrickplayOptions: {
-        EnableHwAcceleration: false,
-        EnableHwEncoding: false,
+      desired: {
+        trickplayOptions: {
+          enableHwAcceleration: true,
+          enableHwEncoding: null,
+        },
+      },
+      expected: {
+        schema: {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: true,
+            EnableHwEncoding: undefined,
+          },
+        },
+        patch: {
+          TrickplayOptions: {
+            EnableHwAcceleration: true,
+            EnableHwEncoding: undefined,
+          },
+        },
       },
     },
-    desired: {
-      trickplayOptions: {
-        enableHwAcceleration: true,
-        enableHwEncoding: true,
+    {
+      name: "t6",
+      current: {
+        EnableMetrics: false,
+        PluginRepositories: [],
+        TrickplayOptions: {
+          EnableHwAcceleration: false,
+          EnableHwEncoding: true,
+        },
+      },
+      desired: { trickplayOptions: { enableHwAcceleration: true } },
+      expected: {
+        schema: {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: true,
+            EnableHwEncoding: true,
+          },
+        },
+        patch: { TrickplayOptions: { EnableHwAcceleration: true } },
       },
     },
-    expected: {
-      schema: {
+    {
+      name: "t7",
+      current: {
         EnableMetrics: false,
         PluginRepositories: [],
         TrickplayOptions: {
           EnableHwAcceleration: true,
-          EnableHwEncoding: true,
+          EnableHwEncoding: false,
         },
       },
-      patch: {
+      desired: { trickplayOptions: { enableHwEncoding: true } },
+      expected: {
+        schema: {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: true,
+            EnableHwEncoding: true,
+          },
+        },
+        patch: { TrickplayOptions: { EnableHwEncoding: true } },
+      },
+    },
+    {
+      name: "t8",
+      current: {
+        EnableMetrics: false,
+        PluginRepositories: [],
         TrickplayOptions: {
-          EnableHwAcceleration: true,
-          EnableHwEncoding: true,
+          EnableHwAcceleration: false,
+          EnableHwEncoding: false,
+        },
+      },
+      desired: {
+        trickplayOptions: {
+          enableHwAcceleration: true,
+          enableHwEncoding: true,
+        },
+      },
+      expected: {
+        schema: {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: true,
+            EnableHwEncoding: true,
+          },
+        },
+        patch: {
+          TrickplayOptions: {
+            EnableHwAcceleration: true,
+            EnableHwEncoding: true,
+          },
         },
       },
     },
-  },
-  {
-    name: "No desired changes → identical output",
-    current: {
-      EnableMetrics: true,
-      PluginRepositories: [{ Name: "A", Url: "https://a", Enabled: true }],
-      TrickplayOptions: {
-        EnableHwAcceleration: true,
-        EnableHwEncoding: true,
-      },
-    },
-    desired: {},
-    expected: {
-      schema: {
+    {
+      name: "t9",
+      current: {
         EnableMetrics: true,
         PluginRepositories: [{ Name: "A", Url: "https://a", Enabled: true }],
         TrickplayOptions: {
@@ -237,13 +223,20 @@ const cases: Case[] = [
           EnableHwEncoding: true,
         },
       },
-      patch: {},
+      desired: {},
+      expected: {
+        schema: {
+          EnableMetrics: true,
+          PluginRepositories: [{ Name: "A", Url: "https://a", Enabled: true }],
+          TrickplayOptions: {
+            EnableHwAcceleration: true,
+            EnableHwEncoding: true,
+          },
+        },
+        patch: {},
+      },
     },
-  },
-];
-
-describe("apply/system — table driven", () => {
-  it.each(cases)("when $name", ({ current, desired, expected }): void => {
+  ])("when $name", ({ current, desired, expected }): void => {
     // Act
     const updated: ServerConfigurationSchema = applySystem(current, desired);
 
