@@ -1,13 +1,10 @@
 import { promises as fs } from "fs";
 import YAML from "yaml";
-import type createClient from "openapi-fetch";
-import type { paths } from "../../generated/schema";
-import { makeClient } from "../api/client";
 import { applySystem } from "../apply/system";
 import { RootConfig } from "../types/config/root";
 import { ServerConfigurationSchema } from "../types/schema/system";
-
-type JFClient = ReturnType<typeof createClient<paths>>;
+import { makeJF } from "../api/jf";
+import { JF } from "../api/iface";
 
 export async function runPipeline(path: string): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
@@ -16,15 +13,9 @@ export async function runPipeline(path: string): Promise<void> {
   const apiKey: string | undefined = process.env.JELLARR_API_KEY;
   if (!apiKey) throw new Error("JELLARR_API_KEY required");
 
-  const jf: JFClient = makeClient(cfg.base_url, apiKey);
+  const jf: JF = makeJF(cfg.base_url, apiKey);
 
-  // eslint-disable-next-line @typescript-eslint/typedef
-  const read = await jf.GET("/System/Configuration");
-  if (read.error) {
-    throw new Error(`Failed to get config: ${read.response.status.toString()}`);
-  }
-  const current: ServerConfigurationSchema =
-    read.data as ServerConfigurationSchema;
+  const current: ServerConfigurationSchema = await jf.getSystem();
 
   const updated: ServerConfigurationSchema = applySystem(current, cfg.system);
 
@@ -36,10 +27,7 @@ export async function runPipeline(path: string): Promise<void> {
 
   console.log("→ updating system config");
 
-  // eslint-disable-next-line @typescript-eslint/typedef
-  const write = await jf.POST("/System/Configuration", { body: updated });
-  if (write.error) {
-    throw new Error(`Update failed: ${write.response.status.toString()}`);
-  }
+  await jf.updateSystem(updated);
+
   console.log("✓ updated system config");
 }
