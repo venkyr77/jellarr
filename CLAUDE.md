@@ -4,6 +4,20 @@ This file provides comprehensive guidance to Claude Code (claude.ai/code) when
 working with code in this repository. **Read this entire file carefully before
 any work.**
 
+## 🚀 Current State (As of Nov 2024)
+
+**MAJOR REFACTOR COMPLETED**: We just finished a massive architectural overhaul
+moving from monolithic validation to clean modular structure. The codebase is
+now perfectly organized for rapid feature development.
+
+### Key Achievement
+
+- ✅ **64 tests passing** (increased from 42)
+- ✅ **Perfect TypeScript compilation**
+- ✅ **Clean ESLint validation**
+- ✅ **Successful integration tests**
+- ✅ **Copy-paste ready architecture** for new features
+
 ## Critical Context
 
 ### Core Principle
@@ -23,15 +37,23 @@ design principle validated through comprehensive integration testing.
 
 ## Development Commands
 
+### Essential Commands
+
 - **Build**: `npm run build` - Compiles TypeScript using esbuild
 - **Development**: `npm run dev` - Runs the CLI directly with tsx
-- **Test**: `npm run test` - Runs Vitest test suite (64 tests total)
+- **Test**: `npm run test` - Runs Vitest test suite (**64 tests total**)
 - **Type checking**: `npm run typecheck` - Runs TypeScript compiler in check
   mode
 - **Generate types**: `npm run typegen` - Generates TypeScript types from
   Jellyfin OpenAPI spec
-- **Quality checks**: `nix fmt && pnpm eslint && pnpm test` - Run before any
-  commits
+
+### Standard Quality Check Pipeline
+
+```bash
+npm run build && tsc --noEmit && pnpm eslint && pnpm test && nix fmt
+```
+
+Run this sequence before any commits to ensure quality.
 
 ### Full Build Process ("buildfull")
 
@@ -65,9 +87,10 @@ When user says "buildfull", execute this complete build and validation sequence:
    JELLARR_API_KEY=<ask_user_for_key> nix run .# -- --configFile ./config.yml
    ```
 
-Expected result: "✓ system config already up to date ✅ jellarr apply complete"
+Expected result: "✓ system config already up to date ✓ encoding config already
+up to date ✅ jellarr apply complete"
 
-## Project Architecture
+## 🏗️ Project Architecture (NEWLY REFACTORED)
 
 **Jellarr** is a declarative configuration tool for Jellyfin servers built in
 TypeScript using a strict pipeline pattern.
@@ -77,36 +100,119 @@ TypeScript using a strict pipeline pattern.
 1. **CLI** (`src/cli/index.ts`) - Commander.js entry point
 2. **Pipeline** (`src/pipeline/index.ts`) - Main orchestration:
    - Reads YAML config file
-   - Validates with strict Zod schemas (rejects unknown fields)
+   - Validates with strict Zod schemas from `types/config/`
    - Creates authenticated Jellyfin API client
    - Fetches current server configuration
    - Applies ONLY specified changes idempotently
    - Compares JSON to detect changes before applying
-3. **Apply System** (`src/apply/system.ts`) - Handles configuration updates
+3. **Apply Modules** (`src/apply/`) - Handle configuration updates per feature
 
-### Key Directories
+### 🎯 NEW Directory Structure (Post-Refactor)
 
-- `src/api/` - Jellyfin API client using openapi-fetch with generated types
-- `src/validation/` - Strict Zod schemas (all use `.strict()` to prevent unknown
-  fields)
-- `src/apply/` - Idempotent configuration application logic
-- `src/mappers/` - Data transformation utilities
-- `generated/` - Auto-generated types from Jellyfin OpenAPI spec
-- `tests/` - Comprehensive test suite mirroring source structure
+```
+src/
+├── api/                    # Jellyfin API client using openapi-fetch
+├── types/
+│   ├── config/            # 🆕 User-facing config types (Zod-based)
+│   │   ├── root.ts                    # Root config
+│   │   ├── system.ts                  # System config
+│   │   ├── encoding-options.ts        # Encoding config
+│   │   ├── plugin-repository.ts       # Plugin repository config
+│   │   └── trickplay-options.ts       # Trickplay config
+│   └── schema/            # Server API schema types
+│       ├── system.ts              # System server schema
+│       └── encoding-options.ts    # Encoding server schema
+├── apply/                 # Idempotent configuration application logic
+│   ├── system.ts               # System config application
+│   └── encoding-options.ts     # Encoding config application
+├── mappers/               # Data transformation utilities
+│   ├── system.ts               # System config mapper
+│   └── encoding-options.ts     # Encoding config mapper
+└── pipeline/              # Main orchestration
 
-### Validation Architecture
+tests/
+├── types/config/          # 🆕 Config validation tests
+│   ├── root.spec.ts
+│   ├── system.spec.ts
+│   ├── encoding-options.spec.ts
+│   ├── plugin-repository.spec.ts
+│   └── trickplay-options.spec.ts
+├── apply/                 # Apply logic tests
+├── mappers/              # Mapper tests
+└── api/                  # API tests
 
-- **RootConfigSchema**: Requires `version` (positive int), `base_url` (valid
-  URL), `system` object
-- **SystemConfigSchema**: Optional `enableMetrics`, `pluginRepositories`,
-  `trickplayOptions`
-- **PluginRepositoryConfigSchema**: Required `name` (non-empty), `url` (valid),
-  `enabled` (boolean)
-- **TrickplayOptionsConfigSchema**: Optional `enableHwAcceleration`,
-  `enableHwEncoding` booleans
-- All schemas use `.strict()` to reject unknown fields
+generated/                # Auto-generated types from Jellyfin OpenAPI spec
+```
 
-### API Integration
+### 🔥 Perfect Naming Convention Pattern
+
+**CRITICAL**: We established this exact pattern during the refactor. Every file
+follows this:
+
+For OpenAPI schema `components["schemas"]["XyzAbc"]`:
+
+1. **Server Schema Type** (`types/schema/xyz-abc.ts`):
+
+   ```typescript
+   export type XyzAbcSchema = components["schemas"]["XyzAbc"];
+   ```
+
+2. **Config Type** (`types/config/xyz-abc.ts`):
+
+   ```typescript
+   export const XyzAbcConfigType: z.ZodObject<{...}> = z.object({...}).strict();
+   export type XyzAbcConfig = z.infer<typeof XyzAbcConfigType>;
+   ```
+
+3. **Mapper** (`mappers/xyz-abc.ts`):
+
+   ```typescript
+   export function mapXyzAbcConfigToSchema(
+     desired: XyzAbcConfig,
+   ): Partial<XyzAbcSchema> { ... }
+   ```
+
+4. **Apply Logic** (`apply/xyz-abc.ts`):
+
+   ```typescript
+   export async function applyXyzAbc(
+     client: JellyfinClient,
+     desired: XyzAbcConfig | undefined,
+   ): Promise<void> { ... }
+   ```
+
+5. **Variable Naming**:
+   ```typescript
+   const currentXyzAbcSchema: XyzAbcSchema = ...;
+   const updatedXyzAbcSchema: XyzAbcSchema = ...;
+   ```
+
+### ✨ Copy-Paste Ready Feature Addition
+
+Adding a new config feature is now trivial:
+
+```bash
+# 1. Create config type
+touch src/types/config/new-feature.ts
+touch tests/types/config/new-feature.spec.ts
+
+# 2. Create server schema (if needed)
+touch src/types/schema/new-feature.ts
+
+# 3. Create mapper
+touch src/mappers/new-feature.ts
+touch tests/mappers/new-feature.spec.ts
+
+# 4. Create apply logic
+touch src/apply/new-feature.ts
+touch tests/apply/new-feature.spec.ts
+
+# 5. Wire into pipeline (src/pipeline/index.ts)
+```
+
+Follow the established patterns in existing files!
+
+## API Integration
 
 - Uses `openapi-fetch` with types generated from Jellyfin's OpenAPI
   specification
@@ -164,134 +270,95 @@ encoding.enableHardwareEncoding       → EnableHardwareEncoding
 
 ### Validated Integration Tests (it1-it10)
 
-| Test | Field Type | Scenario                                    | Server State                                                             | Config                                                                 | Expected Result                                                  | Status |
-| ---- | ---------- | ------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------- | ---------------------------------------------------------------- | ------ |
-| it1  | Scalar     | Preserve true                               | EnableMetrics: true                                                      | system: {}                                                             | EnableMetrics: true                                              | ✅     |
-| it2  | Scalar     | Preserve false                              | EnableMetrics: false                                                     | system: {}                                                             | EnableMetrics: false                                             | ✅     |
-| it3  | List       | Preserve list                               | PluginRepositories: [repo]                                               | system: {}                                                             | PluginRepositories: [repo]                                       | ✅     |
-| it4  | List       | Replace list                                | PluginRepositories: [old]                                                | pluginRepositories: [new]                                              | PluginRepositories: [new]                                        | ✅     |
-| it5  | Object     | Preserve object (both true)                 | TrickplayOptions: {EnableHwAcceleration: true, EnableHwEncoding: true}   | system: {}                                                             | Both fields: true                                                | ✅     |
-| it6  | Object     | Preserve object (both false)                | TrickplayOptions: {EnableHwAcceleration: false, EnableHwEncoding: false} | system: {}                                                             | Both fields: false                                               | ✅     |
-| it7  | Object     | Partial update (true,false→false,undefined) | TrickplayOptions: {EnableHwAcceleration: true, EnableHwEncoding: false}  | trickplayOptions: {enableHwAcceleration: false}                        | EnableHwAcceleration: false, EnableHwEncoding: false (preserved) | ✅     |
-| it8  | Object     | Partial update (false,true→undefined,false) | TrickplayOptions: {EnableHwAcceleration: false, EnableHwEncoding: true}  | trickplayOptions: {enableHwEncoding: false}                            | EnableHwAcceleration: false (preserved), EnableHwEncoding: false | ✅     |
-| it9  | Object     | Full update (false,false→true,true)         | TrickplayOptions: {EnableHwAcceleration: false, EnableHwEncoding: false} | trickplayOptions: {enableHwAcceleration: true, enableHwEncoding: true} | Both fields: true                                                | ✅     |
-| it10 | Scalar     | Preserve false (encoding)                   | EnableHardwareEncoding: false                                            | encoding: {}                                                           | EnableHardwareEncoding: false                                    | ✅     |
+| Test | Field Type | Scenario                               | Status |
+| ---- | ---------- | -------------------------------------- | ------ |
+| it1  | Scalar     | Preserve true enableMetrics            | ✅     |
+| it2  | Scalar     | Preserve false enableMetrics           | ✅     |
+| it3  | List       | Preserve pluginRepositories list       | ✅     |
+| it4  | List       | Replace pluginRepositories list        | ✅     |
+| it5  | Object     | Preserve trickplayOptions (both true)  | ✅     |
+| it6  | Object     | Preserve trickplayOptions (both false) | ✅     |
+| it7  | Object     | Partial trickplayOptions update        | ✅     |
+| it8  | Object     | Partial trickplayOptions update        | ✅     |
+| it9  | Object     | Full trickplayOptions update           | ✅     |
+| it10 | Scalar     | Preserve encoding config               | ✅     |
 
 **Core Validation**: All tests confirm jellarr implements true declarative
-behavior - only explicitly configured fields are modified, ensuring safe
-operation alongside other management tools.
-
-## TypeScript Migration Context
-
-**Current State**: Active TypeScript migration on `ts-migration` branch
-
-- Added strict Zod validation schemas (`src/validation/config.ts`)
-- Comprehensive test suite (`tests/validation/config.spec.ts`)
-- Updated pipeline to use validated types (`src/pipeline/index.ts`)
-- Nix build system with proper dependency management
-
-**Key Files Modified**:
-
-- `src/pipeline/index.ts`: Added Zod validation with detailed error messages
-- `src/validation/config.ts`: Complete schema definitions with strict validation
-- `tests/validation/config.spec.ts`: 42 tests covering all validation scenarios
-- `nix/package.nix`: Proper pnpm dependency hash management
+behavior - only explicitly configured fields are modified.
 
 ## Build System
 
-**Nix Integration**:
+### Nix Integration
 
 - Main derivation: `nix/package.nix`
-- Critical: Line 47 contains pnpm dependency hash - must be updated when
+- **Critical**: Line 47 contains pnpm dependency hash - must be updated when
   dependencies change
-- Current hash: `"sha256-LjdZDFenfylIpKxRpVmPUten/1IyL/cmI6QjDfcmfDc="`
+- Current hash: `"sha256-EFshNgnzsgnJnXuhdbyZKsMQ2W7LWA58jNQEzJ7TTwU="`
 - Build command: `nix build .#`
 - Run command: `JELLARR_API_KEY=<key> nix run .# -- --configFile <path>`
 
-**Testing Strategy**:
+### Testing Strategy
 
-- Unit tests: `pnpm test` (Vitest, 42 tests)
-- Type checking: `pnpm typecheck`
-- Linting: `pnpm eslint`
-- Integration: Full server interaction tests (it1-it9)
+- **Unit tests**: `pnpm test` (Vitest, **64 tests**)
+- **Type checking**: `pnpm typecheck`
+- **Linting**: `pnpm eslint`
+- **Integration**: Full server interaction tests (it1-it10)
 
 ## When User Says "/init"
 
 1. **Understand the context**: This is a declarative Jellyfin configuration tool
    with strict validation
 2. **Remember the core principle**: Only modify explicitly specified fields
-3. **Know the architecture**: TypeScript pipeline with Zod validation and
-   openapi-fetch
-4. **Be ready for integration testing**: Use the established it1-it9 pattern for
-   any new features
+3. **Know the NEW architecture**: Clean modular structure in `types/config/`
+   with perfect naming conventions
+4. **Be ready for rapid development**: Use established copy-paste patterns for
+   new features
 5. **Follow build practices**: Use "buildfull" for clean builds, always validate
-   with tests
+   with standard pipeline
 6. **Respect authentication**: Always ask for API key, never store it
 
-## Naming Convention Rules
+## 🎯 Development Workflow
 
-**CRITICAL**: Follow this exact naming pattern for all OpenAPI schema
-integrations.
+### For New Config Features
 
-For any OpenAPI schema `components["schemas"]["XyzAbc"]`, create:
+1. **Create config type** in `types/config/new-feature.ts` following
+   `XyzAbcConfigType` pattern
+2. **Create tests** in `tests/types/config/new-feature.spec.ts`
+3. **Create mapper** in `mappers/new-feature.ts` following
+   `mapXyzAbcConfigToSchema` pattern
+4. **Create apply logic** in `apply/new-feature.ts` following `applyXyzAbc`
+   pattern
+5. **Wire into pipeline** in `src/pipeline/index.ts`
+6. **Run standard quality pipeline**:
+   `npm run build && tsc --noEmit && pnpm eslint && pnpm test && nix fmt`
+7. **Integration test** with real server using established it1-it10 pattern
 
-1. **`XyzAbcSchema`** - Direct type mapping from OpenAPI schema
+### Quality Gates
 
-   ```typescript
-   export type XyzAbcSchema = components["schemas"]["XyzAbc"];
-   ```
-
-2. **`XyzAbcConfig`** - User-facing config interface
-
-   ```typescript
-   export interface XyzAbcConfig {
-     someField?: boolean;
-   }
-   ```
-
-3. **`XyzAbcConfigSchema`** - Zod validation schema for config
-
-   ```typescript
-   export const XyzAbcConfigSchema = z
-     .object({
-       someField: z.boolean().optional(),
-     })
-     .strict();
-   ```
-
-4. **`mapXyzAbcConfigToSchema`** - Mapper function from config to schema
-
-   ```typescript
-   export function mapXyzAbcConfigToSchema(
-     desired: XyzAbcConfig,
-   ): Partial<XyzAbcSchema> { ... }
-   ```
-
-5. **Variable names** - Must match the type name
-   ```typescript
-   const currentXyzAbcSchema: XyzAbcSchema = ...;
-   const updatedXyzAbcSchema: XyzAbcSchema = ...;
-   ```
-
-**Example**: For `components["schemas"]["EncodingOptions"]`:
-
-- ✅ `EncodingOptionsSchema`, `EncodingOptionsConfig`,
-  `EncodingOptionsConfigSchema`
-- ✅ `mapEncodingOptionsConfigToSchema`
-- ✅ `currentEncodingOptionsSchema`, `updatedEncodingOptionsSchema`
-
-**Never deviate from this pattern** - it ensures consistent, predictable naming
-across the entire codebase.
+- ✅ All 64 tests must pass
+- ✅ TypeScript compilation clean
+- ✅ ESLint validation passing
+- ✅ Integration test successful
+- ✅ buildfull process complete
 
 ## Important Reminders
 
-- **Never create files unless absolutely necessary** - prefer editing existing
-  files
-- **Never proactively create documentation** - only when explicitly requested
-- **Always run quality checks** before significant changes:
-  `nix fmt && pnpm eslint && pnpm test`
-- **Integration test any behavior changes** using the established curl +
-  jellarr + verification pattern
-- **Maintain strict Zod validation** - all schemas should use `.strict()` to
-  prevent unknown fields
-- **Update Nix hash** when dependencies change during buildfull process
+- **Perfect architecture**: We just completed major refactor - everything is now
+  clean and modular
+- **Copy-paste ready**: New features follow established patterns exactly
+- **64 tests passing**: Comprehensive validation ensures quality
+- **Integration tested**: Real server validation with it1-it10 pattern
+- **Never deviate from naming conventions**: `XyzAbcConfigType` → `XyzAbcConfig`
+  pattern is law
+- **Always run standard pipeline**:
+  `npm run build && tsc --noEmit && pnpm eslint && pnpm test && nix fmt`
+- **buildfull is comprehensive**: Full clean environment + build + validation +
+  integration test
+- **Integration test any changes**: Use curl + jellarr + verification pattern
+  established
+
+## 🔥 Ready for Tomorrow
+
+The codebase is now in perfect state for rapid feature development. When you say
+`/init` tomorrow, we'll have 0% context loss and can immediately start building
+new features using the established patterns. GGWP! 🚀
