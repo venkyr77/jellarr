@@ -1,5 +1,5 @@
-import { type EncodingOptionsConfig } from "../types/config/encoding";
-import { type EncodingOptionsSchema } from "../types/schema/encoding";
+import { type EncodingOptionsConfig } from "../types/config/encoding-options";
+import { type EncodingOptionsSchema } from "../types/schema/encoding-options";
 
 export function mapEncodingOptionsConfigToSchema(
   desired: EncodingOptionsConfig,

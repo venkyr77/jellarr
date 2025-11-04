@@ -4,10 +4,8 @@ import {
   toPluginRepositorySchemas,
   mapSystemConfigurationConfigToSchema,
 } from "../../src/mappers/system";
-import type {
-  PluginRepositoryConfig,
-  SystemConfig,
-} from "../../src/types/config/system";
+import type { SystemConfig } from "../../src/types/config/system";
+import type { PluginRepositoryConfig } from "../../src/types/config/plugin-repository";
 import type {
   PluginRepositorySchema,
   ServerConfigurationSchema,

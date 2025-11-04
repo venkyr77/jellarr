@@ -1,5 +1,5 @@
 import type { ServerConfigurationSchema } from "../types/schema/system";
-import type { EncodingOptionsSchema } from "../types/schema/encoding";
+import type { EncodingOptionsSchema } from "../types/schema/encoding-options";
 import type { JellyfinClient } from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";

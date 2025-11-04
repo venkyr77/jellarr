@@ -1,7 +1,7 @@
 import { logger } from "../lib/logger";
-import { mapEncodingOptionsConfigToSchema } from "../mappers/encoding";
-import { type EncodingOptionsConfig } from "../types/config/encoding";
-import { type EncodingOptionsSchema } from "../types/schema/encoding";
+import { mapEncodingOptionsConfigToSchema } from "../mappers/encoding-options";
+import { type EncodingOptionsConfig } from "../types/config/encoding-options";
+import { type EncodingOptionsSchema } from "../types/schema/encoding-options";
 
 function hasEnableHardwareEncodingChanged(
   current: EncodingOptionsSchema,

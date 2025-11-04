@@ -1,16 +1,19 @@
-export interface PluginRepositoryConfig {
-  name: string;
-  url: string;
-  enabled: boolean;
-}
+import { z } from "zod";
+import { PluginRepositoryConfigType } from "./plugin-repository";
+import { TrickplayOptionsConfigType } from "./trickplay-options";
 
-export interface TrickplayOptionsConfig {
-  enableHwAcceleration?: boolean;
-  enableHwEncoding?: boolean;
-}
+export const SystemConfigType: z.ZodObject<{
+  enableMetrics: z.ZodOptional<z.ZodBoolean>;
+  pluginRepositories: z.ZodOptional<
+    z.ZodArray<typeof PluginRepositoryConfigType>
+  >;
+  trickplayOptions: z.ZodOptional<typeof TrickplayOptionsConfigType>;
+}> = z
+  .object({
+    enableMetrics: z.boolean().optional(),
+    pluginRepositories: z.array(PluginRepositoryConfigType).optional(),
+    trickplayOptions: TrickplayOptionsConfigType.optional(),
+  })
+  .strict();
 
-export interface SystemConfig {
-  enableMetrics?: boolean;
-  pluginRepositories?: PluginRepositoryConfig[];
-  trickplayOptions?: TrickplayOptionsConfig;
-}
+export type SystemConfig = z.infer<typeof SystemConfigType>;

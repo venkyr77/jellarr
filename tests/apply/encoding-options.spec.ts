@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { applyEncoding } from "../../src/apply/encoding";
-import { type EncodingOptionsConfig } from "../../src/types/config/encoding";
-import { type EncodingOptionsSchema } from "../../src/types/schema/encoding";
+import { applyEncoding } from "../../src/apply/encoding-options";
+import { type EncodingOptionsConfig } from "../../src/types/config/encoding-options";
+import { type EncodingOptionsSchema } from "../../src/types/schema/encoding-options";
 import * as loggerModule from "../../src/lib/logger";
 
 // Mock the logger

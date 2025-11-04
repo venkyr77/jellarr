@@ -1,5 +1,5 @@
 import type { ServerConfigurationSchema } from "../types/schema/system";
-import type { EncodingOptionsSchema } from "../types/schema/encoding";
+import type { EncodingOptionsSchema } from "../types/schema/encoding-options";
 
 export interface JellyfinClient {
   getSystemConfiguration(): Promise<ServerConfigurationSchema>;

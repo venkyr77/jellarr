@@ -1,8 +1,6 @@
-import {
-  type SystemConfig,
-  type TrickplayOptionsConfig,
-  type PluginRepositoryConfig,
-} from "../types/config/system";
+import { type SystemConfig } from "../types/config/system";
+import { type TrickplayOptionsConfig } from "../types/config/trickplay-options";
+import { type PluginRepositoryConfig } from "../types/config/plugin-repository";
 import {
   type ServerConfigurationSchema,
   type TrickplayOptionsSchema,

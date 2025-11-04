@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { mapEncodingOptionsConfigToSchema } from "../../src/mappers/encoding";
-import { type EncodingOptionsConfig } from "../../src/types/config/encoding";
-import { type EncodingOptionsSchema } from "../../src/types/schema/encoding";
+import { mapEncodingOptionsConfigToSchema } from "../../src/mappers/encoding-options";
+import { type EncodingOptionsConfig } from "../../src/types/config/encoding-options";
+import { type EncodingOptionsSchema } from "../../src/types/schema/encoding-options";
 
 describe("mappers/encoding", () => {
   describe("mapEncodingOptionsConfigToSchema", () => {

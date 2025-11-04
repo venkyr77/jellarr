@@ -3,11 +3,9 @@ import {
   fromPluginRepositorySchemas,
   mapSystemConfigurationConfigToSchema,
 } from "../mappers/system";
-import {
-  type PluginRepositoryConfig,
-  type SystemConfig,
-  type TrickplayOptionsConfig,
-} from "../types/config/system";
+import { type SystemConfig } from "../types/config/system";
+import { type PluginRepositoryConfig } from "../types/config/plugin-repository";
+import { type TrickplayOptionsConfig } from "../types/config/trickplay-options";
 import {
   type ServerConfigurationSchema,
   type TrickplayOptionsSchema,
