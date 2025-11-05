@@ -6,7 +6,7 @@ import {
   type RootConfig,
 } from "../../../src/types/config/root";
 
-describe("types/config/root — RootConfig", () => {
+describe("RootConfig", () => {
   it("should validate complete root config", () => {
     // Arrange
     const validConfig: z.input<typeof RootConfigType> = {

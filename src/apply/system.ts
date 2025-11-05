@@ -4,8 +4,10 @@ import {
   mapSystemConfigurationConfigToSchema,
 } from "../mappers/system";
 import { type SystemConfig } from "../types/config/system";
-import { type PluginRepositoryConfig } from "../types/config/plugin-repository";
-import { type TrickplayOptionsConfig } from "../types/config/trickplay-options";
+import {
+  type PluginRepositoryConfig,
+  type TrickplayOptionsConfig,
+} from "../types/config/system";
 import {
   type ServerConfigurationSchema,
   type TrickplayOptionsSchema,

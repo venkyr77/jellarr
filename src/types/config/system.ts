@@ -1,6 +1,26 @@
 import { z } from "zod";
-import { PluginRepositoryConfigType } from "./plugin-repository";
-import { TrickplayOptionsConfigType } from "./trickplay-options";
+
+export const PluginRepositoryConfigType: z.ZodObject<{
+  name: z.ZodString;
+  url: ReturnType<typeof z.url>;
+  enabled: z.ZodBoolean;
+}> = z.object({
+  name: z.string().min(1, "Plugin repository name cannot be empty"),
+  url: z.url({ message: "Plugin repository URL must be a valid URL" }),
+  enabled: z.boolean(),
+});
+
+export type PluginRepositoryConfig = z.infer<typeof PluginRepositoryConfigType>;
+
+export const TrickplayOptionsConfigType: z.ZodObject<{
+  enableHwAcceleration: z.ZodOptional<z.ZodBoolean>;
+  enableHwEncoding: z.ZodOptional<z.ZodBoolean>;
+}> = z.object({
+  enableHwAcceleration: z.boolean().optional(),
+  enableHwEncoding: z.boolean().optional(),
+});
+
+export type TrickplayOptionsConfig = z.infer<typeof TrickplayOptionsConfigType>;
 
 export const SystemConfigType: z.ZodObject<{
   enableMetrics: z.ZodOptional<z.ZodBoolean>;
