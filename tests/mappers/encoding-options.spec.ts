@@ -1,3 +1,16 @@
+/**
+ * Encoding Options Mapper Test Coverage
+ *
+ * ## enableHardwareEncoding
+ * - ✅ Field mapping: enableHardwareEncoding → EnableHardwareEncoding (true/false)
+ * - ✅ Undefined field handling
+ * - ✅ Property exclusion validation
+ *
+ * ## Missing Coverage
+ * - ❌ hardwareAccelerationType enum mapping
+ * - ❌ Multi-field mapping scenarios
+ * - ❌ All 8 enum values (none, amf, qsv, nvenc, v4l2m2m, vaapi, videotoolbox, rkmpp)
+ */
 import { describe, it, expect } from "vitest";
 import { mapEncodingOptionsConfigToSchema } from "../../src/mappers/encoding-options";
 import { type EncodingOptionsConfig } from "../../src/types/config/encoding-options";

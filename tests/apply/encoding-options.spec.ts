@@ -1,3 +1,18 @@
+/**
+ * Encoding Options Apply Test Coverage
+ *
+ * ## enableHardwareEncoding (Scalar Boolean)
+ * - ✅ Change: false → true, true → false (actual changes)
+ * - ✅ Preserve when undefined
+ * - ✅ No-change: same value
+ * - ✅ Logging behavior (changes logged vs no-changes not logged)
+ * - ✅ Field preservation (other schema fields untouched)
+ *
+ * ## Missing Coverage
+ * - ❌ hardwareAccelerationType (8 enum values)
+ * - ❌ Multi-field scenarios (both fields together)
+ * - ❌ Mixed updates (one field same, one different)
+ */
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { applyEncoding } from "../../src/apply/encoding-options";
 import { type EncodingOptionsConfig } from "../../src/types/config/encoding-options";

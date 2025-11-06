@@ -1,3 +1,26 @@
+/**
+ * Comprehensive System Mapper Test Coverage
+ *
+ * ## fromPluginRepositorySchemas
+ * - ✅ Empty array conversion
+ * - ✅ Multiple repository field mapping (Name→name, Url→url, Enabled→enabled)
+ * - ✅ Single repository handling
+ * - ✅ Disabled repository conversion
+ *
+ * ## toPluginRepositorySchemas
+ * - ✅ Empty array conversion
+ * - ✅ Multiple repository field mapping (name→Name, url→Url, enabled→Enabled)
+ * - ✅ Single repository handling
+ * - ✅ Disabled repository conversion
+ *
+ * ## mapSystemConfigurationConfigToSchema
+ * - ✅ enableMetrics mapping (true/false)
+ * - ✅ pluginRepositories mapping (populated/empty)
+ * - ✅ trickplayOptions mapping (full/partial/empty)
+ * - ✅ Multi-field combinations
+ * - ✅ Empty config handling
+ * - ✅ Undefined field exclusion validation
+ */
 import { describe, it, expect } from "vitest";
 import {
   fromPluginRepositorySchemas,
@@ -11,131 +34,391 @@ import type {
   ServerConfigurationSchema,
 } from "../../src/types/schema/system";
 
-describe("mappers/system — fromPluginRepositorySchemas", () => {
-  it.each([
-    {
-      name: "fromPluginRepositorySchemas_t1",
-      input: [],
-      expected: [],
-    },
-    {
-      name: "fromPluginRepositorySchemas_t2",
-      input: [
-        { Name: "A", Url: "https://a", Enabled: true },
-        { Name: "B", Url: "https://b", Enabled: false },
-      ],
-      expected: [
-        { name: "A", url: "https://a", enabled: true },
-        { name: "B", url: "https://b", enabled: false },
-      ],
-    },
-    {
-      name: "fromPluginRepositorySchemas_t3",
-      input: undefined,
-      expected: [],
-    },
-  ])("when $name", ({ input, expected }): void => {
-    // Arrange
-    const jfRepos: PluginRepositorySchema[] | null | undefined = input;
+describe("mappers/system", () => {
+  describe("fromPluginRepositorySchemas", () => {
+    it("should convert empty server schema array to empty config array", () => {
+      // Arrange
+      const jfRepos: PluginRepositorySchema[] = [];
 
-    // Act
-    const out: PluginRepositoryConfig[] = fromPluginRepositorySchemas(
-      jfRepos ?? [],
-    );
+      // Act
+      const result: PluginRepositoryConfig[] =
+        fromPluginRepositorySchemas(jfRepos);
 
-    // Assert
-    expect(out).toEqual(expected);
+      // Assert
+      expect(result).toEqual([]);
+    });
+
+    it("should convert server schema to config format with proper field mapping", () => {
+      // Arrange
+      const jfRepos: PluginRepositorySchema[] = [
+        { Name: "Repository A", Url: "https://repo-a.com", Enabled: true },
+        { Name: "Repository B", Url: "https://repo-b.com", Enabled: false },
+      ];
+
+      // Act
+      const result: PluginRepositoryConfig[] =
+        fromPluginRepositorySchemas(jfRepos);
+
+      // Assert
+      expect(result).toEqual([
+        { name: "Repository A", url: "https://repo-a.com", enabled: true },
+        { name: "Repository B", url: "https://repo-b.com", enabled: false },
+      ]);
+    });
+
+    it("should handle single repository conversion", () => {
+      // Arrange
+      const jfRepos: PluginRepositorySchema[] = [
+        { Name: "Single Repo", Url: "https://single.com", Enabled: true },
+      ];
+
+      // Act
+      const result: PluginRepositoryConfig[] =
+        fromPluginRepositorySchemas(jfRepos);
+
+      // Assert
+      expect(result).toEqual([
+        { name: "Single Repo", url: "https://single.com", enabled: true },
+      ]);
+    });
+
+    it("should convert disabled repositories correctly", () => {
+      // Arrange
+      const jfRepos: PluginRepositorySchema[] = [
+        { Name: "Disabled Repo", Url: "https://disabled.com", Enabled: false },
+      ];
+
+      // Act
+      const result: PluginRepositoryConfig[] =
+        fromPluginRepositorySchemas(jfRepos);
+
+      // Assert
+      expect(result).toEqual([
+        { name: "Disabled Repo", url: "https://disabled.com", enabled: false },
+      ]);
+    });
   });
-});
 
-describe("mappers/system — toPluginRepositorySchemas", () => {
-  it.each([
-    {
-      name: "toPluginRepositorySchemas_t1",
-      input: [],
-      expected: [],
-    },
-    {
-      name: "toPluginRepositorySchemas_t2",
-      input: [
-        { name: "A", url: "https://a", enabled: true },
-        { name: "B", url: "https://b", enabled: false },
-      ],
-      expected: [
-        { Name: "A", Url: "https://a", Enabled: true },
-        { Name: "B", Url: "https://b", Enabled: false },
-      ],
-    },
-    {
-      name: "toPluginRepositorySchemas_t3",
-      input: undefined,
-      expected: [],
-    },
-  ])("when $name", ({ input, expected }): void => {
-    // Arrange
-    const cfgRepos: PluginRepositoryConfig[] | null | undefined = input;
+  describe("toPluginRepositorySchemas", () => {
+    it("should convert empty config array to empty server schema array", () => {
+      // Arrange
+      const cfgRepos: PluginRepositoryConfig[] = [];
 
-    // Act
-    const out: PluginRepositorySchema[] = toPluginRepositorySchemas(
-      cfgRepos ?? [],
-    );
+      // Act
+      const result: PluginRepositorySchema[] =
+        toPluginRepositorySchemas(cfgRepos);
 
-    // Assert
-    expect(out).toEqual(expected);
+      // Assert
+      expect(result).toEqual([]);
+    });
+
+    it("should convert config format to server schema with proper field mapping", () => {
+      // Arrange
+      const cfgRepos: PluginRepositoryConfig[] = [
+        { name: "Config Repo A", url: "https://config-a.com", enabled: true },
+        { name: "Config Repo B", url: "https://config-b.com", enabled: false },
+      ];
+
+      // Act
+      const result: PluginRepositorySchema[] =
+        toPluginRepositorySchemas(cfgRepos);
+
+      // Assert
+      expect(result).toEqual([
+        { Name: "Config Repo A", Url: "https://config-a.com", Enabled: true },
+        { Name: "Config Repo B", Url: "https://config-b.com", Enabled: false },
+      ]);
+    });
+
+    it("should handle single repository conversion", () => {
+      // Arrange
+      const cfgRepos: PluginRepositoryConfig[] = [
+        {
+          name: "Single Config",
+          url: "https://single-config.com",
+          enabled: true,
+        },
+      ];
+
+      // Act
+      const result: PluginRepositorySchema[] =
+        toPluginRepositorySchemas(cfgRepos);
+
+      // Assert
+      expect(result).toEqual([
+        {
+          Name: "Single Config",
+          Url: "https://single-config.com",
+          Enabled: true,
+        },
+      ]);
+    });
+
+    it("should convert disabled repositories correctly", () => {
+      // Arrange
+      const cfgRepos: PluginRepositoryConfig[] = [
+        {
+          name: "Disabled Config",
+          url: "https://disabled-config.com",
+          enabled: false,
+        },
+      ];
+
+      // Act
+      const result: PluginRepositorySchema[] =
+        toPluginRepositorySchemas(cfgRepos);
+
+      // Assert
+      expect(result).toEqual([
+        {
+          Name: "Disabled Config",
+          Url: "https://disabled-config.com",
+          Enabled: false,
+        },
+      ]);
+    });
   });
-});
 
-describe("mappers/system — mapSystemConfigurationConfigToSchema", () => {
-  it.each([
-    {
-      name: "mapSystemConfigurationConfigToSchema_t1",
-      desired: { enableMetrics: true },
-      expected: { EnableMetrics: true },
-    },
-    {
-      name: "mapSystemConfigurationConfigToSchema_t2",
-      desired: {
+  describe("mapSystemConfigurationConfigToSchema", () => {
+    it("should map enableMetrics to EnableMetrics", () => {
+      // Arrange
+      const config: SystemConfig = {
+        enableMetrics: true,
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({
+        EnableMetrics: true,
+      });
+    });
+
+    it("should map enableMetrics false to EnableMetrics false", () => {
+      // Arrange
+      const config: SystemConfig = {
+        enableMetrics: false,
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({
+        EnableMetrics: false,
+      });
+    });
+
+    it("should map pluginRepositories to PluginRepositories", () => {
+      // Arrange
+      const config: SystemConfig = {
         pluginRepositories: [
-          { name: "B", url: "https://b", enabled: true },
-          { name: "A", url: "https://a", enabled: false },
+          { name: "Test Repo", url: "https://test.com", enabled: true },
+          { name: "Another Repo", url: "https://another.com", enabled: false },
         ],
-      },
-      expected: {
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({
         PluginRepositories: [
-          { Name: "B", Url: "https://b", Enabled: true },
-          { Name: "A", Url: "https://a", Enabled: false },
+          { Name: "Test Repo", Url: "https://test.com", Enabled: true },
+          { Name: "Another Repo", Url: "https://another.com", Enabled: false },
         ],
-      },
-    },
-    {
-      name: "mapSystemConfigurationConfigToSchema_t3",
-      desired: {
+      });
+    });
+
+    it("should map empty pluginRepositories to empty PluginRepositories", () => {
+      // Arrange
+      const config: SystemConfig = {
+        pluginRepositories: [],
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({
+        PluginRepositories: [],
+      });
+    });
+
+    it("should map trickplayOptions to TrickplayOptions", () => {
+      // Arrange
+      const config: SystemConfig = {
         trickplayOptions: {
           enableHwAcceleration: true,
           enableHwEncoding: false,
         },
-      },
-      expected: {
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({
         TrickplayOptions: {
           EnableHwAcceleration: true,
           EnableHwEncoding: false,
         },
-      },
-    },
-    {
-      name: "mapSystemConfigurationConfigToSchema_t6",
-      desired: {},
-      expected: {},
-    },
-  ])("$name", ({ desired, expected }): void => {
-    // Arrange
-    const inCfg: SystemConfig = desired;
+      });
+    });
 
-    // Act
-    const patch: Partial<ServerConfigurationSchema> =
-      mapSystemConfigurationConfigToSchema(inCfg);
+    it("should map partial trickplayOptions (enableHwAcceleration only)", () => {
+      // Arrange
+      const config: SystemConfig = {
+        trickplayOptions: {
+          enableHwAcceleration: true,
+        },
+      };
 
-    // Assert
-    expect(patch).toEqual(expected);
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({
+        TrickplayOptions: {
+          EnableHwAcceleration: true,
+        },
+      });
+    });
+
+    it("should map partial trickplayOptions (enableHwEncoding only)", () => {
+      // Arrange
+      const config: SystemConfig = {
+        trickplayOptions: {
+          enableHwEncoding: false,
+        },
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({
+        TrickplayOptions: {
+          EnableHwEncoding: false,
+        },
+      });
+    });
+
+    it("should map empty trickplayOptions to empty TrickplayOptions", () => {
+      // Arrange
+      const config: SystemConfig = {
+        trickplayOptions: {},
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({
+        TrickplayOptions: {},
+      });
+    });
+
+    it("should map multiple fields simultaneously", () => {
+      // Arrange
+      const config: SystemConfig = {
+        enableMetrics: true,
+        pluginRepositories: [
+          { name: "Multi Repo", url: "https://multi.com", enabled: true },
+        ],
+        trickplayOptions: {
+          enableHwAcceleration: false,
+          enableHwEncoding: true,
+        },
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({
+        EnableMetrics: true,
+        PluginRepositories: [
+          { Name: "Multi Repo", Url: "https://multi.com", Enabled: true },
+        ],
+        TrickplayOptions: {
+          EnableHwAcceleration: false,
+          EnableHwEncoding: true,
+        },
+      });
+    });
+
+    it("should return empty object when no fields are provided", () => {
+      // Arrange
+      const config: SystemConfig = {};
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({});
+    });
+
+    it("should not include EnableMetrics when enableMetrics is undefined", () => {
+      // Arrange
+      const config: SystemConfig = {
+        pluginRepositories: [],
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result).not.toHaveProperty("EnableMetrics");
+      expect(result).toEqual({
+        PluginRepositories: [],
+      });
+    });
+
+    it("should not include PluginRepositories when pluginRepositories is undefined", () => {
+      // Arrange
+      const config: SystemConfig = {
+        enableMetrics: true,
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result).not.toHaveProperty("PluginRepositories");
+      expect(result).toEqual({
+        EnableMetrics: true,
+      });
+    });
+
+    it("should not include TrickplayOptions when trickplayOptions is undefined", () => {
+      // Arrange
+      const config: SystemConfig = {
+        enableMetrics: false,
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result).not.toHaveProperty("TrickplayOptions");
+      expect(result).toEqual({
+        EnableMetrics: false,
+      });
+    });
   });
 });
