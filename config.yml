@@ -11,3 +11,13 @@ system:
     enableHwEncoding: true
 encoding:
   enableHardwareEncoding: true
+  hardwareAccelerationType: "vaapi"
+  vaapiDevice: "/dev/dri/renderD128"
+  hardwareDecodingCodecs:
+    ["h264", "hevc", "mpeg2video", "vc1", "vp8", "vp9", "av1"]
+  enableDecodingColorDepth10Hevc: true
+  enableDecodingColorDepth10Vp9: true
+  enableDecodingColorDepth10HevcRext: true
+  enableDecodingColorDepth12HevcRext: true
+  allowHevcEncoding: false
+  allowAv1Encoding: false

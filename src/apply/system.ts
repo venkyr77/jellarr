@@ -1,3 +1,4 @@
+import { deepEqual } from "fast-equals";
 import { logger } from "../lib/logger";
 import {
   fromPluginRepositorySchemas,
@@ -29,25 +30,17 @@ function arePluginRepositoryConfigsEqual(
   a: PluginRepositoryConfig[],
   b: PluginRepositoryConfig[],
 ): boolean {
-  if (a.length !== b.length) return false;
+  // Order-independent comparison using deepEqual with sorted arrays
+  const sortByNameAndUrl: (
+    repos: PluginRepositoryConfig[],
+  ) => PluginRepositoryConfig[] = (
+    repos: PluginRepositoryConfig[],
+  ): PluginRepositoryConfig[] =>
+    [...repos].sort(
+      (a, b) => a.name.localeCompare(b.name) || a.url.localeCompare(b.url),
+    );
 
-  const key: (r: PluginRepositoryConfig) => string = (
-    r: PluginRepositoryConfig,
-  ): string => `${r.name}::${r.url}`;
-
-  const am: Map<string, PluginRepositoryConfig> = new Map(
-    a.map((r: PluginRepositoryConfig): [string, PluginRepositoryConfig] => [
-      key(r),
-      r,
-    ]),
-  );
-
-  for (const r of b) {
-    const other: PluginRepositoryConfig | undefined = am.get(key(r));
-    if (!other || other.enabled !== r.enabled) return false;
-  }
-
-  return true;
+  return deepEqual(sortByNameAndUrl(a), sortByNameAndUrl(b));
 }
 
 function hasPluginRepositoriesChanged(
