@@ -178,8 +178,10 @@ version: 1
 base_url: "http://localhost:8096"
 encoding:
   enableHardwareEncoding: true
-  hardwareAccelerationType: "vaapi" # vaapi, qsv, nvenc, amf, v4l2m2m
+  hardwareAccelerationType: "vaapi" # none, amf, qsv, nvenc, v4l2m2m, vaapi, videotoolbox, rkmpp
   vaapiDevice: "/dev/dri/renderD128"
+  # or qsv device
+  qsvDevice: "/dev/dri/renderD128"
   hardwareDecodingCodecs:
     - h264
     - hevc
