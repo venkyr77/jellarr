@@ -1,0 +1,58 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Build package
+        run: nix build .#default
+
+      - name: Prepare release artifacts
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          mkdir -p release
+          cp result/share/bundle.cjs release/jellarr-${VERSION}.cjs
+          cp result/bin/jellarr release/jellarr-${VERSION}
+          chmod +x release/jellarr-${VERSION}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/jellarr-*.cjs
+            release/jellarr-*
+          body: |
+            ## Jellarr ${{ github.ref_name }}
+
+            **Install with Nix:**
+            ```bash
+            nix run github:venkyr77/jellarr/${{ github.ref_name }}
+            ```
+
+            **Run with Node.js:**
+            ```bash
+            node jellarr-${{ github.ref_name }}.cjs --configFile ./config/config.yml
+            ```
+
+            **Docker:**
+            ```bash
+            docker pull ghcr.io/venkyr77/jellarr:${{ github.ref_name }}
+            ```
+          draft: false
+          prerelease: false
