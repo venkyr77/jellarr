@@ -1,0 +1,43 @@
+name: Publish Docker Image
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Build Docker image
+        run: nix build .#docker
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Load and tag image
+        run: |
+          docker load < result
+          VERSION=${GITHUB_REF#refs/tags/}
+          docker tag localhost/jellarr:latest ghcr.io/${{ github.repository_owner }}/jellarr:${VERSION}
+
+      - name: Push image
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          docker push ghcr.io/${{ github.repository_owner }}/jellarr:${VERSION}
