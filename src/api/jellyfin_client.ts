@@ -1,5 +1,10 @@
 import type { ServerConfigurationSchema } from "../types/schema/system";
 import type { EncodingOptionsSchema } from "../types/schema/encoding-options";
+import type {
+  VirtualFolderInfoSchema,
+  AddVirtualFolderDtoSchema,
+  CollectionTypeSchema,
+} from "../types/schema/library";
 import type { JellyfinClient } from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";
@@ -72,6 +77,44 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /System/Configuration/encoding failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getVirtualFolders(): Promise<VirtualFolderInfoSchema[]> {
+      // eslint-disable-next-line @typescript-eslint/typedef
+      const res = await client.GET("/Library/VirtualFolders");
+
+      if (res.error) {
+        throw new Error(
+          `GET /Library/VirtualFolders failed: ${res.response.status.toString()}`,
+        );
+      }
+
+      return res.data as VirtualFolderInfoSchema[];
+    },
+
+    async addVirtualFolder(
+      name: string,
+      collectionType: CollectionTypeSchema | undefined,
+      body: AddVirtualFolderDtoSchema,
+    ): Promise<void> {
+      // eslint-disable-next-line @typescript-eslint/typedef
+      const res = await client.POST("/Library/VirtualFolders", {
+        params: {
+          query: {
+            name,
+            collectionType,
+            refreshLibrary: true,
+          },
+        },
+        body,
+        headers: { "content-type": "application/json" },
+      });
+
+      if (res.error) {
+        throw new Error(
+          `POST /Library/VirtualFolders failed: ${res.response.status.toString()}`,
         );
       }
     },

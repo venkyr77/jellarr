@@ -1,5 +1,10 @@
 import type { ServerConfigurationSchema } from "../types/schema/system";
 import type { EncodingOptionsSchema } from "../types/schema/encoding-options";
+import type {
+  VirtualFolderInfoSchema,
+  AddVirtualFolderDtoSchema,
+  CollectionTypeSchema,
+} from "../types/schema/library";
 
 export interface JellyfinClient {
   getSystemConfiguration(): Promise<ServerConfigurationSchema>;
@@ -9,5 +14,11 @@ export interface JellyfinClient {
   getEncodingConfiguration(): Promise<EncodingOptionsSchema>;
   updateEncodingConfiguration(
     body: Partial<EncodingOptionsSchema>,
+  ): Promise<void>;
+  getVirtualFolders(): Promise<VirtualFolderInfoSchema[]>;
+  addVirtualFolder(
+    name: string,
+    collectionType: CollectionTypeSchema | undefined,
+    body: AddVirtualFolderDtoSchema,
   ): Promise<void>;
 }

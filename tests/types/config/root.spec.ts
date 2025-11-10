@@ -79,6 +79,160 @@ describe("RootConfig", () => {
     }
   });
 
+  it("should validate root config with library section", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+      library: {
+        virtualFolders: [
+          {
+            name: "test",
+            collectionType: "movies",
+            libraryOptions: {
+              pathInfos: [{ path: "/test" }],
+            },
+          },
+        ],
+      },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
+  it("should validate complete root config with all sections", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {
+        enableMetrics: true,
+        pluginRepositories: [
+          {
+            name: "Test Repository",
+            url: "https://test.example.com/manifest.json",
+            enabled: true,
+          },
+        ],
+        trickplayOptions: {
+          enableHwAcceleration: true,
+        },
+      },
+      encoding: {
+        enableHardwareEncoding: true,
+      },
+      library: {
+        virtualFolders: [
+          {
+            name: "movies",
+            collectionType: "movies",
+            libraryOptions: {
+              pathInfos: [{ path: "/media/movies" }],
+            },
+          },
+          {
+            name: "tv shows",
+            collectionType: "tvshows",
+            libraryOptions: {
+              pathInfos: [{ path: "/media/tv" }, { path: "/media/shows" }],
+            },
+          },
+        ],
+      },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
+  it("should validate root config without library section", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
+  it("should validate root config with library section", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+      library: {
+        virtualFolders: [
+          {
+            name: "Movies",
+            collectionType: "movies",
+            libraryOptions: {
+              pathInfos: [{ path: "/mnt/movies" }],
+            },
+          },
+        ],
+      },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.library).toBeDefined();
+      expect(result.data.library?.virtualFolders).toHaveLength(1);
+      expect(result.data.library?.virtualFolders?.[0].name).toBe("Movies");
+    }
+  });
+
+  it("should validate root config with empty library section", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+      library: {},
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.library).toBeDefined();
+      expect(result.data.library?.virtualFolders).toBeUndefined();
+    }
+  });
+
   it("should reject invalid version", () => {
     // Arrange
     const invalidConfig: z.input<typeof RootConfigType> = {

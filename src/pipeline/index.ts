@@ -3,6 +3,9 @@ import YAML from "yaml";
 import { deepEqual } from "fast-equals";
 import { applySystem } from "../apply/system";
 import { applyEncoding } from "../apply/encoding-options";
+import { calculateLibraryDiff, applyLibrary } from "../apply/library";
+import type { VirtualFolderInfoSchema } from "../types/schema/library";
+import type { LibraryConfig } from "../types/config/library";
 import { type ServerConfigurationSchema } from "../types/schema/system";
 import { type EncodingOptionsSchema } from "../types/schema/encoding-options";
 import { createJellyfinClient } from "../api/jellyfin_client";
@@ -75,6 +78,22 @@ export async function runPipeline(path: string): Promise<void> {
       console.log("✓ updated encoding config");
     } else {
       console.log("✓ encoding config already up to date");
+    }
+  }
+
+  // Handle library configuration if provided
+  if (cfg.library) {
+    const currentVirtualFolders: VirtualFolderInfoSchema[] =
+      await jellyfinClient.getVirtualFolders();
+    const updatedLibraryConfig: LibraryConfig | undefined =
+      calculateLibraryDiff(currentVirtualFolders, cfg.library);
+
+    if (updatedLibraryConfig) {
+      console.log("→ updating library config");
+      await applyLibrary(jellyfinClient, updatedLibraryConfig);
+      console.log("✓ updated library config");
+    } else {
+      console.log("✓ library config already up to date");
     }
   }
 }
