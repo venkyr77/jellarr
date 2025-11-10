@@ -35,7 +35,7 @@ jobs:
         run: |
           docker load < result
           VERSION=${GITHUB_REF#refs/tags/}
-          docker tag localhost/jellarr:latest ghcr.io/${{ github.repository_owner }}/jellarr:${VERSION}
+          docker tag jellarr:latest ghcr.io/${{ github.repository_owner }}/jellarr:${VERSION}
 
       - name: Push image
         run: |
