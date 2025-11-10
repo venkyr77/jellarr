@@ -80,28 +80,7 @@ encoding:
 
 ## Installation
 
-### Docker (Recommended)
-
-```bash
-docker pull ghcr.io/venkyr77/jellarr:v0.0.1
-```
-
-**With docker-compose:**
-
-```yaml
-services:
-  jellarr:
-    image: ghcr.io/venkyr77/jellarr:v0.0.1
-    container_name: jellarr
-    environment:
-      - JELLARR_API_KEY=${JELLARR_API_KEY}
-      - TZ=Etc/UTC
-    volumes:
-      - ./config:/config
-    restart: "no"
-```
-
-### Nix Flake
+### Nix Flake (Recommended)
 
 Add to your `flake.nix`:
 
@@ -135,6 +114,27 @@ Or run directly:
 
 ```bash
 JELLARR_API_KEY=your_api_key nix run github:venkyr77/jellarr/v0.0.1
+```
+
+### Docker (Recommended)
+
+```bash
+docker pull ghcr.io/venkyr77/jellarr:v0.0.1
+```
+
+**With docker-compose:**
+
+```yaml
+services:
+  jellarr:
+    image: ghcr.io/venkyr77/jellarr:v0.0.1
+    container_name: jellarr
+    environment:
+      - JELLARR_API_KEY=${JELLARR_API_KEY}
+      - TZ=Etc/UTC
+    volumes:
+      - ./config:/config
+    restart: "no"
 ```
 
 ### Binary Download
@@ -221,7 +221,7 @@ library:
 
 ## Secret Management
 
-### With sops-nix (Recommended)
+### With sops-nix (nix only)
 
 ```nix
 {
