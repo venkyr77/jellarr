@@ -1,100 +1,127 @@
 # Jellarr
 
-**Jellarr** is a declarative configuration tool for
-[Jellyfin](https://jellyfin.org) built in TypeScript. It applies configuration
-to a Jellyfin server using its public API — safely, idempotently, and
-version-controlled via YAML.
+**Jellarr** is an open-source tool designed to simplify declarative
+configuration management for [Jellyfin](https://jellyfin.org) media servers.
+Inspired by [Configarr](https://github.com/raydak-labs/configarr)'s approach to
+\*arr stack automation, Jellarr uses Jellyfin's official REST API to safely
+apply configuration changes through version-controlled YAML files.
+
+By streamlining server configuration, Jellarr saves time, enhances consistency
+across environments, and reduces manual intervention.
 
 ---
 
-## ✨ Overview
+## Why Jellarr?
 
-Jellarr lets you define Jellyfin settings in a simple YAML file and apply them
-automatically.
+Managing Jellyfin configuration becomes painful at scale:
 
-Instead of editing XML or clicking through the web UI, you describe the desired
-state and run:
+- **Configuration drift** across dev/staging/prod environments
+- **No version control** for settings changes
+- **Manual clicking** through web UI doesn't scale to multiple servers
+- **No automation** for infrastructure-as-code workflows
+
+Existing solutions have limitations. While
+[declarative-jellyfin](https://github.com/Sveske-Juice/declarative-jellyfin)
+pioneered declarative Jellyfin configuration, it takes a risky approach:
+
+- Directly manipulates XML files and SQLite databases
+- Stops/starts Jellyfin service multiple times during configuration
+- Reimplements Jellyfin's internal UUID generation in bash
+- NixOS-only with hardcoded systemd and path dependencies
+- Breaks when Jellyfin changes internals
+  ([example issue](https://github.com/Sveske-Juice/declarative-jellyfin/issues/13))
+
+**Jellarr takes a different approach:**
+
+- ✅ **API-based** — Uses Jellyfin's official REST API, never touches internal
+  files or databases
+- ✅ **Zero service interruption** — Jellyfin keeps running, no restarts
+  required
+- ✅ **Cross-platform** — Works on Docker, bare metal, any OS (not just NixOS)
+- ✅ **Type-safe** — OpenAPI-generated types catch errors at build time
+- ✅ **Future-proof** — Relies on stable API contracts, not reverse-engineered
+  internals
+- ✅ **Production-ready** — Idempotent, safe to run anytime via cron/systemd
+  timers
+
+---
+
+## Quick Start
 
 ```bash
-JELLARR_API_KEY=your_api_key nix run .# -- --configFile ./config.yml
+# With Nix
+nix run github:venkyr77/jellarr/v0.0.1
+
+# With Docker
+docker pull ghcr.io/venkyr77/jellarr:v0.0.1
+
+# Download binary (requires Node.js 24+)
+./jellarr-v0.0.1
 ```
 
-Jellarr compares the current server configuration with your YAML and updates
-only what’s needed.
-
----
-
-## 📦 Example
-
-**`sample-config.yml`**
+**Example config** (`config/config.yml`):
 
 ```yaml
 version: 1
-base_url: "http://10.0.0.76:8096"
+base_url: "http://localhost:8096"
 system:
   enableMetrics: true
+  pluginRepositories:
+    - name: "Jellyfin Official"
+      url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
+      enabled: true
+encoding:
+  enableHardwareEncoding: true
+  hardwareAccelerationType: "vaapi"
+  vaapiDevice: "/dev/dri/renderD128"
 ```
 
-This enables Prometheus metrics (`/metrics`) on your Jellyfin server.
-
 ---
 
-## 🚀 Usage
+## Installation
 
-1. **Set your Jellyfin API key and URL**
+### Docker (Recommended)
 
-   ```bash
-   export JELLARR_API_KEY=your_api_key
-   ```
+```bash
+docker pull ghcr.io/venkyr77/jellarr:v0.0.1
+```
 
-2. **Run Jellarr**
+**With docker-compose:**
 
-   ```bash
-   nix run .# -- --configFile ./config.yml
-   ```
+```yaml
+services:
+  jellarr:
+    image: ghcr.io/venkyr77/jellarr:v0.0.1
+    container_name: jellarr
+    environment:
+      - JELLARR_API_KEY=${JELLARR_API_KEY}
+      - TZ=Etc/UTC
+    volumes:
+      - ./config:/config
+    restart: "no"
+```
 
-   You’ll see output such as:
+### Nix Flake
 
-   ```
-   ✓ system config already up to date
-   ✅ jellarr apply complete
-   ```
-
-   or
-
-   ```
-   → updating system config
-   ✓ updated system config
-   ✅ jellarr apply complete
-   ```
-
----
-
-## ❄️ Using via Nix Flake
-
-> ⚠️ **Important:** Make sure `JELLARR_API_KEY` is provided (e.g., via an
-> environment variable, SOPS template, or systemd environment file). See
-> [🔐 Secret Management (API Key)](#-secret-management-api-key) below for secure
-> options.
-
-You can consume **Jellarr** directly from its flake:
+Add to your `flake.nix`:
 
 ```nix
 {
-  inputs.jellarr.url = "github:venkyr77/jellarr";
+  inputs.jellarr.url = "github:venkyr77/jellarr/v0.0.1";
 
   outputs = { self, nixpkgs, jellarr, ... }: {
     nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
       modules = [
         jellarr.nixosModules.default
-        ({ config, pkgs, ... }: {
+        ({ config, ... }: {
           services.jellarr = {
             enable = true;
             user = "jellyfin";
             group = "jellyfin";
+            environmentFile = config.sops.templates.jellarr-env.path;
             config = {
               base_url = "http://localhost:8096";
+              system.enableMetrics = true;
             };
           };
         })
@@ -104,176 +131,254 @@ You can consume **Jellarr** directly from its flake:
 }
 ```
 
-Or run it directly:
+Or run directly:
 
 ```bash
-JELLARR_API_KEY=your_api_key nix run github:venkyr77/jellarr -- --configFile ./config.yml
+JELLARR_API_KEY=your_api_key nix run github:venkyr77/jellarr/v0.0.1
+```
+
+### Binary Download
+
+Download from [releases](https://github.com/venkyr77/jellarr/releases):
+
+```bash
+curl -LO https://github.com/venkyr77/jellarr/releases/download/v0.0.1/jellarr-v0.0.1
+chmod +x jellarr-v0.0.1
+JELLARR_API_KEY=your_api_key ./jellarr-v0.0.1
+```
+
+**Note:** Requires Node.js 24+ installed on your system.
+
+---
+
+## Configuration
+
+Jellarr uses a YAML configuration file (default: `config/config.yml`).
+
+### System Configuration
+
+```yaml
+system:
+  enableMetrics: true # Enable Prometheus metrics endpoint
+  pluginRepositories:
+    - name: "Jellyfin Official"
+      url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
+      enabled: true
+  trickplayOptions:
+    enableHwAcceleration: true
+    enableHwEncoding: true
+```
+
+### Encoding Configuration
+
+```yaml
+encoding:
+  enableHardwareEncoding: true
+  hardwareAccelerationType: "vaapi" # vaapi, qsv, nvenc, amf, v4l2m2m
+  vaapiDevice: "/dev/dri/renderD128"
+  hardwareDecodingCodecs:
+    - h264
+    - hevc
+    - vp9
+    - av1
+  enableDecodingColorDepth10Hevc: true
+  allowHevcEncoding: false
+  allowAv1Encoding: false
+```
+
+### Library Configuration
+
+```yaml
+library:
+  - name: "Movies"
+    type: "movies"
+    paths:
+      - "/data/movies"
+    preferredMetadataLanguage: "en"
+    preferredImageLanguage: "en"
 ```
 
 ---
 
-## 🔐 Secret Management (API Key)
+## Secret Management
 
-You can securely provide the `JELLARR_API_KEY` using **sops-nix**.
-
-### Option 1: Using sops-nix environmentFile (recommended)
+### With sops-nix (Recommended)
 
 ```nix
 {
   sops = {
-    secrets.jellarr-api-key.sopsFile = "path to jellyfin api key environment file";
-
-    templates.jellarr-ev = {
+    secrets.jellarr-api-key.sopsFile = ./secrets/jellarr.env;
+    templates.jellarr-env = {
       content = ''
         JELLARR_API_KEY=${config.sops.placeholder.jellarr-api-key}
       '';
-      inherit (config.services.jellarr) group;
       owner = config.services.jellarr.user;
+      group = config.services.jellarr.group;
     };
   };
 
   services.jellarr = {
     enable = true;
-    user = "jellyfin";
-    group = "jellyfin";
-    config.base_url = "http://localhost:8096";
-    environmentFile = config.sops.templates.jellarr-ev.path;
+    environmentFile = config.sops.templates.jellarr-env.path;
+    config = { /* ... */ };
   };
 }
 ```
 
-This setup:
-
-- Stores your API key in an encrypted file managed by **sops**.
-- Renders a secure environment file owned by the Jellarr service user.
-- Keeps your API key out of your Git history.
-
-### Option 2: Inline systemd Environment (simple, less secure)
-
-If you’re testing locally and prefer not to use sops yet:
-
-```nix
-{
-  services.jellarr = {
-    enable = true;
-    user = "jellyfin";
-    group = "jellyfin";
-    config.base_url = "http://localhost:8096";
-  };
-
-  systemd.services.jellarr.environment = {
-    JELLARR_API_KEY = "paste-your-api-key-here";
-  };
-}
-```
-
-⚠️ Avoid committing plaintext secrets — prefer sops for production use.
-
----
-
-### CLI Flag
-
-If you need to point Jellarr to a different config file; for example
-`/etc/jellarr/config.yml`:
+### With Environment Variable
 
 ```bash
-JELLARR_API_KEY=your_api_key nix run .# -- --configFile /etc/jellarr/config.yml
+export JELLARR_API_KEY=your_api_key
+jellarr
+```
+
+### With Docker
+
+```bash
+docker run -e JELLARR_API_KEY=your_api_key \
+  -v ./config:/config:ro \
+  ghcr.io/venkyr77/jellarr:v0.0.1
 ```
 
 ---
 
-## 🧠 Design
+## Real-World Example
 
-- **TypeScript architecture:** Pipeline pattern with strict Zod validation
-- **OpenAPI integration:** Generated types from Jellyfin's OpenAPI specification
-- **Declarative config:** YAML → Zod validation → Jellyfin API
-- **Idempotent apply:** Compares current and desired state before updating
+Production configuration with Intel GPU hardware acceleration:
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+
+system:
+  enableMetrics: true
+  pluginRepositories:
+    - name: "Jellyfin Official"
+      url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
+      enabled: true
+  trickplayOptions:
+    enableHwAcceleration: true
+    enableHwEncoding: true
+
+encoding:
+  enableHardwareEncoding: true
+  hardwareAccelerationType: "vaapi"
+  vaapiDevice: "/dev/dri/renderD128"
+  hardwareDecodingCodecs:
+    - h264
+    - hevc
+    - mpeg2video
+    - vc1
+    - vp8
+    - vp9
+    - av1
+  enableDecodingColorDepth10Hevc: true
+  enableDecodingColorDepth10HevcRext: true
+  enableDecodingColorDepth12HevcRext: true
+  enableDecodingColorDepth10Vp9: true
+  allowHevcEncoding: false
+  allowAv1Encoding: false
+
+library:
+  - name: "Movies"
+    type: "movies"
+    paths:
+      - "/mnt/media/movies"
+  - name: "TV Shows"
+    type: "tvshows"
+    paths:
+      - "/mnt/media/tv"
+```
+
+---
+
+## Architecture
+
+**Jellarr** is built in TypeScript with a strict pipeline pattern:
+
+1. **CLI** (`src/cli/index.ts`) - Commander.js entry point
+2. **Pipeline** (`src/pipeline/index.ts`) - Main orchestration:
+   - Reads YAML config file
+   - Validates with strict Zod schemas
+   - Creates authenticated Jellyfin API client
+   - Fetches current server configuration
+   - Applies ONLY specified changes idempotently
+3. **Apply Modules** (`src/apply/`) - Handle configuration updates per feature:
+   - `calculateDiff()` - Pure calculation, returns schema or undefined
+   - `apply()` - Side effects, calls Jellyfin API
+
+**Key Design Principles:**
+
 - **Selective updates:** Only modifies explicitly configured fields
-- **Extensible:** Support for plugin repositories and trickplay options
+- **Idempotent:** Safe to run multiple times
+- **Type-safe:** OpenAPI-generated types + Zod validation
+- **Calculate/Apply pattern:** Separation of pure logic from side effects
+- **215 tests:** Comprehensive test coverage
 
 ---
 
-## 🧪 Development
-
-Run tests locally:
+## Development
 
 ```bash
-pnpm test        # 42 tests with Vitest
+pnpm test        # 215 tests with Vitest
 pnpm typecheck   # TypeScript validation
 pnpm eslint      # Code linting
+pnpm build       # Build with esbuild
 
-# or via nix
-nix flake check --all-systems
+# Full validation pipeline
+npm run build && tsc --noEmit && pnpm eslint && pnpm test && nix fmt
 ```
 
-Format code:
+### Nix Development
 
 ```bash
-nix fmt
-```
-
-Full build validation:
-
-```bash
-rm -rf node_modules ./result
-nix-collect-garbage -d
-pnpm install && pnpm build && pnpm eslint && pnpm test
-nix fmt && git add -A
-# Update Nix hash if dependencies changed
-nix build .#
+nix build .#default      # Build CLI package
+nix build .#docker-image # Build Docker image
+nix flake check          # Run checks
+nix fmt                  # Format Nix files
 ```
 
 ---
 
-## 🎯 Current Features
+## Comparison: Jellarr vs declarative-jellyfin
 
-**System Configuration:**
+| Feature            | Jellarr                         | declarative-jellyfin        |
+| ------------------ | ------------------------------- | --------------------------- |
+| **Method**         | Official REST API               | Direct XML/DB manipulation  |
+| **Service Impact** | Zero (never stops Jellyfin)     | Stops/starts multiple times |
+| **Platform**       | Cross-platform (Docker, any OS) | NixOS-only                  |
+| **Dependencies**   | Node.js 24+                     | systemd, specific paths     |
+| **Safety**         | API validates all changes       | Direct file/DB writes       |
+| **Future-proof**   | API contract stability          | Breaks on internal changes  |
+| **Type Safety**    | TypeScript + Zod + OpenAPI      | Bash scripts                |
+| **Testing**        | 215 automated tests             | Manual                      |
 
-- ✅ **Metrics**: Enable/disable Prometheus metrics endpoint (`/metrics`)
-- ✅ **Plugin Repositories**: Manage plugin sources with name, URL, and enabled
-  status
-- ✅ **Trickplay Options**: Configure hardware acceleration and encoding for
-  trickplay generation
+**declarative-jellyfin's approach:**
 
-**Encoding Configuration:**
+- Writes `~/.config/jellyfin/encoding.xml` directly
+- Manipulates SQLite database with hardcoded schema
+- Reimplements Jellyfin's UUID algorithm in bash
+- Requires stopping Jellyfin service during configuration
+- [Known issues with timing/conflicts](https://github.com/Sveske-Juice/declarative-jellyfin/issues/13)
 
-- ✅ **Hardware Encoding**: Enable/disable hardware-accelerated encoding for
-  transcoding operations
+**Jellarr's approach:**
 
-**Architecture:**
-
-- ✅ **Strict Validation**: Zod schemas prevent invalid configurations
-- ✅ **Selective Updates**: Only modifies explicitly specified fields
-- ✅ **Type Safety**: Full TypeScript with generated Jellyfin API types
-- ✅ **Integration Testing**: Comprehensive test suite (it1-it9) validating core
-  behavior
-
-## 🗺️ Roadmap
-
-**High Priority:**
-
-- [x] **Encoding Configuration**: Basic transcoding settings
-      (enableHardwareEncoding)
-- [x] **Deep Equality Checking**: Replaced JSON.stringify with fast-equals
-      library
-- [ ] **Structured Error Handling**: Better error types and API response details
-
-**Medium Priority:**
-
-- [ ] **Libraries Configuration**: Create, update, and delete media libraries
-- [ ] **Users & Authentication**: User management and access control settings
-- [ ] **Playback Configuration**: Default audio/subtitle languages, quality
-      settings
-
-**Future Features:**
-
-- [ ] **Plugin Configuration**: Install and configure specific plugins
-- [ ] **Network & Security**: HTTPS, remote access, and security policies
-- [ ] **Notification Settings**: Configure webhooks and notification providers
-- [ ] **Release Automation**: CI/CD pipeline and Docker image
+- Uses `/System/Configuration` and similar API endpoints
+- Never touches internal files or databases
+- Jellyfin validates all changes
+- Zero service interruption
+- Works on any platform where Jellyfin runs
 
 ---
 
-**License:** [GNU AGPL-3.0 License](https://www.gnu.org/licenses/agpl-3.0.html)
+## Contributing
+
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+## License
+
+[GNU AGPL-3.0 License](https://www.gnu.org/licenses/agpl-3.0.html)
 
 © 2025 Jellarr contributors
