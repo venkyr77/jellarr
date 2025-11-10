@@ -364,16 +364,16 @@ nix fmt                  # Format project files
 
 ## Comparison: Jellarr vs declarative-jellyfin
 
-| Feature            | Jellarr                         | declarative-jellyfin        |
-| ------------------ | ------------------------------- | --------------------------- |
-| **Method**         | Official REST API               | Direct XML/DB manipulation  |
-| **Service Impact** | Zero (never stops Jellyfin)     | Stops/starts multiple times |
-| **Platform**       | Cross-platform (Docker, any OS) | NixOS-only                  |
-| **Dependencies**   | Node.js 24+                     | systemd, specific paths     |
-| **Safety**         | API validates all changes       | Direct file/DB writes       |
-| **Future-proof**   | API contract stability          | Breaks on internal changes  |
-| **Type Safety**    | TypeScript + Zod + OpenAPI      | Bash scripts                |
-| **Testing**        | Comprehensive unit tests        | Complex NixOS VM tests      |
+| Feature            | Jellarr                         | declarative-jellyfin                           |
+| ------------------ | ------------------------------- | ---------------------------------------------- |
+| **Method**         | Official REST API               | Direct XML/DB manipulation                     |
+| **Service Impact** | Zero (never stops Jellyfin)     | Stops/starts multiple times                    |
+| **Platform**       | Cross-platform (Docker, any OS) | NixOS-only                                     |
+| **Dependencies**   | Node.js 24+                     | systemd, sqlite, jellyfin running on same host |
+| **Safety**         | API validates all changes       | Direct file/DB writes                          |
+| **Future-proof**   | API contract stability          | Breaks on internal changes                     |
+| **Type Safety**    | TypeScript + Zod + OpenAPI      | Bash scripts                                   |
+| **Testing**        | Comprehensive unit tests        | Complex NixOS VM tests                         |
 
 **declarative-jellyfin's approach:**
 
