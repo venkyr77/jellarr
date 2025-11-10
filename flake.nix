@@ -40,9 +40,27 @@
 
         formatter = (treefmt-nix.lib.evalModule pkgs ./treefmt.nix).config.build.wrapper;
 
-        packages.default = import ./nix/package.nix {
-          inherit pkgs;
-          inherit (pkgs) lib;
+        packages = {
+          default = import ./nix/package.nix {
+            inherit pkgs;
+            inherit (pkgs) lib;
+          };
+
+          docker = pkgs.dockerTools.buildLayeredImage {
+            name = "jellarr";
+            tag = "latest";
+
+            contents = [
+              pkgs.coreutils
+              pkgs.nodejs_24
+              config.packages.default
+            ];
+
+            config = {
+              Cmd = ["${pkgs.lib.getExe config.packages.default}"];
+              Env = ["NODE_ENV=production"];
+            };
+          };
         };
       };
     };

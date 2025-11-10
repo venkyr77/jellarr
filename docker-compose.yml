@@ -1,0 +1,10 @@
+services:
+  jellarr:
+    image: ghcr.io/venkyr77/jellarr:latest
+    container_name: jellarr
+    environment:
+      - JELLARR_API_KEY=${JELLARR_API_KEY}
+      - TZ=Etc/UTC
+    volumes:
+      - ./config:/config
+    restart: "no"
