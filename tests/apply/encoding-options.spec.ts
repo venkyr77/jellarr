@@ -52,7 +52,11 @@
  * - ✅ All 11 fields complete scenario
  */
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { applyEncoding } from "../../src/apply/encoding-options";
+import {
+  calculateEncodingDiff,
+  applyEncoding,
+} from "../../src/apply/encoding-options";
+import type { JellyfinClient } from "../../src/api/jellyfin.types";
 import { type EncodingOptionsConfig } from "../../src/types/config/encoding-options";
 import { type EncodingOptionsSchema } from "../../src/types/schema/encoding-options";
 import * as loggerModule from "../../src/lib/logger";
@@ -71,7 +75,7 @@ describe("apply/encoding", () => {
     vi.clearAllMocks();
   });
 
-  describe("applyEncoding", () => {
+  describe("calculateEncodingDiff", () => {
     it("should update EnableHardwareEncoding when enableHardwareEncoding changes from false to true", () => {
       // Arrange
       const current: EncodingOptionsSchema = {
@@ -85,12 +89,15 @@ describe("apply/encoding", () => {
       };
 
       // Act
-      const result: EncodingOptionsSchema = applyEncoding(current, desired);
+      const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+        current,
+        desired,
+      );
 
       // Assert
-      expect(result.EnableHardwareEncoding).toBe(true);
-      expect(result.EncodingThreadCount).toBe(-1); // Should preserve other fields
-      expect(result.TranscodingTempPath).toBe("/tmp"); // Should preserve other fields
+      expect(result?.EnableHardwareEncoding).toBe(true);
+      expect(result?.EncodingThreadCount).toBe(-1); // Should preserve other fields
+      expect(result?.TranscodingTempPath).toBe("/tmp"); // Should preserve other fields
     });
 
     it("should update EnableHardwareEncoding when enableHardwareEncoding changes from true to false", () => {
@@ -105,11 +112,14 @@ describe("apply/encoding", () => {
       };
 
       // Act
-      const result: EncodingOptionsSchema = applyEncoding(current, desired);
+      const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+        current,
+        desired,
+      );
 
       // Assert
-      expect(result.EnableHardwareEncoding).toBe(false);
-      expect(result.EncodingThreadCount).toBe(4); // Should preserve other fields
+      expect(result?.EnableHardwareEncoding).toBe(false);
+      expect(result?.EncodingThreadCount).toBe(4); // Should preserve other fields
     });
 
     it("should not modify EnableHardwareEncoding when enableHardwareEncoding is undefined", () => {
@@ -122,11 +132,13 @@ describe("apply/encoding", () => {
       const desired: EncodingOptionsConfig = {};
 
       // Act
-      const result: EncodingOptionsSchema = applyEncoding(current, desired);
+      const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+        current,
+        desired,
+      );
 
       // Assert
-      expect(result.EnableHardwareEncoding).toBe(true); // Should remain unchanged
-      expect(result.EncodingThreadCount).toBe(2); // Should preserve other fields
+      expect(result).toBeUndefined();
     });
 
     it("should not modify EnableHardwareEncoding when value is the same", () => {
@@ -141,11 +153,13 @@ describe("apply/encoding", () => {
       };
 
       // Act
-      const result: EncodingOptionsSchema = applyEncoding(current, desired);
+      const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+        current,
+        desired,
+      );
 
       // Assert
-      expect(result.EnableHardwareEncoding).toBe(true);
-      expect(result.EncodingThreadCount).toBe(1); // Should preserve other fields
+      expect(result).toBeUndefined();
     });
 
     it("should log when EnableHardwareEncoding changes", () => {
@@ -164,7 +178,7 @@ describe("apply/encoding", () => {
       );
 
       // Act
-      applyEncoding(current, desired);
+      calculateEncodingDiff(current, desired);
 
       // Assert
       expect(loggerSpy).toHaveBeenCalledWith(
@@ -188,7 +202,7 @@ describe("apply/encoding", () => {
       );
 
       // Act
-      applyEncoding(current, desired);
+      calculateEncodingDiff(current, desired);
 
       // Assert
       expect(loggerSpy).not.toHaveBeenCalled();
@@ -208,7 +222,7 @@ describe("apply/encoding", () => {
       );
 
       // Act
-      applyEncoding(current, desired);
+      calculateEncodingDiff(current, desired);
 
       // Assert
       expect(loggerSpy).not.toHaveBeenCalled();
@@ -252,11 +266,14 @@ describe("apply/encoding", () => {
         };
 
         // Act
-        const result: EncodingOptionsSchema = applyEncoding(current, desired);
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
 
         // Assert
-        expect(result.HardwareAccelerationType).toBe(expectedValue);
-        expect(result.EncodingThreadCount).toBe(-1); // Should preserve other fields
+        expect(result?.HardwareAccelerationType).toBe(expectedValue);
+        expect(result?.EncodingThreadCount).toBe(-1); // Should preserve other fields
       });
     });
 
@@ -270,11 +287,13 @@ describe("apply/encoding", () => {
       const desired: EncodingOptionsConfig = {};
 
       // Act
-      const result: EncodingOptionsSchema = applyEncoding(current, desired);
+      const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+        current,
+        desired,
+      );
 
       // Assert
-      expect(result.HardwareAccelerationType).toBe("nvenc"); // Should remain unchanged
-      expect(result.EncodingThreadCount).toBe(2); // Should preserve other fields
+      expect(result).toBeUndefined();
     });
 
     it("should not modify HardwareAccelerationType when value is the same", () => {
@@ -303,11 +322,13 @@ describe("apply/encoding", () => {
         };
 
         // Act
-        const result: EncodingOptionsSchema = applyEncoding(current, desired);
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
 
         // Assert
-        expect(result.HardwareAccelerationType).toBe(value);
-        expect(result.EncodingThreadCount).toBe(1); // Should preserve other fields
+        expect(result).toBeUndefined();
       });
     });
 
@@ -327,7 +348,7 @@ describe("apply/encoding", () => {
       );
 
       // Act
-      applyEncoding(current, desired);
+      calculateEncodingDiff(current, desired);
 
       // Assert
       expect(loggerSpy).toHaveBeenCalledWith(
@@ -351,7 +372,7 @@ describe("apply/encoding", () => {
       );
 
       // Act
-      applyEncoding(current, desired);
+      calculateEncodingDiff(current, desired);
 
       // Assert
       expect(loggerSpy).toHaveBeenCalledWith(
@@ -375,7 +396,7 @@ describe("apply/encoding", () => {
       );
 
       // Act
-      applyEncoding(current, desired);
+      calculateEncodingDiff(current, desired);
 
       // Assert
       expect(loggerSpy).not.toHaveBeenCalled();
@@ -395,7 +416,7 @@ describe("apply/encoding", () => {
       );
 
       // Act
-      applyEncoding(current, desired);
+      calculateEncodingDiff(current, desired);
 
       // Assert
       expect(loggerSpy).not.toHaveBeenCalled();
@@ -420,12 +441,15 @@ describe("apply/encoding", () => {
       );
 
       // Act
-      const result: EncodingOptionsSchema = applyEncoding(current, desired);
+      const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+        current,
+        desired,
+      );
 
       // Assert
-      expect(result.EnableHardwareEncoding).toBe(true);
-      expect(result.HardwareAccelerationType).toBe("nvenc");
-      expect(result.EncodingThreadCount).toBe(4); // Should preserve other fields
+      expect(result?.EnableHardwareEncoding).toBe(true);
+      expect(result?.HardwareAccelerationType).toBe("nvenc");
+      expect(result?.EncodingThreadCount).toBe(4); // Should preserve other fields
 
       // Should log both changes
       expect(loggerSpy).toHaveBeenCalledWith(
@@ -455,11 +479,14 @@ describe("apply/encoding", () => {
       );
 
       // Act
-      const result: EncodingOptionsSchema = applyEncoding(current, desired);
+      const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+        current,
+        desired,
+      );
 
       // Assert
-      expect(result.EnableHardwareEncoding).toBe(true);
-      expect(result.HardwareAccelerationType).toBe("videotoolbox");
+      expect(result?.EnableHardwareEncoding).toBe(true);
+      expect(result?.HardwareAccelerationType).toBe("videotoolbox");
 
       // Should only log the change
       expect(loggerSpy).toHaveBeenCalledWith(
@@ -511,11 +538,12 @@ describe("apply/encoding", () => {
           };
 
           // Act
-          const result: EncodingOptionsSchema = applyEncoding(current, desired);
+          const result: EncodingOptionsSchema | undefined =
+            calculateEncodingDiff(current, desired);
 
           // Assert
-          expect(result.VaapiDevice).toBe(expectedValue);
-          expect(result.EncodingThreadCount).toBe(2); // Should preserve other fields
+          expect(result?.VaapiDevice).toBe(expectedValue);
+          expect(result?.EncodingThreadCount).toBe(2); // Should preserve other fields
         });
       });
 
@@ -560,11 +588,12 @@ describe("apply/encoding", () => {
           };
 
           // Act
-          const result: EncodingOptionsSchema = applyEncoding(current, desired);
+          const result: EncodingOptionsSchema | undefined =
+            calculateEncodingDiff(current, desired);
 
           // Assert
-          expect(result.QsvDevice).toBe(expectedValue);
-          expect(result.EncodingThreadCount).toBe(3); // Should preserve other fields
+          expect(result?.QsvDevice).toBe(expectedValue);
+          expect(result?.EncodingThreadCount).toBe(3); // Should preserve other fields
         });
       });
 
@@ -579,12 +608,13 @@ describe("apply/encoding", () => {
         const desired: EncodingOptionsConfig = {};
 
         // Act
-        const result: EncodingOptionsSchema = applyEncoding(current, desired);
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
 
         // Assert
-        expect(result.VaapiDevice).toBe("/dev/dri/renderD128");
-        expect(result.QsvDevice).toBe("/dev/dri/card1");
-        expect(result.EncodingThreadCount).toBe(1);
+        expect(result).toBeUndefined();
       });
 
       it("should not modify device fields when values are the same", () => {
@@ -601,12 +631,13 @@ describe("apply/encoding", () => {
         };
 
         // Act
-        const result: EncodingOptionsSchema = applyEncoding(current, desired);
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
 
         // Assert
-        expect(result.VaapiDevice).toBe("/dev/dri/renderD128");
-        expect(result.QsvDevice).toBe("");
-        expect(result.EncodingThreadCount).toBe(4);
+        expect(result).toBeUndefined();
       });
 
       it("should log when VaapiDevice changes", () => {
@@ -625,7 +656,7 @@ describe("apply/encoding", () => {
         );
 
         // Act
-        applyEncoding(current, desired);
+        calculateEncodingDiff(current, desired);
 
         // Assert
         expect(loggerSpy).toHaveBeenCalledWith(
@@ -649,7 +680,7 @@ describe("apply/encoding", () => {
         );
 
         // Act
-        applyEncoding(current, desired);
+        calculateEncodingDiff(current, desired);
 
         // Assert
         expect(loggerSpy).toHaveBeenCalledWith(
@@ -717,11 +748,12 @@ describe("apply/encoding", () => {
           };
 
           // Act
-          const result: EncodingOptionsSchema = applyEncoding(current, desired);
+          const result: EncodingOptionsSchema | undefined =
+            calculateEncodingDiff(current, desired);
 
           // Assert
-          expect(result.HardwareDecodingCodecs).toEqual(expectedValue);
-          expect(result.EncodingThreadCount).toBe(2); // Should preserve other fields
+          expect(result?.HardwareDecodingCodecs).toEqual(expectedValue);
+          expect(result?.EncodingThreadCount).toBe(2); // Should preserve other fields
         });
       });
 
@@ -735,11 +767,13 @@ describe("apply/encoding", () => {
         const desired: EncodingOptionsConfig = {};
 
         // Act
-        const result: EncodingOptionsSchema = applyEncoding(current, desired);
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
 
         // Assert
-        expect(result.HardwareDecodingCodecs).toEqual(["h264", "hevc"]);
-        expect(result.EncodingThreadCount).toBe(1);
+        expect(result).toBeUndefined();
       });
 
       it("should not modify HardwareDecodingCodecs when array is the same", () => {
@@ -754,11 +788,13 @@ describe("apply/encoding", () => {
         };
 
         // Act
-        const result: EncodingOptionsSchema = applyEncoding(current, desired);
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
 
         // Assert
-        expect(result.HardwareDecodingCodecs).toEqual(["h264", "hevc", "vp9"]);
-        expect(result.EncodingThreadCount).toBe(4);
+        expect(result).toBeUndefined();
       });
 
       it("should log when HardwareDecodingCodecs changes", () => {
@@ -777,7 +813,7 @@ describe("apply/encoding", () => {
         );
 
         // Act
-        applyEncoding(current, desired);
+        calculateEncodingDiff(current, desired);
 
         // Assert
         expect(loggerSpy).toHaveBeenCalledWith(
@@ -811,14 +847,12 @@ describe("apply/encoding", () => {
             };
 
             // Act
-            const result: EncodingOptionsSchema = applyEncoding(
-              current,
-              desired,
-            );
+            const result: EncodingOptionsSchema | undefined =
+              calculateEncodingDiff(current, desired);
 
             // Assert
-            expect(result.EnableDecodingColorDepth10Hevc).toBe(desiredValue);
-            expect(result.EncodingThreadCount).toBe(2);
+            expect(result?.EnableDecodingColorDepth10Hevc).toBe(desiredValue);
+            expect(result?.EncodingThreadCount).toBe(2);
           });
         });
 
@@ -832,11 +866,11 @@ describe("apply/encoding", () => {
           const desired: EncodingOptionsConfig = {};
 
           // Act
-          const result: EncodingOptionsSchema = applyEncoding(current, desired);
+          const result: EncodingOptionsSchema | undefined =
+            calculateEncodingDiff(current, desired);
 
           // Assert
-          expect(result.EnableDecodingColorDepth10Hevc).toBe(true);
-          expect(result.EncodingThreadCount).toBe(1);
+          expect(result).toBeUndefined();
         });
 
         it("should log when EnableDecodingColorDepth10Hevc changes", () => {
@@ -855,7 +889,7 @@ describe("apply/encoding", () => {
           );
 
           // Act
-          applyEncoding(current, desired);
+          calculateEncodingDiff(current, desired);
 
           // Assert
           expect(loggerSpy).toHaveBeenCalledWith(
@@ -887,14 +921,12 @@ describe("apply/encoding", () => {
             };
 
             // Act
-            const result: EncodingOptionsSchema = applyEncoding(
-              current,
-              desired,
-            );
+            const result: EncodingOptionsSchema | undefined =
+              calculateEncodingDiff(current, desired);
 
             // Assert
-            expect(result.EnableDecodingColorDepth10Vp9).toBe(desiredValue);
-            expect(result.EncodingThreadCount).toBe(3);
+            expect(result?.EnableDecodingColorDepth10Vp9).toBe(desiredValue);
+            expect(result?.EncodingThreadCount).toBe(3);
           });
         });
 
@@ -914,7 +946,7 @@ describe("apply/encoding", () => {
           );
 
           // Act
-          applyEncoding(current, desired);
+          calculateEncodingDiff(current, desired);
 
           // Assert
           expect(loggerSpy).toHaveBeenCalledWith(
@@ -946,16 +978,14 @@ describe("apply/encoding", () => {
             };
 
             // Act
-            const result: EncodingOptionsSchema = applyEncoding(
-              current,
-              desired,
-            );
+            const result: EncodingOptionsSchema | undefined =
+              calculateEncodingDiff(current, desired);
 
             // Assert
-            expect(result.EnableDecodingColorDepth10HevcRext).toBe(
+            expect(result?.EnableDecodingColorDepth10HevcRext).toBe(
               desiredValue,
             );
-            expect(result.EncodingThreadCount).toBe(4);
+            expect(result?.EncodingThreadCount).toBe(4);
           });
         });
 
@@ -975,7 +1005,7 @@ describe("apply/encoding", () => {
           );
 
           // Act
-          applyEncoding(current, desired);
+          calculateEncodingDiff(current, desired);
 
           // Assert
           expect(loggerSpy).toHaveBeenCalledWith(
@@ -1007,16 +1037,14 @@ describe("apply/encoding", () => {
             };
 
             // Act
-            const result: EncodingOptionsSchema = applyEncoding(
-              current,
-              desired,
-            );
+            const result: EncodingOptionsSchema | undefined =
+              calculateEncodingDiff(current, desired);
 
             // Assert
-            expect(result.EnableDecodingColorDepth12HevcRext).toBe(
+            expect(result?.EnableDecodingColorDepth12HevcRext).toBe(
               desiredValue,
             );
-            expect(result.EncodingThreadCount).toBe(5);
+            expect(result?.EncodingThreadCount).toBe(5);
           });
         });
 
@@ -1036,7 +1064,7 @@ describe("apply/encoding", () => {
           );
 
           // Act
-          applyEncoding(current, desired);
+          calculateEncodingDiff(current, desired);
 
           // Assert
           expect(loggerSpy).toHaveBeenCalledWith(
@@ -1071,14 +1099,12 @@ describe("apply/encoding", () => {
             };
 
             // Act
-            const result: EncodingOptionsSchema = applyEncoding(
-              current,
-              desired,
-            );
+            const result: EncodingOptionsSchema | undefined =
+              calculateEncodingDiff(current, desired);
 
             // Assert
-            expect(result.AllowHevcEncoding).toBe(desiredValue);
-            expect(result.EncodingThreadCount).toBe(6);
+            expect(result?.AllowHevcEncoding).toBe(desiredValue);
+            expect(result?.EncodingThreadCount).toBe(6);
           });
         });
 
@@ -1092,11 +1118,11 @@ describe("apply/encoding", () => {
           const desired: EncodingOptionsConfig = {};
 
           // Act
-          const result: EncodingOptionsSchema = applyEncoding(current, desired);
+          const result: EncodingOptionsSchema | undefined =
+            calculateEncodingDiff(current, desired);
 
           // Assert
-          expect(result.AllowHevcEncoding).toBe(false);
-          expect(result.EncodingThreadCount).toBe(1);
+          expect(result).toBeUndefined();
         });
 
         it("should log when AllowHevcEncoding changes", () => {
@@ -1115,7 +1141,7 @@ describe("apply/encoding", () => {
           );
 
           // Act
-          applyEncoding(current, desired);
+          calculateEncodingDiff(current, desired);
 
           // Assert
           expect(loggerSpy).toHaveBeenCalledWith(
@@ -1147,14 +1173,12 @@ describe("apply/encoding", () => {
             };
 
             // Act
-            const result: EncodingOptionsSchema = applyEncoding(
-              current,
-              desired,
-            );
+            const result: EncodingOptionsSchema | undefined =
+              calculateEncodingDiff(current, desired);
 
             // Assert
-            expect(result.AllowAv1Encoding).toBe(desiredValue);
-            expect(result.EncodingThreadCount).toBe(7);
+            expect(result?.AllowAv1Encoding).toBe(desiredValue);
+            expect(result?.EncodingThreadCount).toBe(7);
           });
         });
 
@@ -1168,11 +1192,11 @@ describe("apply/encoding", () => {
           const desired: EncodingOptionsConfig = {};
 
           // Act
-          const result: EncodingOptionsSchema = applyEncoding(current, desired);
+          const result: EncodingOptionsSchema | undefined =
+            calculateEncodingDiff(current, desired);
 
           // Assert
-          expect(result.AllowAv1Encoding).toBe(true);
-          expect(result.EncodingThreadCount).toBe(1);
+          expect(result).toBeUndefined();
         });
 
         it("should log when AllowAv1Encoding changes", () => {
@@ -1191,7 +1215,7 @@ describe("apply/encoding", () => {
           );
 
           // Act
-          applyEncoding(current, desired);
+          calculateEncodingDiff(current, desired);
 
           // Assert
           expect(loggerSpy).toHaveBeenCalledWith(
@@ -1239,26 +1263,29 @@ describe("apply/encoding", () => {
       );
 
       // Act
-      const result: EncodingOptionsSchema = applyEncoding(current, desired);
+      const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+        current,
+        desired,
+      );
 
       // Assert - All fields updated correctly
-      expect(result.EnableHardwareEncoding).toBe(true);
-      expect(result.HardwareAccelerationType).toBe("vaapi");
-      expect(result.VaapiDevice).toBe("/dev/dri/renderD128");
-      expect(result.QsvDevice).toBe("");
-      expect(result.HardwareDecodingCodecs).toEqual([
+      expect(result?.EnableHardwareEncoding).toBe(true);
+      expect(result?.HardwareAccelerationType).toBe("vaapi");
+      expect(result?.VaapiDevice).toBe("/dev/dri/renderD128");
+      expect(result?.QsvDevice).toBe("");
+      expect(result?.HardwareDecodingCodecs).toEqual([
         "h264",
         "hevc",
         "vp9",
         "av1",
       ]);
-      expect(result.EnableDecodingColorDepth10Hevc).toBe(true);
-      expect(result.EnableDecodingColorDepth10Vp9).toBe(false);
-      expect(result.EnableDecodingColorDepth10HevcRext).toBe(true);
-      expect(result.EnableDecodingColorDepth12HevcRext).toBe(false);
-      expect(result.AllowHevcEncoding).toBe(false);
-      expect(result.AllowAv1Encoding).toBe(false);
-      expect(result.EncodingThreadCount).toBe(8); // Should preserve other fields
+      expect(result?.EnableDecodingColorDepth10Hevc).toBe(true);
+      expect(result?.EnableDecodingColorDepth10Vp9).toBe(false);
+      expect(result?.EnableDecodingColorDepth10HevcRext).toBe(true);
+      expect(result?.EnableDecodingColorDepth12HevcRext).toBe(false);
+      expect(result?.AllowHevcEncoding).toBe(false);
+      expect(result?.AllowAv1Encoding).toBe(false);
+      expect(result?.EncodingThreadCount).toBe(8); // Should preserve other fields
 
       // Should log changes for fields that actually changed
       expect(loggerSpy).toHaveBeenCalledWith(
@@ -1299,6 +1326,37 @@ describe("apply/encoding", () => {
 
       // Total calls should be 6 (only the fields that actually changed)
       expect(loggerSpy).toHaveBeenCalledTimes(6);
+    });
+  });
+
+  describe("applyEncoding", () => {
+    let mockClient: JellyfinClient;
+    let updateSpy: Mock;
+
+    beforeEach(() => {
+      updateSpy = vi.fn();
+      mockClient = {
+        updateEncodingConfiguration: updateSpy,
+      } as unknown as JellyfinClient;
+    });
+
+    it("should do nothing when schema is undefined", async () => {
+      await applyEncoding(mockClient, undefined);
+      expect(updateSpy).not.toHaveBeenCalled();
+    });
+
+    it("should call client.updateEncodingConfiguration with schema", async () => {
+      const schema: EncodingOptionsSchema = {
+        EnableHardwareEncoding: true,
+        HardwareAccelerationType: "nvenc",
+      } as EncodingOptionsSchema;
+
+      updateSpy.mockResolvedValue(undefined);
+
+      await applyEncoding(mockClient, schema);
+
+      expect(updateSpy).toHaveBeenCalledTimes(1);
+      expect(updateSpy).toHaveBeenCalledWith(schema);
     });
   });
 });

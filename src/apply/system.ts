@@ -1,5 +1,6 @@
 import { deepEqual } from "fast-equals";
 import { logger } from "../lib/logger";
+import type { JellyfinClient } from "../api/jellyfin.types";
 import {
   fromPluginRepositorySchemas,
   mapSystemConfigurationConfigToSchema,
@@ -84,12 +85,21 @@ function hasTrickplayOptionsChanged(
   return false;
 }
 
-export function applySystem(
+export function calculateSystemDiff(
   current: ServerConfigurationSchema,
   desired: SystemConfig,
-): ServerConfigurationSchema {
+): ServerConfigurationSchema | undefined {
   const patch: Partial<ServerConfigurationSchema> =
     mapSystemConfigurationConfigToSchema(desired);
+
+  const hasChanges: boolean =
+    hasEnableMetricsChanged(current, desired) ||
+    hasPluginRepositoriesChanged(current, desired) ||
+    hasTrickplayOptionsChanged(current, desired);
+
+  if (!hasChanges) {
+    return undefined;
+  }
 
   if (hasEnableMetricsChanged(current, desired)) {
     logger.info(
@@ -125,4 +135,15 @@ export function applySystem(
   }
 
   return out;
+}
+
+export async function applySystem(
+  client: JellyfinClient,
+  updatedSchema: ServerConfigurationSchema | undefined,
+): Promise<void> {
+  if (!updatedSchema) {
+    return;
+  }
+
+  await client.updateSystemConfiguration(updatedSchema);
 }

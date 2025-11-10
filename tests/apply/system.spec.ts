@@ -32,7 +32,8 @@
  * - ✅ Robust error recovery
  */
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { applySystem } from "../../src/apply/system";
+import { calculateSystemDiff, applySystem } from "../../src/apply/system";
+import type { JellyfinClient } from "../../src/api/jellyfin.types";
 import type { ServerConfigurationSchema } from "../../src/types/schema/system";
 import type { SystemConfig } from "../../src/types/config/system";
 import * as loggerModule from "../../src/lib/logger";
@@ -51,7 +52,7 @@ describe("apply/system", () => {
     vi.clearAllMocks();
   });
 
-  describe("applySystem", () => {
+  describe("calculateSystemDiff", () => {
     describe("enableMetrics (Scalar Boolean)", () => {
       it("should preserve EnableMetrics when enableMetrics is undefined (current: true)", () => {
         // Arrange
@@ -64,12 +65,11 @@ describe("apply/system", () => {
         const desired: SystemConfig = {};
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.EnableMetrics).toBe(true);
-        expect(result.PluginRepositories).toEqual([]);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result).toBeUndefined();
       });
 
       it("should preserve EnableMetrics when enableMetrics is undefined (current: false)", () => {
@@ -83,12 +83,11 @@ describe("apply/system", () => {
         const desired: SystemConfig = {};
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.PluginRepositories).toEqual([]);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result).toBeUndefined();
       });
 
       it("should update EnableMetrics when enableMetrics changes from false to true", () => {
@@ -102,12 +101,13 @@ describe("apply/system", () => {
         const desired: SystemConfig = { enableMetrics: true };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.EnableMetrics).toBe(true);
-        expect(result.PluginRepositories).toEqual([]);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result?.EnableMetrics).toBe(true);
+        expect(result?.PluginRepositories).toEqual([]);
+        expect(result?.TrickplayOptions).toBeUndefined();
       });
 
       it("should update EnableMetrics when enableMetrics changes from true to false", () => {
@@ -121,12 +121,13 @@ describe("apply/system", () => {
         const desired: SystemConfig = { enableMetrics: false };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.PluginRepositories).toEqual([]);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.PluginRepositories).toEqual([]);
+        expect(result?.TrickplayOptions).toBeUndefined();
       });
 
       it("should not modify EnableMetrics when value is the same (true → true)", () => {
@@ -140,12 +141,11 @@ describe("apply/system", () => {
         const desired: SystemConfig = { enableMetrics: true };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.EnableMetrics).toBe(true);
-        expect(result.PluginRepositories).toEqual([]);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result).toBeUndefined();
       });
 
       it("should not modify EnableMetrics when value is the same (false → false)", () => {
@@ -159,12 +159,11 @@ describe("apply/system", () => {
         const desired: SystemConfig = { enableMetrics: false };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.PluginRepositories).toEqual([]);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result).toBeUndefined();
       });
 
       it("should log when EnableMetrics changes", () => {
@@ -183,7 +182,7 @@ describe("apply/system", () => {
         );
 
         // Act
-        applySystem(current, desired);
+        calculateSystemDiff(current, desired);
 
         // Assert
         expect(loggerSpy).toHaveBeenCalledWith(
@@ -207,7 +206,7 @@ describe("apply/system", () => {
         );
 
         // Act
-        applySystem(current, desired);
+        calculateSystemDiff(current, desired);
 
         // Assert
         expect(loggerSpy).not.toHaveBeenCalled();
@@ -229,7 +228,7 @@ describe("apply/system", () => {
         );
 
         // Act
-        applySystem(current, desired);
+        calculateSystemDiff(current, desired);
 
         // Assert
         expect(loggerSpy).not.toHaveBeenCalled();
@@ -256,12 +255,11 @@ describe("apply/system", () => {
         const desired: SystemConfig = {};
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.PluginRepositories).toEqual(existingRepos);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result).toBeUndefined();
       });
 
       it("should preserve PluginRepositories when pluginRepositories is undefined (current: empty)", () => {
@@ -275,12 +273,11 @@ describe("apply/system", () => {
         const desired: SystemConfig = {};
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.PluginRepositories).toEqual([]);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result).toBeUndefined();
       });
 
       it("should replace PluginRepositories when pluginRepositories is specified (populated → different populated)", () => {
@@ -301,15 +298,16 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.PluginRepositories).toEqual([
+        expect(result?.PluginRepositories).toEqual([
           { Name: "New1", Url: "https://new1.com", Enabled: true },
           { Name: "New2", Url: "https://new2.com", Enabled: false },
         ]);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.TrickplayOptions).toBeUndefined();
       });
 
       it("should replace PluginRepositories (empty → populated)", () => {
@@ -327,14 +325,15 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.PluginRepositories).toEqual([
+        expect(result?.PluginRepositories).toEqual([
           { Name: "New", Url: "https://new.com", Enabled: true },
         ]);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.TrickplayOptions).toBeUndefined();
       });
 
       it("should replace PluginRepositories (populated → empty)", () => {
@@ -352,12 +351,13 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.PluginRepositories).toEqual([]);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result?.PluginRepositories).toEqual([]);
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.TrickplayOptions).toBeUndefined();
       });
 
       it("should not modify PluginRepositories when content is the same (empty → empty)", () => {
@@ -373,12 +373,11 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.PluginRepositories).toEqual([]);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result).toBeUndefined();
       });
 
       it("should replace PluginRepositories (single → multiple)", () => {
@@ -400,16 +399,17 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.PluginRepositories).toEqual([
+        expect(result?.PluginRepositories).toEqual([
           { Name: "Multi1", Url: "https://multi1.com", Enabled: true },
           { Name: "Multi2", Url: "https://multi2.com", Enabled: false },
           { Name: "Multi3", Url: "https://multi3.com", Enabled: true },
         ]);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.TrickplayOptions).toBeUndefined();
       });
 
       it("should replace PluginRepositories (multiple → single)", () => {
@@ -430,14 +430,15 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.PluginRepositories).toEqual([
+        expect(result?.PluginRepositories).toEqual([
           { Name: "Single", Url: "https://single.com", Enabled: true },
         ]);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.TrickplayOptions).toBeUndefined();
       });
 
       it("should not modify PluginRepositories when content is identical", () => {
@@ -464,15 +465,11 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.PluginRepositories).toEqual([
-          { Name: "Same", Url: "https://same.com", Enabled: true },
-          { Name: "Also Same", Url: "https://alsosame.com", Enabled: false },
-        ]);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result).toBeUndefined();
       });
 
       it("should log when PluginRepositories changes", () => {
@@ -497,7 +494,7 @@ describe("apply/system", () => {
         );
 
         // Act
-        applySystem(current, desired);
+        calculateSystemDiff(current, desired);
 
         // Assert
         expect(loggerSpy).toHaveBeenCalledWith(
@@ -526,7 +523,7 @@ describe("apply/system", () => {
         );
 
         // Act
-        applySystem(current, desired);
+        calculateSystemDiff(current, desired);
 
         // Assert
         expect(loggerSpy).not.toHaveBeenCalled();
@@ -552,12 +549,11 @@ describe("apply/system", () => {
         const desired: SystemConfig = {};
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.TrickplayOptions).toEqual(existingTrickplay);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.PluginRepositories).toEqual([]);
+        expect(result).toBeUndefined();
       });
 
       it("should preserve TrickplayOptions when trickplayOptions is undefined (current: undefined)", () => {
@@ -571,12 +567,11 @@ describe("apply/system", () => {
         const desired: SystemConfig = {};
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.TrickplayOptions).toBeUndefined();
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.PluginRepositories).toEqual([]);
+        expect(result).toBeUndefined();
       });
 
       it("should update TrickplayOptions with partial update (enableHwAcceleration only)", () => {
@@ -595,13 +590,14 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.TrickplayOptions?.EnableHwAcceleration).toBe(true);
-        expect(result.TrickplayOptions?.EnableHwEncoding).toBe(true); // Should preserve
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.PluginRepositories).toEqual([]);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true);
+        expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(true); // Should preserve
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.PluginRepositories).toEqual([]);
       });
 
       it("should update TrickplayOptions with partial update (enableHwEncoding only)", () => {
@@ -620,13 +616,14 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.TrickplayOptions?.EnableHwAcceleration).toBe(true); // Should preserve
-        expect(result.TrickplayOptions?.EnableHwEncoding).toBe(true);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.PluginRepositories).toEqual([]);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true); // Should preserve
+        expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(true);
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.PluginRepositories).toEqual([]);
       });
 
       it("should update TrickplayOptions with full update (both fields)", () => {
@@ -648,13 +645,14 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.TrickplayOptions?.EnableHwAcceleration).toBe(true);
-        expect(result.TrickplayOptions?.EnableHwEncoding).toBe(true);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.PluginRepositories).toEqual([]);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true);
+        expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(true);
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.PluginRepositories).toEqual([]);
       });
 
       it("should preserve all fields when trickplayOptions is empty object", () => {
@@ -673,13 +671,11 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.TrickplayOptions?.EnableHwAcceleration).toBe(true);
-        expect(result.TrickplayOptions?.EnableHwEncoding).toBe(false);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.PluginRepositories).toEqual([]);
+        expect(result).toBeUndefined();
       });
 
       it("should create TrickplayOptions when current is undefined", () => {
@@ -698,13 +694,14 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.TrickplayOptions?.EnableHwAcceleration).toBe(true);
-        expect(result.TrickplayOptions?.EnableHwEncoding).toBe(false);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.PluginRepositories).toEqual([]);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true);
+        expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(false);
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.PluginRepositories).toEqual([]);
       });
 
       it("should not modify TrickplayOptions when values are the same", () => {
@@ -726,13 +723,11 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.TrickplayOptions?.EnableHwAcceleration).toBe(true);
-        expect(result.TrickplayOptions?.EnableHwEncoding).toBe(false);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.PluginRepositories).toEqual([]);
+        expect(result).toBeUndefined();
       });
 
       it("should handle mixed update (one field same, one different)", () => {
@@ -754,13 +749,14 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.TrickplayOptions?.EnableHwAcceleration).toBe(true);
-        expect(result.TrickplayOptions?.EnableHwEncoding).toBe(true);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.PluginRepositories).toEqual([]);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true);
+        expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(true);
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.PluginRepositories).toEqual([]);
       });
 
       it("should log when TrickplayOptions changes", () => {
@@ -784,7 +780,7 @@ describe("apply/system", () => {
         );
 
         // Act
-        applySystem(current, desired);
+        calculateSystemDiff(current, desired);
 
         // Assert
         expect(loggerSpy).toHaveBeenCalledWith(
@@ -811,7 +807,7 @@ describe("apply/system", () => {
         );
 
         // Act
-        applySystem(current, desired);
+        calculateSystemDiff(current, desired);
 
         // Assert
         expect(loggerSpy).not.toHaveBeenCalled();
@@ -845,16 +841,17 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.EnableMetrics).toBe(true);
-        expect(result.PluginRepositories).toEqual([
+        expect(result?.EnableMetrics).toBe(true);
+        expect(result?.PluginRepositories).toEqual([
           { Name: "New1", Url: "https://new1.com", Enabled: true },
           { Name: "New2", Url: "https://new2.com", Enabled: false },
         ]);
-        expect(result.TrickplayOptions?.EnableHwAcceleration).toBe(true);
-        expect(result.TrickplayOptions?.EnableHwEncoding).toBe(true);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true);
+        expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(true);
       });
 
       it("should update two fields while preserving the third (enableMetrics + pluginRepositories)", () => {
@@ -882,14 +879,15 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.EnableMetrics).toBe(true);
-        expect(result.PluginRepositories).toEqual([
+        expect(result?.EnableMetrics).toBe(true);
+        expect(result?.PluginRepositories).toEqual([
           { Name: "New", Url: "https://new.com", Enabled: false },
         ]);
-        expect(result.TrickplayOptions).toEqual(existingTrickplay); // Preserved
+        expect(result?.TrickplayOptions).toEqual(existingTrickplay); // Preserved
       });
 
       it("should update two fields while preserving the third (enableMetrics + trickplayOptions)", () => {
@@ -916,13 +914,14 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.EnableMetrics).toBe(true);
-        expect(result.PluginRepositories).toEqual(existingRepos); // Preserved
-        expect(result.TrickplayOptions?.EnableHwAcceleration).toBe(true);
-        expect(result.TrickplayOptions?.EnableHwEncoding).toBe(false); // Preserved within object
+        expect(result?.EnableMetrics).toBe(true);
+        expect(result?.PluginRepositories).toEqual(existingRepos); // Preserved
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true);
+        expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(false); // Preserved within object
       });
 
       it("should update two fields while preserving the third (pluginRepositories + trickplayOptions)", () => {
@@ -948,15 +947,16 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.EnableMetrics).toBe(true); // Preserved
-        expect(result.PluginRepositories).toEqual([
+        expect(result?.EnableMetrics).toBe(true); // Preserved
+        expect(result?.PluginRepositories).toEqual([
           { Name: "New", Url: "https://new.com", Enabled: false },
         ]);
-        expect(result.TrickplayOptions?.EnableHwAcceleration).toBe(false); // Preserved within object
-        expect(result.TrickplayOptions?.EnableHwEncoding).toBe(true);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false); // Preserved within object
+        expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(true);
       });
 
       it("should preserve all fields when no changes are specified", () => {
@@ -976,10 +976,11 @@ describe("apply/system", () => {
         const desired: SystemConfig = {};
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result).toEqual(current);
+        expect(result).toBeUndefined();
       });
     });
 
@@ -999,12 +1000,13 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.TrickplayOptions?.EnableHwAcceleration).toBe(true);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.PluginRepositories).toEqual([]);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true);
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.PluginRepositories).toEqual([]);
       });
 
       it("should handle malformed current state (null PluginRepositories)", () => {
@@ -1022,15 +1024,47 @@ describe("apply/system", () => {
         };
 
         // Act
-        const result: ServerConfigurationSchema = applySystem(current, desired);
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result.PluginRepositories).toEqual([
+        expect(result?.PluginRepositories).toEqual([
           { Name: "New", Url: "https://new.com", Enabled: true },
         ]);
-        expect(result.EnableMetrics).toBe(false);
-        expect(result.TrickplayOptions).toBeUndefined();
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.TrickplayOptions).toBeUndefined();
       });
+    });
+  });
+
+  describe("applySystem", () => {
+    let mockClient: JellyfinClient;
+    let updateSpy: Mock;
+
+    beforeEach(() => {
+      updateSpy = vi.fn();
+      mockClient = {
+        updateSystemConfiguration: updateSpy,
+      } as unknown as JellyfinClient;
+    });
+
+    it("should do nothing when schema is undefined", async () => {
+      await applySystem(mockClient, undefined);
+      expect(updateSpy).not.toHaveBeenCalled();
+    });
+
+    it("should call client.updateSystemConfiguration with schema", async () => {
+      const schema: ServerConfigurationSchema = {
+        EnableMetrics: true,
+        PluginRepositories: [],
+      } as ServerConfigurationSchema;
+
+      updateSpy.mockResolvedValue(undefined);
+
+      await applySystem(mockClient, schema);
+
+      expect(updateSpy).toHaveBeenCalledTimes(1);
+      expect(updateSpy).toHaveBeenCalledWith(schema);
     });
   });
 });

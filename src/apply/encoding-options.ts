@@ -1,5 +1,6 @@
 import { deepEqual } from "fast-equals";
 import { logger } from "../lib/logger";
+import type { JellyfinClient } from "../api/jellyfin.types";
 import { mapEncodingOptionsConfigToSchema } from "../mappers/encoding-options";
 import { type EncodingOptionsConfig } from "../types/config/encoding-options";
 import { type EncodingOptionsSchema } from "../types/schema/encoding-options";
@@ -137,12 +138,29 @@ function hasAllowAv1EncodingChanged(
   return cur !== next;
 }
 
-export function applyEncoding(
+export function calculateEncodingDiff(
   current: EncodingOptionsSchema,
   desired: EncodingOptionsConfig,
-): EncodingOptionsSchema {
+): EncodingOptionsSchema | undefined {
   const patch: Partial<EncodingOptionsSchema> =
     mapEncodingOptionsConfigToSchema(desired);
+
+  const hasChanges: boolean =
+    hasEnableHardwareEncodingChanged(current, desired) ||
+    hasHardwareAccelerationTypeChanged(current, desired) ||
+    hasHardwareDecodingCodecsChanged(current, desired) ||
+    hasEnableDecodingColorDepth10HevcChanged(current, desired) ||
+    hasEnableDecodingColorDepth10Vp9Changed(current, desired) ||
+    hasEnableDecodingColorDepth10HevcRextChanged(current, desired) ||
+    hasEnableDecodingColorDepth12HevcRextChanged(current, desired) ||
+    hasVaapiDeviceChanged(current, desired) ||
+    hasQsvDeviceChanged(current, desired) ||
+    hasAllowHevcEncodingChanged(current, desired) ||
+    hasAllowAv1EncodingChanged(current, desired);
+
+  if (!hasChanges) {
+    return undefined;
+  }
 
   if (hasEnableHardwareEncodingChanged(current, desired)) {
     logger.info(
@@ -259,4 +277,15 @@ export function applyEncoding(
   }
 
   return out;
+}
+
+export async function applyEncoding(
+  client: JellyfinClient,
+  updatedSchema: EncodingOptionsSchema | undefined,
+): Promise<void> {
+  if (!updatedSchema) {
+    return;
+  }
+
+  await client.updateEncodingConfiguration(updatedSchema);
 }

@@ -1,8 +1,10 @@
 import { promises as fs } from "fs";
 import YAML from "yaml";
-import { deepEqual } from "fast-equals";
-import { applySystem } from "../apply/system";
-import { applyEncoding } from "../apply/encoding-options";
+import { calculateSystemDiff, applySystem } from "../apply/system";
+import {
+  calculateEncodingDiff,
+  applyEncoding,
+} from "../apply/encoding-options";
 import { calculateLibraryDiff, applyLibrary } from "../apply/library";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
 import type { LibraryConfig } from "../types/config/library";
@@ -39,18 +41,16 @@ export async function runPipeline(path: string): Promise<void> {
   const currentServerConfigurationSchema: ServerConfigurationSchema =
     await jellyfinClient.getSystemConfiguration();
 
-  const updatedServerConfigurationSchema: ServerConfigurationSchema =
-    applySystem(currentServerConfigurationSchema, cfg.system);
-
-  const isSystemSame: boolean = deepEqual(
-    updatedServerConfigurationSchema,
+  const updatedServerConfigurationSchema:
+    | ServerConfigurationSchema
+    | undefined = calculateSystemDiff(
     currentServerConfigurationSchema,
+    cfg.system,
   );
-  if (!isSystemSame) {
+
+  if (updatedServerConfigurationSchema) {
     console.log("→ updating system config");
-    await jellyfinClient.updateSystemConfiguration(
-      updatedServerConfigurationSchema,
-    );
+    await applySystem(jellyfinClient, updatedServerConfigurationSchema);
     console.log("✓ updated system config");
   } else {
     console.log("✓ system config already up to date");
@@ -61,20 +61,12 @@ export async function runPipeline(path: string): Promise<void> {
     const currentEncodingOptionsSchema: EncodingOptionsSchema =
       await jellyfinClient.getEncodingConfiguration();
 
-    const updatedEncodingOptionsSchema: EncodingOptionsSchema = applyEncoding(
-      currentEncodingOptionsSchema,
-      cfg.encoding,
-    );
+    const updatedEncodingOptionsSchema: EncodingOptionsSchema | undefined =
+      calculateEncodingDiff(currentEncodingOptionsSchema, cfg.encoding);
 
-    const isEncodingSame: boolean = deepEqual(
-      updatedEncodingOptionsSchema,
-      currentEncodingOptionsSchema,
-    );
-    if (!isEncodingSame) {
+    if (updatedEncodingOptionsSchema) {
       console.log("→ updating encoding config");
-      await jellyfinClient.updateEncodingConfiguration(
-        updatedEncodingOptionsSchema,
-      );
+      await applyEncoding(jellyfinClient, updatedEncodingOptionsSchema);
       console.log("✓ updated encoding config");
     } else {
       console.log("✓ encoding config already up to date");

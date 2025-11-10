@@ -4,19 +4,21 @@ This file provides comprehensive guidance to Claude Code (claude.ai/code) when
 working with code in this repository. **Read this entire file carefully before
 any work.**
 
-## 🚀 Current State (As of Nov 2024)
+## 🚀 Current State (As of Nov 2025)
 
-**MAJOR REFACTOR COMPLETED**: We just finished a massive architectural overhaul
-moving from monolithic validation to clean modular structure. The codebase is
-now perfectly organized for rapid feature development.
+**LATEST: CALCULATE/APPLY PATTERN REFACTOR COMPLETE** - We just finished
+implementing the calculate/apply separation pattern across all configuration
+modules (system, encoding, library), bringing perfect consistency and clean
+separation of concerns.
 
-### Key Achievement
+### Key Achievements
 
-- ✅ **64 tests passing** (increased from 42)
+- ✅ **215 tests passing** (increased from 64!)
 - ✅ **Perfect TypeScript compilation**
 - ✅ **Clean ESLint validation**
 - ✅ **Successful integration tests**
 - ✅ **Copy-paste ready architecture** for new features
+- ✅ **Consistent calculate/apply pattern** across all modules
 
 ## Critical Context
 
@@ -41,7 +43,7 @@ design principle validated through comprehensive integration testing.
 
 - **Build**: `npm run build` - Compiles TypeScript using esbuild
 - **Development**: `npm run dev` - Runs the CLI directly with tsx
-- **Test**: `npm run test` - Runs Vitest test suite (**64 tests total**)
+- **Test**: `npm run test` - Runs Vitest test suite (**215 tests total**)
 - **Type checking**: `npm run typecheck` - Runs TypeScript compiler in check
   mode
 - **Generate types**: `npm run typegen` - Generates TypeScript types from
@@ -117,17 +119,21 @@ src/
 │   │   ├── root.ts                    # Root config
 │   │   ├── system.ts                  # System config
 │   │   ├── encoding-options.ts        # Encoding config
+│   │   ├── library.ts                 # Library config
 │   │   ├── plugin-repository.ts       # Plugin repository config
 │   │   └── trickplay-options.ts       # Trickplay config
 │   └── schema/            # Server API schema types
 │       ├── system.ts              # System server schema
-│       └── encoding-options.ts    # Encoding server schema
+│       ├── encoding-options.ts    # Encoding server schema
+│       └── library.ts             # Library server schema
 ├── apply/                 # Idempotent configuration application logic
 │   ├── system.ts               # System config application
-│   └── encoding-options.ts     # Encoding config application
+│   ├── encoding-options.ts     # Encoding config application
+│   └── library.ts              # Library config application
 ├── mappers/               # Data transformation utilities
 │   ├── system.ts               # System config mapper
-│   └── encoding-options.ts     # Encoding config mapper
+│   ├── encoding-options.ts     # Encoding config mapper
+│   └── library.ts              # Library config mapper
 └── pipeline/              # Main orchestration
 
 tests/
@@ -135,9 +141,13 @@ tests/
 │   ├── root.spec.ts
 │   ├── system.spec.ts
 │   ├── encoding-options.spec.ts
+│   ├── library.spec.ts
 │   ├── plugin-repository.spec.ts
 │   └── trickplay-options.spec.ts
-├── apply/                 # Apply logic tests
+├── apply/                 # Apply logic tests (calculate/apply pattern)
+│   ├── system.spec.ts
+│   ├── encoding-options.spec.ts
+│   └── library.spec.ts
 ├── mappers/              # Mapper tests
 └── api/                  # API tests
 
@@ -172,20 +182,148 @@ For OpenAPI schema `components["schemas"]["XyzAbc"]`:
    ): Partial<XyzAbcSchema> { ... }
    ```
 
-4. **Apply Logic** (`apply/xyz-abc.ts`):
+4. **Apply Logic** (`apply/xyz-abc.ts`) - **CALCULATE/APPLY PATTERN**:
 
    ```typescript
+   // Pure calculation - no side effects
+   export function calculateXyzAbcDiff(
+     current: XyzAbcSchema,
+     desired: XyzAbcConfig,
+   ): XyzAbcSchema | undefined {
+     // Check if any fields changed
+     const hasChanges: boolean = hasField1Changed(current, desired) ||
+       hasField2Changed(current, desired);
+
+     if (!hasChanges) return undefined;
+
+     // Log changes
+     if (hasField1Changed(current, desired)) {
+       logger.info(
+         `Field1 changed: ${current.Field1} → ${desired.field1}`,
+       );
+     }
+
+     // Build and return updated schema
+     const out: XyzAbcSchema = { ...current };
+     // ... apply patches
+     return out;
+   }
+
+   // Side effects only - API calls
    export async function applyXyzAbc(
      client: JellyfinClient,
-     desired: XyzAbcConfig | undefined,
-   ): Promise<void> { ... }
+     updatedSchema: XyzAbcSchema | undefined,
+   ): Promise<void> {
+     if (!updatedSchema) return;
+     await client.updateXyzAbcConfiguration(updatedSchema);
+   }
    ```
 
 5. **Variable Naming**:
+
    ```typescript
    const currentXyzAbcSchema: XyzAbcSchema = ...;
-   const updatedXyzAbcSchema: XyzAbcSchema = ...;
+   const updatedXyzAbcSchema: XyzAbcSchema | undefined =
+     calculateXyzAbcDiff(currentXyzAbcSchema, cfg.xyzAbc);
+
+   if (updatedXyzAbcSchema) {
+     await applyXyzAbc(jellyfinClient, updatedXyzAbcSchema);
+   }
    ```
+
+### 🎯 Calculate/Apply Pattern (CRITICAL)
+
+**ALL apply modules MUST follow this pattern**. This separates pure calculation
+logic from side effects (API calls).
+
+#### Pattern Overview
+
+```typescript
+// apply/feature.ts structure:
+
+// 1. Helper functions - check individual field changes
+function hasField1Changed(current: Schema, desired: Config): boolean {
+  if (desired.field1 === undefined) return false;
+  return current.Field1 !== desired.field1;
+}
+
+// 2. Calculate function - pure logic, returns undefined if no changes
+export function calculateFeatureDiff(
+  current: FeatureSchema,
+  desired: FeatureConfig,
+): FeatureSchema | undefined {
+  const hasChanges: boolean = hasField1Changed(current, desired) ||
+    hasField2Changed(current, desired);
+
+  if (!hasChanges) return undefined;
+
+  // Log all changes
+  if (hasField1Changed(current, desired)) {
+    logger.info(`Field1 changed: ${current.Field1} → ${desired.field1}`);
+  }
+
+  // Apply patches
+  const patch = mapFeatureConfigToSchema(desired);
+  const out: FeatureSchema = { ...current };
+  if ("Field1" in patch) out.Field1 = patch.Field1;
+  return out;
+}
+
+// 3. Apply function - side effects only
+export async function applyFeature(
+  client: JellyfinClient,
+  updatedSchema: FeatureSchema | undefined,
+): Promise<void> {
+  if (!updatedSchema) return;
+  await client.updateFeatureConfiguration(updatedSchema);
+}
+```
+
+#### Pipeline Usage
+
+```typescript
+// In src/pipeline/index.ts:
+const currentSchema = await client.getFeatureConfiguration();
+const updatedSchema = calculateFeatureDiff(currentSchema, cfg.feature);
+
+if (updatedSchema) {
+  console.log("→ updating feature config");
+  await applyFeature(client, updatedSchema);
+  console.log("✓ updated feature config");
+} else {
+  console.log("✓ feature config already up to date");
+}
+```
+
+#### Test Pattern
+
+```typescript
+// tests/apply/feature.spec.ts structure:
+
+describe("calculateFeatureDiff", () => {
+  it("should return undefined when no changes", () => {
+    const result = calculateFeatureDiff(current, {});
+    expect(result).toBeUndefined();
+  });
+
+  it("should return schema when field changes", () => {
+    const result = calculateFeatureDiff(current, { field1: newValue });
+    expect(result?.Field1).toBe(newValue);
+  });
+});
+
+describe("applyFeature", () => {
+  it("should do nothing when schema is undefined", async () => {
+    await applyFeature(mockClient, undefined);
+    expect(updateSpy).not.toHaveBeenCalled();
+  });
+
+  it("should call client with schema", async () => {
+    await applyFeature(mockClient, schema);
+    expect(updateSpy).toHaveBeenCalledWith(schema);
+  });
+});
+```
 
 ### ✨ Copy-Paste Ready Feature Addition
 
@@ -299,7 +437,7 @@ behavior - only explicitly configured fields are modified.
 
 ### Testing Strategy
 
-- **Unit tests**: `pnpm test` (Vitest, **64 tests**)
+- **Unit tests**: `pnpm test` (Vitest, **215 tests**)
 - **Type checking**: `pnpm typecheck`
 - **Linting**: `pnpm eslint`
 - **Integration**: Full server interaction tests (it1-it10)
@@ -324,18 +462,26 @@ behavior - only explicitly configured fields are modified.
 1. **Create config type** in `types/config/new-feature.ts` following
    `XyzAbcConfigType` pattern
 2. **Create tests** in `tests/types/config/new-feature.spec.ts`
-3. **Create mapper** in `mappers/new-feature.ts` following
+3. **Create server schema** in `types/schema/new-feature.ts` (if needed)
+4. **Create mapper** in `mappers/new-feature.ts` following
    `mapXyzAbcConfigToSchema` pattern
-4. **Create apply logic** in `apply/new-feature.ts` following `applyXyzAbc`
-   pattern
-5. **Wire into pipeline** in `src/pipeline/index.ts`
-6. **Run standard quality pipeline**:
+5. **Create apply logic** in `apply/new-feature.ts` following **calculate/apply
+   pattern**:
+   - `calculateNewFeatureDiff()` - pure logic, returns `Schema | undefined`
+   - `applyNewFeature()` - side effects, takes `JellyfinClient` and schema
+6. **Create apply tests** in `tests/apply/new-feature.spec.ts`:
+   - Test `calculateNewFeatureDiff` for all field combinations
+   - Test `applyNewFeature` with mocked client
+7. **Wire into pipeline** in `src/pipeline/index.ts`:
+   - Import both `calculateNewFeatureDiff` and `applyNewFeature`
+   - Fetch current state, calculate diff, apply if needed
+8. **Run standard quality pipeline**:
    `npm run build && tsc --noEmit && pnpm eslint && pnpm test && nix fmt`
-7. **Integration test** with real server using established it1-it10 pattern
+9. **Integration test** with real server using established it1-it10 pattern
 
 ### Quality Gates
 
-- ✅ All 64 tests must pass
+- ✅ All 215 tests must pass
 - ✅ TypeScript compilation clean
 - ✅ ESLint validation passing
 - ✅ Integration test successful
@@ -343,13 +489,18 @@ behavior - only explicitly configured fields are modified.
 
 ## Important Reminders
 
-- **Perfect architecture**: We just completed major refactor - everything is now
-  clean and modular
+- **Calculate/Apply Pattern**: ALL apply modules follow this pattern - pure
+  calculation separated from side effects
+- **Perfect architecture**: Clean modular structure with consistent patterns
+  across all modules
 - **Copy-paste ready**: New features follow established patterns exactly
-- **64 tests passing**: Comprehensive validation ensures quality
+- **215 tests passing**: Comprehensive validation ensures quality (system: 40,
+  encoding: 44, library: 11, plus config/mapper tests)
 - **Integration tested**: Real server validation with it1-it10 pattern
 - **Never deviate from naming conventions**: `XyzAbcConfigType` → `XyzAbcConfig`
   pattern is law
+- **Calculate returns undefined**: When no changes detected, calculate functions
+  return `undefined` (not empty schema)
 - **Always run standard pipeline**:
   `npm run build && tsc --noEmit && pnpm eslint && pnpm test && nix fmt`
 - **buildfull is comprehensive**: Full clean environment + build + validation +
