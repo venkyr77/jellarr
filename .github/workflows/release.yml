@@ -45,7 +45,7 @@ jobs:
             docker pull ghcr.io/venkyr77/jellarr:${{ github.ref_name }}
 
             # Download binary (requires Node.js 24+)
-            ./jellarr-${{ github.ref_name }} --configFile ./config/config.yml
+            ./jellarr-${{ github.ref_name }}
             ```
           draft: false
           prerelease: false
