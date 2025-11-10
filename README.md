@@ -18,7 +18,7 @@ Managing Jellyfin configuration becomes painful at scale:
 - **Configuration drift** across dev/staging/prod environments
 - **No version control** for settings changes
 - **Manual clicking** through web UI doesn't scale to multiple servers
-- **No automation** for infrastructure-as-code workflows
+- **No automation** for configuration-as-code workflows
 
 Existing solutions have limitations. While
 [declarative-jellyfin](https://github.com/Sveske-Juice/declarative-jellyfin)
@@ -158,6 +158,8 @@ Jellarr uses a YAML configuration file (default: `config/config.yml`).
 ### System Configuration
 
 ```yaml
+version: 1
+base_url: "http://localhost:8096"
 system:
   enableMetrics: true # Enable Prometheus metrics endpoint
   pluginRepositories:
@@ -172,6 +174,8 @@ system:
 ### Encoding Configuration
 
 ```yaml
+version: 1
+base_url: "http://localhost:8096"
 encoding:
   enableHardwareEncoding: true
   hardwareAccelerationType: "vaapi" # vaapi, qsv, nvenc, amf, v4l2m2m
@@ -179,9 +183,15 @@ encoding:
   hardwareDecodingCodecs:
     - h264
     - hevc
+    - mpeg2video
+    - vc1
+    - vp8
     - vp9
     - av1
   enableDecodingColorDepth10Hevc: true
+  enableDecodingColorDepth10HevcRext: true
+  enableDecodingColorDepth12HevcRext: true
+  enableDecodingColorDepth10Vp9: true
   allowHevcEncoding: false
   allowAv1Encoding: false
 ```
@@ -189,13 +199,20 @@ encoding:
 ### Library Configuration
 
 ```yaml
+version: 1
+base_url: "http://localhost:8096"
 library:
-  - name: "Movies"
-    type: "movies"
-    paths:
-      - "/data/movies"
-    preferredMetadataLanguage: "en"
-    preferredImageLanguage: "en"
+  virtualFolders:
+    - name: "Movies"
+      collectionType: "movies"
+      libraryOptions:
+        pathInfos:
+          - path: "/data/movies"
+    - name: "TV Shows"
+      collectionType: "tvshows"
+      libraryOptions:
+        pathInfos:
+          - path: "/data/tv"
 ```
 
 ---
@@ -242,9 +259,9 @@ docker run -e JELLARR_API_KEY=your_api_key \
 
 ---
 
-## Real-World Example
+## Full Configuration Example
 
-Production configuration with Intel GPU hardware acceleration:
+Full configuration example with VAAPI hardware acceleration:
 
 ```yaml
 version: 1
@@ -280,14 +297,17 @@ encoding:
   allowAv1Encoding: false
 
 library:
-  - name: "Movies"
-    type: "movies"
-    paths:
-      - "/mnt/media/movies"
-  - name: "TV Shows"
-    type: "tvshows"
-    paths:
-      - "/mnt/media/tv"
+  virtualFolders:
+    - name: "Movies"
+      collectionType: "movies"
+      libraryOptions:
+        pathInfos:
+          - path: "/mnt/media/movies"
+    - name: "TV Shows"
+      collectionType: "tvshows"
+      libraryOptions:
+        pathInfos:
+          - path: "/mnt/media/tv"
 ```
 
 ---
