@@ -27,32 +27,25 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           mkdir -p release
-          cp result/share/bundle.cjs release/jellarr-${VERSION}.cjs
-          cp result/bin/jellarr release/jellarr-${VERSION}.sh
-          chmod +x release/jellarr-${VERSION}.sh
+          cp result/bin/jellarr release/jellarr-${VERSION}
+          chmod +x release/jellarr-${VERSION}
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            release/*.cjs
-            release/*.sh
+          files: release/jellarr-*
           body: |
             ## Jellarr ${{ github.ref_name }}
 
-            **Install with Nix:**
             ```bash
+            # With Nix
             nix run github:venkyr77/jellarr/${{ github.ref_name }}
-            ```
 
-            **Run with Node.js:**
-            ```bash
-            node jellarr-${{ github.ref_name }}.cjs --configFile ./config/config.yml
-            ```
-
-            **Docker:**
-            ```bash
+            # With Docker
             docker pull ghcr.io/venkyr77/jellarr:${{ github.ref_name }}
+
+            # Download binary (requires Node.js 24+)
+            ./jellarr-${{ github.ref_name }} --configFile ./config/config.yml
             ```
           draft: false
           prerelease: false
