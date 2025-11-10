@@ -335,14 +335,14 @@ library:
 - **Idempotent:** Safe to run multiple times
 - **Type-safe:** OpenAPI-generated types + Zod validation
 - **Calculate/Apply pattern:** Separation of pure logic from side effects
-- **215 tests:** Comprehensive test coverage
+- **Comprehensive test coverage**
 
 ---
 
 ## Development
 
 ```bash
-pnpm test        # 215 tests with Vitest
+pnpm test        # Tests with Vitest
 pnpm typecheck   # TypeScript validation
 pnpm eslint      # Code linting
 pnpm build       # Build with esbuild
@@ -357,7 +357,7 @@ npm run build && tsc --noEmit && pnpm eslint && pnpm test && nix fmt
 nix build .#default      # Build CLI package
 nix build .#docker-image # Build Docker image
 nix flake check          # Run checks
-nix fmt                  # Format Nix files
+nix fmt                  # Format project files
 ```
 
 ---
@@ -373,7 +373,7 @@ nix fmt                  # Format Nix files
 | **Safety**         | API validates all changes       | Direct file/DB writes       |
 | **Future-proof**   | API contract stability          | Breaks on internal changes  |
 | **Type Safety**    | TypeScript + Zod + OpenAPI      | Bash scripts                |
-| **Testing**        | 215 automated tests             | Manual                      |
+| **Testing**        | Comprehensive unit tests        | Complex NixOS VM tests      |
 
 **declarative-jellyfin's approach:**
 
