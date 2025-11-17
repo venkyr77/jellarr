@@ -5,6 +5,7 @@ import type {
   AddVirtualFolderDtoSchema,
   CollectionTypeSchema,
 } from "../types/schema/library";
+import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type { JellyfinClient } from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";
@@ -115,6 +116,40 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /Library/VirtualFolders failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getBrandingConfiguration(): Promise<BrandingOptionsDtoSchema> {
+      // eslint-disable-next-line @typescript-eslint/typedef
+      const res = await client.GET("/System/Configuration/{key}", {
+        params: {
+          path: {
+            key: "Branding",
+          },
+        },
+      });
+
+      if (res.error) {
+        throw new Error(
+          `GET /System/Configuration/Branding failed: ${res.response.status.toString()}`,
+        );
+      }
+
+      return res.data as BrandingOptionsDtoSchema;
+    },
+
+    async updateBrandingConfiguration(
+      body: Partial<BrandingOptionsDtoSchema>,
+    ): Promise<void> {
+      // eslint-disable-next-line @typescript-eslint/typedef
+      const res = await client.POST("/System/Configuration/Branding", {
+        body: body as BrandingOptionsDtoSchema,
+      });
+
+      if (res.error) {
+        throw new Error(
+          `POST /System/Configuration/Branding failed: ${res.response.status.toString()}`,
         );
       }
     },

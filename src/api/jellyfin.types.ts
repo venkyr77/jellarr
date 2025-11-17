@@ -5,6 +5,7 @@ import type {
   AddVirtualFolderDtoSchema,
   CollectionTypeSchema,
 } from "../types/schema/library";
+import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 
 export interface JellyfinClient {
   getSystemConfiguration(): Promise<ServerConfigurationSchema>;
@@ -20,5 +21,9 @@ export interface JellyfinClient {
     name: string,
     collectionType: CollectionTypeSchema | undefined,
     body: AddVirtualFolderDtoSchema,
+  ): Promise<void>;
+  getBrandingConfiguration(): Promise<BrandingOptionsDtoSchema>;
+  updateBrandingConfiguration(
+    body: Partial<BrandingOptionsDtoSchema>,
   ): Promise<void>;
 }

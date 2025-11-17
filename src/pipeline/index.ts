@@ -6,10 +6,15 @@ import {
   applyEncoding,
 } from "../apply/encoding-options";
 import { calculateLibraryDiff, applyLibrary } from "../apply/library";
+import {
+  calculateBrandingOptionsDiff,
+  applyBrandingOptions,
+} from "../apply/branding-options";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
 import type { LibraryConfig } from "../types/config/library";
 import { type ServerConfigurationSchema } from "../types/schema/system";
 import { type EncodingOptionsSchema } from "../types/schema/encoding-options";
+import { type BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import { createJellyfinClient } from "../api/jellyfin_client";
 import { type JellyfinClient } from "../api/jellyfin.types";
 import { RootConfigType, type RootConfig } from "../types/config/root";
@@ -86,6 +91,23 @@ export async function runPipeline(path: string): Promise<void> {
       console.log("✓ updated library config");
     } else {
       console.log("✓ library config already up to date");
+    }
+  }
+
+  // branding configuration
+  if (cfg.branding) {
+    const currentBrandingSchema: BrandingOptionsDtoSchema =
+      await jellyfinClient.getBrandingConfiguration();
+
+    const updatedBrandingSchema: BrandingOptionsDtoSchema | undefined =
+      calculateBrandingOptionsDiff(currentBrandingSchema, cfg.branding);
+
+    if (updatedBrandingSchema) {
+      console.log("→ updating branding config");
+      await applyBrandingOptions(jellyfinClient, updatedBrandingSchema);
+      console.log("✓ updated branding config");
+    } else {
+      console.log("✓ branding config already up to date");
     }
   }
 }

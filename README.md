@@ -217,6 +217,17 @@ library:
           - path: "/data/tv"
 ```
 
+### Branding Configuration
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+branding:
+  loginDisclaimer: "Welcome to Jellarr Test Server"
+  customCss: '@import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");'
+  splashscreenEnabled: true
+```
+
 ---
 
 ## Secret Management
@@ -268,7 +279,6 @@ Full configuration example with VAAPI hardware acceleration:
 ```yaml
 version: 1
 base_url: "http://localhost:8096"
-
 system:
   enableMetrics: true
   pluginRepositories:
@@ -278,38 +288,29 @@ system:
   trickplayOptions:
     enableHwAcceleration: true
     enableHwEncoding: true
-
 encoding:
   enableHardwareEncoding: true
   hardwareAccelerationType: "vaapi"
   vaapiDevice: "/dev/dri/renderD128"
   hardwareDecodingCodecs:
-    - h264
-    - hevc
-    - mpeg2video
-    - vc1
-    - vp8
-    - vp9
-    - av1
+    ["h264", "hevc", "mpeg2video", "vc1", "vp8", "vp9", "av1"]
   enableDecodingColorDepth10Hevc: true
+  enableDecodingColorDepth10Vp9: true
   enableDecodingColorDepth10HevcRext: true
   enableDecodingColorDepth12HevcRext: true
-  enableDecodingColorDepth10Vp9: true
   allowHevcEncoding: false
   allowAv1Encoding: false
-
 library:
   virtualFolders:
-    - name: "Movies"
+    - name: "test-jellarr"
       collectionType: "movies"
       libraryOptions:
         pathInfos:
-          - path: "/mnt/media/movies"
-    - name: "TV Shows"
-      collectionType: "tvshows"
-      libraryOptions:
-        pathInfos:
-          - path: "/mnt/media/tv"
+          - path: "/mnt/movies/English"
+branding:
+  loginDisclaimer: "Welcome to Jellarr Test Server"
+  customCss: '@import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");'
+  splashscreenEnabled: true
 ```
 
 ---
