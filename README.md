@@ -223,9 +223,11 @@ library:
 version: 1
 base_url: "http://localhost:8096"
 branding:
-  loginDisclaimer: "Welcome to Jellarr Test Server"
-  customCss: '@import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");'
-  splashscreenEnabled: true
+  loginDisclaimer: |
+    Configured by <a href="https://github.com/venkyr77/jellarr">Jellarr</a>
+  customCss: |
+    @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");
+  splashscreenEnabled: false
 ```
 
 ---
@@ -302,15 +304,17 @@ encoding:
   allowAv1Encoding: false
 library:
   virtualFolders:
-    - name: "test-jellarr"
+    - name: "Movies"
       collectionType: "movies"
       libraryOptions:
         pathInfos:
           - path: "/mnt/movies/English"
 branding:
-  loginDisclaimer: "Welcome to Jellarr Test Server"
-  customCss: '@import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");'
-  splashscreenEnabled: true
+  loginDisclaimer: |
+    Configured by <a href="https://github.com/venkyr77/jellarr">Jellarr</a>
+  customCss: |
+    @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");
+  splashscreenEnabled: false
 ```
 
 ---
