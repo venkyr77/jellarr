@@ -30,34 +30,26 @@ jobs:
           cp result/bin/jellarr release/jellarr-${VERSION}
           chmod +x release/jellarr-${VERSION}
 
-      - name: Extract changelog entry
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          # Create release body with usage instructions + changelog
-          cat > release/changelog.md << EOF
-          ## Jellarr ${{ github.ref_name }}
-
-          \`\`\`bash
-          # With Nix
-          nix run github:venkyr77/jellarr/${{ github.ref_name }}
-
-          # With Docker
-          docker run --rm -e JELLARR_API_KEY=your_key -v /path/to/config:/config:ro ghcr.io/venkyr77/jellarr:${{ github.ref_name }}
-
-          # Download binary (requires Node.js 24+)
-          ./jellarr-${{ github.ref_name }} --configFile path/to/config.yml
-          \`\`\`
-
-          ## Changelog
-
-          EOF
-          # Extract changelog section for this version
-          awk "/## \[${VERSION}\]/{flag=1; next} /## \[/{flag=0} flag" CHANGELOG.md >> release/changelog.md
-
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: release/jellarr-*
-          body_path: release/changelog.md
+          body: |
+            ## Jellarr ${{ github.ref_name }}
+
+            ```bash
+            # With Nix
+            nix run github:venkyr77/jellarr/${{ github.ref_name }}
+
+            # With Docker
+            docker run --rm -e JELLARR_API_KEY=your_key -v /path/to/config:/config:ro ghcr.io/venkyr77/jellarr:${{ github.ref_name }}
+
+            # Download binary (requires Node.js 24+)
+            ./jellarr-${{ github.ref_name }} --configFile path/to/config.yml
+            ```
+
+            ## Changelog
+
+            See [CHANGELOG.md](https://github.com/venkyr77/jellarr/blob/main/CHANGELOG.md) for detailed release notes.
           draft: false
           prerelease: false
