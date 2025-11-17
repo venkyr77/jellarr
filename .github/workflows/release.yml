@@ -46,5 +46,9 @@ jobs:
             # Download bundle (requires Node.js 24+)
             node jellarr-${{ github.ref_name }}.cjs --configFile path/to/config.yml
             ```
+
+            ## Changelog
+
+            See [CHANGELOG.md](https://github.com/venkyr77/jellarr/blob/main/CHANGELOG.md) for detailed release notes.
           draft: false
           prerelease: false
