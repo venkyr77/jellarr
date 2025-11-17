@@ -137,14 +137,14 @@ services:
     restart: "no"
 ```
 
-### Binary Download
+### Bundle Download
 
-Download from [releases](https://github.com/venkyr77/jellarr/releases):
+Download from [releases](https://github.com/venkyr77/jellarr/releases) (requires
+Node.js 24+):
 
 ```bash
-curl -LO https://github.com/venkyr77/jellarr/releases/download/v0.0.1/jellarr-v0.0.1
-chmod +x jellarr-v0.0.1
-JELLARR_API_KEY=your_api_key ./jellarr-v0.0.1
+curl -LO https://github.com/venkyr77/jellarr/releases/download/v0.0.2/jellarr-v0.0.2.cjs
+JELLARR_API_KEY=your_api_key node jellarr-v0.0.2.cjs --configFile path/to/config.yml
 ```
 
 **Note:** Requires Node.js 24+ installed on your system.

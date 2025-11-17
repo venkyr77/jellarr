@@ -27,13 +27,12 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           mkdir -p release
-          cp result/bin/jellarr release/jellarr-${VERSION}
-          chmod +x release/jellarr-${VERSION}
+          cp result/share/bundle.cjs release/jellarr-${VERSION}.cjs
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: release/jellarr-*
+          files: release/*.cjs
           body: |
             ## Jellarr ${{ github.ref_name }}
 
@@ -44,8 +43,8 @@ jobs:
             # With Docker
             docker pull ghcr.io/venkyr77/jellarr:${{ github.ref_name }}
 
-            # Download binary (requires Node.js 24+)
-            ./jellarr-${{ github.ref_name }}
+            # Download bundle (requires Node.js 24+)
+            node jellarr-${{ github.ref_name }}.cjs --configFile path/to/config.yml
             ```
           draft: false
           prerelease: false
