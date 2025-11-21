@@ -15,6 +15,12 @@ import type {
   AddVirtualFolderDtoSchema,
   LibraryOptionsSchema,
 } from "../../src/types/schema/library";
+import type { EncodingOptionsSchema } from "../../src/types/schema/encoding-options";
+import type { BrandingOptionsDtoSchema } from "../../src/types/schema/branding-options";
+import type {
+  UserDtoSchema,
+  CreateUserByNameSchema,
+} from "../../src/types/schema/users";
 
 const baseUrl: string = "http://localhost:8096/";
 const apiKey: string = "test-key";
@@ -294,5 +300,336 @@ describe("api/jf Library façade", () => {
     await expect(
       jellyfinClient.addVirtualFolder("Test", "movies", body),
     ).rejects.toThrow(/POST \/Library\/VirtualFolders failed/i);
+  });
+});
+
+describe("api/jf Encoding façade", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  afterEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("when GET /System/Configuration/Encoding returns JSON then it returns the parsed object", async (): Promise<void> => {
+    // Arrange
+    const payload: EncodingOptionsSchema = {
+      EnableHardwareEncoding: true,
+      EnableHardwareDecoding: false,
+    } as EncodingOptionsSchema;
+    mockFetchJson(payload);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const out: EncodingOptionsSchema =
+      await jellyfinClient.getEncodingConfiguration();
+
+    // Assert
+    expect(out).toEqual(payload);
+
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("GET");
+    expect(req.url).toMatch(/\/System\/Configuration\/encoding$/);
+    expect(req.headers.get("X-Emby-Token")).toBe(apiKey);
+  });
+
+  it("when POST /System/Configuration/Encoding succeeds then it sends JSON body and resolves", async (): Promise<void> => {
+    // Arrange
+    mockFetchJson({});
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await jellyfinClient.updateEncodingConfiguration({
+      EnableHardwareEncoding: true,
+    });
+
+    // Assert
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/System\/Configuration\/encoding$/);
+    expect(req.headers.get("content-type")).toBe("application/json");
+    expect(req.headers.get("X-Emby-Token")).toBe(apiKey);
+
+    const bodyText: string = await req.text();
+    expect(bodyText).toContain("EnableHardwareEncoding");
+  });
+
+  it("when GET /System/Configuration/Encoding fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 500 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(jellyfinClient.getEncodingConfiguration()).rejects.toThrow(
+      /GET \/System\/Configuration\/encoding failed/i,
+    );
+  });
+
+  it("when POST /System/Configuration/Encoding fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 400 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(
+      jellyfinClient.updateEncodingConfiguration({}),
+    ).rejects.toThrow(/POST \/System\/Configuration\/encoding failed/i);
+  });
+});
+
+describe("api/jf Branding façade", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  afterEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("when GET /System/Configuration/Branding returns JSON then it returns the parsed object", async (): Promise<void> => {
+    // Arrange
+    const payload: BrandingOptionsDtoSchema = {
+      LoginDisclaimer: "Welcome to our server",
+      CustomCss: "body { background: blue; }",
+      SplashscreenEnabled: true,
+    } as BrandingOptionsDtoSchema;
+    mockFetchJson(payload);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const out: BrandingOptionsDtoSchema =
+      await jellyfinClient.getBrandingConfiguration();
+
+    // Assert
+    expect(out).toEqual(payload);
+
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("GET");
+    expect(req.url).toMatch(/\/System\/Configuration\/Branding$/);
+    expect(req.headers.get("X-Emby-Token")).toBe(apiKey);
+  });
+
+  it("when POST /System/Configuration/Branding succeeds then it sends JSON body and resolves", async (): Promise<void> => {
+    // Arrange
+    mockFetchJson({});
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await jellyfinClient.updateBrandingConfiguration({
+      LoginDisclaimer: "New disclaimer",
+      SplashscreenEnabled: false,
+    });
+
+    // Assert
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/System\/Configuration\/Branding$/);
+    expect(req.headers.get("content-type")).toBe("application/json");
+    expect(req.headers.get("X-Emby-Token")).toBe(apiKey);
+
+    const bodyText: string = await req.text();
+    expect(bodyText).toContain("LoginDisclaimer");
+    expect(bodyText).toContain("SplashscreenEnabled");
+  });
+
+  it("when GET /System/Configuration/Branding fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 403 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(jellyfinClient.getBrandingConfiguration()).rejects.toThrow(
+      /GET \/System\/Configuration\/Branding failed/i,
+    );
+  });
+
+  it("when POST /System/Configuration/Branding fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 422 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(
+      jellyfinClient.updateBrandingConfiguration({}),
+    ).rejects.toThrow(/POST \/System\/Configuration\/Branding failed/i);
+  });
+});
+
+describe("api/jf Users façade", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  afterEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("when GET /Users returns JSON then it returns the parsed array", async (): Promise<void> => {
+    // Arrange
+    const payload: UserDtoSchema[] = [
+      {
+        Name: "admin",
+        Id: "user1-id",
+        ServerId: "server-id",
+        HasConfiguredPassword: true,
+      },
+      {
+        Name: "testuser",
+        Id: "user2-id",
+        ServerId: "server-id",
+        HasConfiguredPassword: true,
+      },
+    ] as UserDtoSchema[];
+    mockFetchJson(payload);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const out: UserDtoSchema[] = await jellyfinClient.getUsers();
+
+    // Assert
+    expect(out).toEqual(payload);
+    expect(out).toHaveLength(2);
+    expect(out[0].Name).toBe("admin");
+    expect(out[1].Name).toBe("testuser");
+
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("GET");
+    expect(req.url).toMatch(/\/Users$/);
+    expect(req.headers.get("X-Emby-Token")).toBe(apiKey);
+  });
+
+  it("when GET /Users returns empty array then it returns empty array", async (): Promise<void> => {
+    // Arrange
+    mockFetchJson([]);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const out: UserDtoSchema[] = await jellyfinClient.getUsers();
+
+    // Assert
+    expect(out).toEqual([]);
+    expect(out).toHaveLength(0);
+  });
+
+  it("when POST /Users/New succeeds then it sends JSON body and resolves", async (): Promise<void> => {
+    // Arrange
+    const responsePayload: UserDtoSchema = {
+      Name: "newuser",
+      Id: "new-user-id",
+      ServerId: "server-id",
+    } as UserDtoSchema;
+    mockFetchJson(responsePayload);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const createBody: CreateUserByNameSchema = {
+      Name: "newuser",
+      Password: "testpass",
+    };
+    await jellyfinClient.createUser(createBody);
+
+    // Assert
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/Users\/New$/);
+    expect(req.headers.get("content-type")).toBe("application/json");
+    expect(req.headers.get("X-Emby-Token")).toBe(apiKey);
+
+    const bodyText: string = await req.text();
+    expect(bodyText).toContain("newuser");
+    expect(bodyText).toContain("testpass");
+  });
+
+  it("when GET /Users fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 401 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(jellyfinClient.getUsers()).rejects.toThrow(
+      /GET \/Users failed/i,
+    );
+  });
+
+  it("when POST /Users/New fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 409 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const createBody: CreateUserByNameSchema = {
+      Name: "duplicate",
+      Password: "test",
+    };
+
+    // Assert
+    await expect(jellyfinClient.createUser(createBody)).rejects.toThrow(
+      /POST \/Users\/New failed/i,
+    );
   });
 });

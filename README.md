@@ -230,6 +230,59 @@ branding:
   splashscreenEnabled: false
 ```
 
+### User Management
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+users:
+  # User with plaintext password (development only)
+  - name: "admin-user"
+    password: "secure-password"
+
+  # User with password file (production recommended)
+  - name: "viewer-user"
+    passwordFile: "/run/secrets/viewer-password"
+```
+
+**Password Security:**
+
+- **plaintext password**: Use `password` field for development/testing only
+- **password file**: Use `passwordFile` for production - file contains only the
+  plaintext password (whitespace is trimmed)
+- **Exactly one required**: Each user must specify either `password` or
+  `passwordFile` (not both)
+
+**sops-nix Integration:**
+
+```nix
+{
+  sops.secrets = {
+    jellarr-api-key.sopsFile = ../../../../secrets/jellarr-api-key;
+    viewer-user-password.sopsFile = ../../../../secrets/viewer-user-password;
+    admin-user-password.sopsFile = ../../../../secrets/admin-user-password;
+  };
+
+  services.jellarr = {
+    enable = true;
+    environmentFile = config.sops.templates.jellarr-env.path;
+    config = {
+      base_url = "http://localhost:8096";
+      users = [
+        {
+          name = "viewer-user";
+          passwordFile = config.sops.secrets.viewer-user-password.path;
+        }
+        {
+          name = "admin-user";
+          passwordFile = config.sops.secrets.admin-user-password.path;
+        }
+      ];
+    };
+  };
+}
+```
+
 ---
 
 ## Secret Management
@@ -315,6 +368,11 @@ branding:
   customCss: |
     @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");
   splashscreenEnabled: false
+users:
+  - name: "admin-user"
+    password: "secure-password"
+  - name: "viewer-user"
+    passwordFile: "/run/secrets/viewer-password"
 ```
 
 ---

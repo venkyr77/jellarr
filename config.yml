@@ -34,3 +34,8 @@ branding:
   customCss: |
     @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");
   splashscreenEnabled: false
+users:
+  - name: "test-jellarr-1"
+    password: "test"
+  - name: "test-jellarr-2"
+    passwordFile: "./test-pass-file"

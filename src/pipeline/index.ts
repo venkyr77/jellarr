@@ -10,11 +10,14 @@ import {
   calculateBrandingOptionsDiff,
   applyBrandingOptions,
 } from "../apply/branding-options";
+import { calculateUsersDiff, applyUsers } from "../apply/users";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
 import type { LibraryConfig } from "../types/config/library";
 import { type ServerConfigurationSchema } from "../types/schema/system";
 import { type EncodingOptionsSchema } from "../types/schema/encoding-options";
 import { type BrandingOptionsDtoSchema } from "../types/schema/branding-options";
+import type { UserDtoSchema } from "../types/schema/users";
+import type { UserConfig } from "../types/config/users";
 import { createJellyfinClient } from "../api/jellyfin_client";
 import { type JellyfinClient } from "../api/jellyfin.types";
 import { RootConfigType, type RootConfig } from "../types/config/root";
@@ -108,6 +111,24 @@ export async function runPipeline(path: string): Promise<void> {
       console.log("✓ updated branding config");
     } else {
       console.log("✓ branding config already up to date");
+    }
+  }
+
+  // user management
+  if (cfg.users) {
+    const currentUsers: UserDtoSchema[] = await jellyfinClient.getUsers();
+
+    const usersToCreate: UserConfig[] | undefined = calculateUsersDiff(
+      currentUsers,
+      cfg.users,
+    );
+
+    if (usersToCreate) {
+      console.log("→ creating users");
+      await applyUsers(jellyfinClient, usersToCreate);
+      console.log("✓ created users");
+    } else {
+      console.log("✓ users already up to date");
     }
   }
 }
