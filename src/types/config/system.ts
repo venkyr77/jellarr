@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const PluginRepositoryConfigType: z.ZodObject<{
   name: z.ZodString;
-  url: ReturnType<typeof z.url>;
+  url: z.ZodURL;
   enabled: z.ZodBoolean;
 }> = z.object({
   name: z.string().min(1, "Plugin repository name cannot be empty"),

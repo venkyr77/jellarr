@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, type Mock } from "vitest";
 import { makeClient } from "../../src/api/client";
 import { type paths } from "../../generated/schema";
-import type createClient from "openapi-fetch";
+import type { Client } from "openapi-fetch";
 
 describe("api/client", () => {
   it("whenClientCreated_thenHeadersInjectedOnEachRequest()", async () => {
@@ -14,10 +14,7 @@ describe("api/client", () => {
 
     try {
       // Act
-      const jf: ReturnType<typeof createClient<paths>> = makeClient(
-        "http://example:8096",
-        "XYZ",
-      );
+      const jf: Client<paths> = makeClient("http://example:8096", "XYZ");
 
       await jf.GET("/System/Info/Public");
 

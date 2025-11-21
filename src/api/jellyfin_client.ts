@@ -6,24 +6,32 @@ import type {
   CollectionTypeSchema,
 } from "../types/schema/library";
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
-import type { JellyfinClient } from "./jellyfin.types";
+import type {
+  JellyfinClient,
+  GetSystemConfigurationResponse,
+  PostSystemConfigurationResponse,
+  GetEncodingConfigurationResponse,
+  PostEncodingConfigurationResponse,
+  GetVirtualFoldersResponse,
+  PostVirtualFolderResponse,
+  GetBrandingConfigurationResponse,
+  PostBrandingConfigurationResponse,
+} from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";
-import type createClient from "openapi-fetch";
+import type { Client } from "openapi-fetch";
 
 export function createJellyfinClient(
   baseUrl: string,
   apiKey: string,
 ): JellyfinClient {
-  const client: ReturnType<typeof createClient<paths>> = makeClient(
-    baseUrl,
-    apiKey,
-  );
+  const client: Client<paths> = makeClient(baseUrl, apiKey);
 
   return {
     async getSystemConfiguration(): Promise<ServerConfigurationSchema> {
-      // eslint-disable-next-line @typescript-eslint/typedef
-      const res = await client.GET("/System/Configuration");
+      const res: GetSystemConfigurationResponse = await client.GET(
+        "/System/Configuration",
+      );
 
       if (res.error) {
         throw new Error(
@@ -37,11 +45,13 @@ export function createJellyfinClient(
     async updateSystemConfiguration(
       body: Partial<ServerConfigurationSchema>,
     ): Promise<void> {
-      // eslint-disable-next-line @typescript-eslint/typedef
-      const res = await client.POST("/System/Configuration", {
-        body,
-        headers: { "content-type": "application/json" },
-      });
+      const res: PostSystemConfigurationResponse = await client.POST(
+        "/System/Configuration",
+        {
+          body,
+          headers: { "content-type": "application/json" },
+        },
+      );
 
       if (res.error) {
         throw new Error(
@@ -51,10 +61,12 @@ export function createJellyfinClient(
     },
 
     async getEncodingConfiguration(): Promise<EncodingOptionsSchema> {
-      // eslint-disable-next-line @typescript-eslint/typedef
-      const res = await client.GET("/System/Configuration/{key}", {
-        params: { path: { key: "encoding" } },
-      });
+      const res: GetEncodingConfigurationResponse = await client.GET(
+        "/System/Configuration/{key}",
+        {
+          params: { path: { key: "encoding" } },
+        },
+      );
 
       if (res.error) {
         throw new Error(
@@ -68,12 +80,14 @@ export function createJellyfinClient(
     async updateEncodingConfiguration(
       body: Partial<EncodingOptionsSchema>,
     ): Promise<void> {
-      // eslint-disable-next-line @typescript-eslint/typedef
-      const res = await client.POST("/System/Configuration/{key}", {
-        params: { path: { key: "encoding" } },
-        body,
-        headers: { "content-type": "application/json" },
-      });
+      const res: PostEncodingConfigurationResponse = await client.POST(
+        "/System/Configuration/{key}",
+        {
+          params: { path: { key: "encoding" } },
+          body,
+          headers: { "content-type": "application/json" },
+        },
+      );
 
       if (res.error) {
         throw new Error(
@@ -83,8 +97,9 @@ export function createJellyfinClient(
     },
 
     async getVirtualFolders(): Promise<VirtualFolderInfoSchema[]> {
-      // eslint-disable-next-line @typescript-eslint/typedef
-      const res = await client.GET("/Library/VirtualFolders");
+      const res: GetVirtualFoldersResponse = await client.GET(
+        "/Library/VirtualFolders",
+      );
 
       if (res.error) {
         throw new Error(
@@ -100,18 +115,20 @@ export function createJellyfinClient(
       collectionType: CollectionTypeSchema | undefined,
       body: AddVirtualFolderDtoSchema,
     ): Promise<void> {
-      // eslint-disable-next-line @typescript-eslint/typedef
-      const res = await client.POST("/Library/VirtualFolders", {
-        params: {
-          query: {
-            name,
-            collectionType,
-            refreshLibrary: true,
+      const res: PostVirtualFolderResponse = await client.POST(
+        "/Library/VirtualFolders",
+        {
+          params: {
+            query: {
+              name,
+              collectionType,
+              refreshLibrary: true,
+            },
           },
+          body,
+          headers: { "content-type": "application/json" },
         },
-        body,
-        headers: { "content-type": "application/json" },
-      });
+      );
 
       if (res.error) {
         throw new Error(
@@ -121,14 +138,16 @@ export function createJellyfinClient(
     },
 
     async getBrandingConfiguration(): Promise<BrandingOptionsDtoSchema> {
-      // eslint-disable-next-line @typescript-eslint/typedef
-      const res = await client.GET("/System/Configuration/{key}", {
-        params: {
-          path: {
-            key: "Branding",
+      const res: GetBrandingConfigurationResponse = await client.GET(
+        "/System/Configuration/{key}",
+        {
+          params: {
+            path: {
+              key: "Branding",
+            },
           },
         },
-      });
+      );
 
       if (res.error) {
         throw new Error(
@@ -142,10 +161,12 @@ export function createJellyfinClient(
     async updateBrandingConfiguration(
       body: Partial<BrandingOptionsDtoSchema>,
     ): Promise<void> {
-      // eslint-disable-next-line @typescript-eslint/typedef
-      const res = await client.POST("/System/Configuration/Branding", {
-        body: body as BrandingOptionsDtoSchema,
-      });
+      const res: PostBrandingConfigurationResponse = await client.POST(
+        "/System/Configuration/Branding",
+        {
+          body: body as BrandingOptionsDtoSchema,
+        },
+      );
 
       if (res.error) {
         throw new Error(

@@ -7,6 +7,22 @@ import type {
 } from "../types/schema/library";
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 
+export interface ApiResponse<T = unknown> {
+  data?: T;
+  error?: unknown;
+  response: Response;
+}
+
+export type GetSystemConfigurationResponse =
+  ApiResponse<ServerConfigurationSchema>;
+export type PostSystemConfigurationResponse = ApiResponse<void>;
+export type GetEncodingConfigurationResponse = ApiResponse;
+export type PostEncodingConfigurationResponse = ApiResponse<void>;
+export type GetVirtualFoldersResponse = ApiResponse<VirtualFolderInfoSchema[]>;
+export type PostVirtualFolderResponse = ApiResponse<void>;
+export type GetBrandingConfigurationResponse = ApiResponse;
+export type PostBrandingConfigurationResponse = ApiResponse<void>;
+
 export interface JellyfinClient {
   getSystemConfiguration(): Promise<ServerConfigurationSchema>;
   updateSystemConfiguration(

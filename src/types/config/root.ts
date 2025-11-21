@@ -6,7 +6,7 @@ import { BrandingOptionsConfigType } from "./branding-options";
 
 export const RootConfigType: z.ZodObject<{
   version: z.ZodNumber;
-  base_url: ReturnType<typeof z.url>;
+  base_url: z.ZodURL;
   system: typeof SystemConfigType;
   encoding: z.ZodOptional<typeof EncodingOptionsConfigType>;
   library: z.ZodOptional<typeof LibraryConfigType>;
