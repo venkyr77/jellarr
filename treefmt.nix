@@ -30,5 +30,13 @@ _: {
       ];
       priority = 50;
     };
+
+    black = {
+      enable = true;
+      includes = [
+        "*.py"
+      ];
+      priority = 60;
+    };
   };
 }
