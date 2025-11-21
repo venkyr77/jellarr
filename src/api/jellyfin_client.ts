@@ -7,6 +7,10 @@ import type {
 } from "../types/schema/library";
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type {
+  UserDtoSchema,
+  CreateUserByNameSchema,
+} from "../types/schema/users";
+import type {
   JellyfinClient,
   GetSystemConfigurationResponse,
   PostSystemConfigurationResponse,
@@ -16,6 +20,8 @@ import type {
   PostVirtualFolderResponse,
   GetBrandingConfigurationResponse,
   PostBrandingConfigurationResponse,
+  GetUsersResponse,
+  PostUserResponse,
 } from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";
@@ -171,6 +177,28 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /System/Configuration/Branding failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getUsers(): Promise<UserDtoSchema[]> {
+      const res: GetUsersResponse = await client.GET("/Users");
+
+      if (res.error) {
+        throw new Error(`GET /Users failed: ${res.response.status.toString()}`);
+      }
+
+      return res.data as UserDtoSchema[];
+    },
+
+    async createUser(body: CreateUserByNameSchema): Promise<void> {
+      const res: PostUserResponse = await client.POST("/Users/New", {
+        body,
+      });
+
+      if (res.error) {
+        throw new Error(
+          `POST /Users/New failed: ${res.response.status.toString()}`,
         );
       }
     },
