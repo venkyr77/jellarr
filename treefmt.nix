@@ -31,12 +31,21 @@ _: {
       priority = 50;
     };
 
-    black = {
+    isort = {
       enable = true;
       includes = [
         "*.py"
       ];
       priority = 60;
+      profile = "black";
+    };
+
+    black = {
+      enable = true;
+      includes = [
+        "*.py"
+      ];
+      priority = 70;
     };
   };
 }

@@ -8,9 +8,12 @@
 
   environment.systemPackages = [
     pkgs.curl
+    pkgs.dig
     pkgs.jq
     pkgs.sqlite
   ];
+
+  networking.useDHCP = true;
 
   services = {
     jellarr = {

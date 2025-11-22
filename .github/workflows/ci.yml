@@ -44,4 +44,4 @@ jobs:
 
       - name: Run integration tests and build checks
         run: |
-          nix flake check --all-systems --print-build-logs
+          nix flake check --all-systems --print-build-logs --option sandbox false
