@@ -9,6 +9,7 @@ import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options"
 import type {
   UserDtoSchema,
   CreateUserByNameSchema,
+  UserPolicySchema,
 } from "../types/schema/users";
 import type {
   JellyfinClient,
@@ -22,6 +23,7 @@ import type {
   PostBrandingConfigurationResponse,
   GetUsersResponse,
   PostNewUserResponse,
+  PostUserPolicyResponse,
 } from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";
@@ -199,6 +201,26 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /Users/New failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async updateUserPolicy(
+      userId: string,
+      body: UserPolicySchema,
+    ): Promise<void> {
+      const res: PostUserPolicyResponse = await client.POST(
+        "/Users/{userId}/Policy",
+        {
+          params: { path: { userId } },
+          body,
+          headers: { "content-type": "application/json" },
+        },
+      );
+
+      if (res.error) {
+        throw new Error(
+          `POST /Users/{userId}/Policy failed: ${res.response.status.toString()}`,
         );
       }
     },

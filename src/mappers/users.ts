@@ -1,6 +1,9 @@
 import { readFileSync } from "fs";
-import { type UserConfig } from "../types/config/users";
-import { type CreateUserByNameSchema } from "../types/schema/users";
+import { type UserConfig, type UserPolicyConfig } from "../types/config/users";
+import {
+  type CreateUserByNameSchema,
+  type UserPolicySchema,
+} from "../types/schema/users";
 
 export function getPlaintextPassword(config: UserConfig): string | undefined {
   return config.password;
@@ -22,4 +25,20 @@ export function mapUserConfigToCreateSchema(
     Name: desired.name,
     Password: getPassword(desired),
   };
+}
+
+export function mapUserPolicyConfigToSchema(
+  desired: UserPolicyConfig,
+): Partial<UserPolicySchema> {
+  const out: Partial<UserPolicySchema> = {};
+
+  if (typeof desired.isAdministrator !== "undefined") {
+    out.IsAdministrator = desired.isAdministrator;
+  }
+
+  if (typeof desired.loginAttemptsBeforeLockout !== "undefined") {
+    out.LoginAttemptsBeforeLockout = desired.loginAttemptsBeforeLockout;
+  }
+
+  return out;
 }
