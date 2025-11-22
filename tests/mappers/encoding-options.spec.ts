@@ -120,21 +120,29 @@ describe("mappers/encoding", () => {
         { input: "rkmpp", expected: "rkmpp" },
       ];
 
-      testCases.forEach(({ input, expected }) => {
-        // Arrange
-        const config: EncodingOptionsConfig = {
-          hardwareAccelerationType: input,
-        };
+      testCases.forEach(
+        ({
+          input,
+          expected,
+        }: {
+          input: EncodingOptionsConfig["hardwareAccelerationType"];
+          expected: string;
+        }) => {
+          // Arrange
+          const config: EncodingOptionsConfig = {
+            hardwareAccelerationType: input,
+          };
 
-        // Act
-        const result: Partial<EncodingOptionsSchema> =
-          mapEncodingOptionsConfigToSchema(config);
+          // Act
+          const result: Partial<EncodingOptionsSchema> =
+            mapEncodingOptionsConfigToSchema(config);
 
-        // Assert
-        expect(result).toEqual({
-          HardwareAccelerationType: expected,
-        });
-      });
+          // Assert
+          expect(result).toEqual({
+            HardwareAccelerationType: expected,
+          });
+        },
+      );
     });
 
     it("should return empty object when hardwareAccelerationType is undefined", () => {
@@ -236,14 +244,22 @@ describe("mappers/encoding", () => {
         },
       ];
 
-      testCases.forEach(({ config, expected }) => {
-        // Act
-        const result: Partial<EncodingOptionsSchema> =
-          mapEncodingOptionsConfigToSchema(config);
+      testCases.forEach(
+        ({
+          config,
+          expected,
+        }: {
+          config: EncodingOptionsConfig;
+          expected: Partial<EncodingOptionsSchema>;
+        }) => {
+          // Act
+          const result: Partial<EncodingOptionsSchema> =
+            mapEncodingOptionsConfigToSchema(config);
 
-        // Assert
-        expect(result).toEqual(expected);
-      });
+          // Assert
+          expect(result).toEqual(expected);
+        },
+      );
     });
 
     it("should not include device fields when undefined", () => {
@@ -304,14 +320,22 @@ describe("mappers/encoding", () => {
         },
       ];
 
-      testCases.forEach(({ config, expected }) => {
-        // Act
-        const result: Partial<EncodingOptionsSchema> =
-          mapEncodingOptionsConfigToSchema(config);
+      testCases.forEach(
+        ({
+          config,
+          expected,
+        }: {
+          config: EncodingOptionsConfig;
+          expected: Partial<EncodingOptionsSchema>;
+        }) => {
+          // Act
+          const result: Partial<EncodingOptionsSchema> =
+            mapEncodingOptionsConfigToSchema(config);
 
-        // Assert
-        expect(result).toEqual(expected);
-      });
+          // Assert
+          expect(result).toEqual(expected);
+        },
+      );
     });
 
     it("should not include HardwareDecodingCodecs when undefined", () => {
@@ -366,14 +390,22 @@ describe("mappers/encoding", () => {
         },
       ];
 
-      testCases.forEach(({ config, expected }) => {
-        // Act
-        const result: Partial<EncodingOptionsSchema> =
-          mapEncodingOptionsConfigToSchema(config);
+      testCases.forEach(
+        ({
+          config,
+          expected,
+        }: {
+          config: EncodingOptionsConfig;
+          expected: Partial<EncodingOptionsSchema>;
+        }) => {
+          // Act
+          const result: Partial<EncodingOptionsSchema> =
+            mapEncodingOptionsConfigToSchema(config);
 
-        // Assert
-        expect(result).toEqual(expected);
-      });
+          // Assert
+          expect(result).toEqual(expected);
+        },
+      );
     });
 
     it("should not include decoding color depth fields when undefined", () => {
@@ -419,14 +451,22 @@ describe("mappers/encoding", () => {
         },
       ];
 
-      testCases.forEach(({ config, expected }) => {
-        // Act
-        const result: Partial<EncodingOptionsSchema> =
-          mapEncodingOptionsConfigToSchema(config);
+      testCases.forEach(
+        ({
+          config,
+          expected,
+        }: {
+          config: EncodingOptionsConfig;
+          expected: Partial<EncodingOptionsSchema>;
+        }) => {
+          // Act
+          const result: Partial<EncodingOptionsSchema> =
+            mapEncodingOptionsConfigToSchema(config);
 
-        // Assert
-        expect(result).toEqual(expected);
-      });
+          // Assert
+          expect(result).toEqual(expected);
+        },
+      );
     });
 
     it("should not include encoding format fields when undefined", () => {

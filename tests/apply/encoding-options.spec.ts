@@ -254,27 +254,35 @@ describe("apply/encoding", () => {
         },
       ];
 
-      testCases.forEach(({ currentValue, desiredValue, expectedValue }) => {
-        // Arrange
-        const current: EncodingOptionsSchema = {
-          HardwareAccelerationType: currentValue,
-          EncodingThreadCount: -1,
-        } as EncodingOptionsSchema;
+      testCases.forEach(
+        ({
+          currentValue,
+          desiredValue,
+          expectedValue,
+        }: {
+          currentValue: string | undefined;
+          desiredValue: EncodingOptionsConfig["hardwareAccelerationType"];
+          expectedValue: string;
+        }) => {
+          // Arrange
+          const current: EncodingOptionsSchema = {
+            HardwareAccelerationType: currentValue,
+            EncodingThreadCount: -1,
+          } as EncodingOptionsSchema;
 
-        const desired: EncodingOptionsConfig = {
-          hardwareAccelerationType: desiredValue,
-        };
+          const desired: EncodingOptionsConfig = {
+            hardwareAccelerationType: desiredValue,
+          };
 
-        // Act
-        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
-          current,
-          desired,
-        );
+          // Act
+          const result: EncodingOptionsSchema | undefined =
+            calculateEncodingDiff(current, desired);
 
-        // Assert
-        expect(result?.HardwareAccelerationType).toBe(expectedValue);
-        expect(result?.EncodingThreadCount).toBe(-1); // Should preserve other fields
-      });
+          // Assert
+          expect(result?.HardwareAccelerationType).toBe(expectedValue);
+          expect(result?.EncodingThreadCount).toBe(-1); // Should preserve other fields
+        },
+      );
     });
 
     it("should not modify HardwareAccelerationType when hardwareAccelerationType is undefined", () => {
@@ -309,7 +317,7 @@ describe("apply/encoding", () => {
         "rkmpp",
       ];
 
-      testCases.forEach((value) => {
+      testCases.forEach((value: string) => {
         // Arrange
         const current: EncodingOptionsSchema = {
           HardwareAccelerationType: value,
@@ -526,25 +534,35 @@ describe("apply/encoding", () => {
           },
         ];
 
-        testCases.forEach(({ currentValue, desiredValue, expectedValue }) => {
-          // Arrange
-          const current: EncodingOptionsSchema = {
-            VaapiDevice: currentValue,
-            EncodingThreadCount: 2,
-          } as EncodingOptionsSchema;
+        testCases.forEach(
+          ({
+            currentValue,
+            desiredValue,
+            expectedValue,
+          }: {
+            currentValue: string | undefined;
+            desiredValue: string;
+            expectedValue: string;
+          }) => {
+            // Arrange
+            const current: EncodingOptionsSchema = {
+              VaapiDevice: currentValue,
+              EncodingThreadCount: 2,
+            } as EncodingOptionsSchema;
 
-          const desired: EncodingOptionsConfig = {
-            vaapiDevice: desiredValue,
-          };
+            const desired: EncodingOptionsConfig = {
+              vaapiDevice: desiredValue,
+            };
 
-          // Act
-          const result: EncodingOptionsSchema | undefined =
-            calculateEncodingDiff(current, desired);
+            // Act
+            const result: EncodingOptionsSchema | undefined =
+              calculateEncodingDiff(current, desired);
 
-          // Assert
-          expect(result?.VaapiDevice).toBe(expectedValue);
-          expect(result?.EncodingThreadCount).toBe(2); // Should preserve other fields
-        });
+            // Assert
+            expect(result?.VaapiDevice).toBe(expectedValue);
+            expect(result?.EncodingThreadCount).toBe(2); // Should preserve other fields
+          },
+        );
       });
 
       it("should update QsvDevice when qsvDevice changes", () => {
@@ -576,25 +594,35 @@ describe("apply/encoding", () => {
           },
         ];
 
-        testCases.forEach(({ currentValue, desiredValue, expectedValue }) => {
-          // Arrange
-          const current: EncodingOptionsSchema = {
-            QsvDevice: currentValue,
-            EncodingThreadCount: 3,
-          } as EncodingOptionsSchema;
+        testCases.forEach(
+          ({
+            currentValue,
+            desiredValue,
+            expectedValue,
+          }: {
+            currentValue: string | undefined;
+            desiredValue: string;
+            expectedValue: string;
+          }) => {
+            // Arrange
+            const current: EncodingOptionsSchema = {
+              QsvDevice: currentValue,
+              EncodingThreadCount: 3,
+            } as EncodingOptionsSchema;
 
-          const desired: EncodingOptionsConfig = {
-            qsvDevice: desiredValue,
-          };
+            const desired: EncodingOptionsConfig = {
+              qsvDevice: desiredValue,
+            };
 
-          // Act
-          const result: EncodingOptionsSchema | undefined =
-            calculateEncodingDiff(current, desired);
+            // Act
+            const result: EncodingOptionsSchema | undefined =
+              calculateEncodingDiff(current, desired);
 
-          // Assert
-          expect(result?.QsvDevice).toBe(expectedValue);
-          expect(result?.EncodingThreadCount).toBe(3); // Should preserve other fields
-        });
+            // Assert
+            expect(result?.QsvDevice).toBe(expectedValue);
+            expect(result?.EncodingThreadCount).toBe(3); // Should preserve other fields
+          },
+        );
       });
 
       it("should not modify device fields when undefined", () => {
@@ -736,25 +764,35 @@ describe("apply/encoding", () => {
           },
         ];
 
-        testCases.forEach(({ currentValue, desiredValue, expectedValue }) => {
-          // Arrange
-          const current: EncodingOptionsSchema = {
-            HardwareDecodingCodecs: currentValue,
-            EncodingThreadCount: 2,
-          } as EncodingOptionsSchema;
+        testCases.forEach(
+          ({
+            currentValue,
+            desiredValue,
+            expectedValue,
+          }: {
+            currentValue: string[] | undefined;
+            desiredValue: EncodingOptionsConfig["hardwareDecodingCodecs"];
+            expectedValue: string[];
+          }) => {
+            // Arrange
+            const current: EncodingOptionsSchema = {
+              HardwareDecodingCodecs: currentValue,
+              EncodingThreadCount: 2,
+            } as EncodingOptionsSchema;
 
-          const desired: EncodingOptionsConfig = {
-            hardwareDecodingCodecs: desiredValue,
-          };
+            const desired: EncodingOptionsConfig = {
+              hardwareDecodingCodecs: desiredValue,
+            };
 
-          // Act
-          const result: EncodingOptionsSchema | undefined =
-            calculateEncodingDiff(current, desired);
+            // Act
+            const result: EncodingOptionsSchema | undefined =
+              calculateEncodingDiff(current, desired);
 
-          // Assert
-          expect(result?.HardwareDecodingCodecs).toEqual(expectedValue);
-          expect(result?.EncodingThreadCount).toBe(2); // Should preserve other fields
-        });
+            // Assert
+            expect(result?.HardwareDecodingCodecs).toEqual(expectedValue);
+            expect(result?.EncodingThreadCount).toBe(2); // Should preserve other fields
+          },
+        );
       });
 
       it("should not modify HardwareDecodingCodecs when undefined", () => {
@@ -835,25 +873,33 @@ describe("apply/encoding", () => {
             { currentValue: true, desiredValue: false },
           ];
 
-          testCases.forEach(({ currentValue, desiredValue }) => {
-            // Arrange
-            const current: EncodingOptionsSchema = {
-              EnableDecodingColorDepth10Hevc: currentValue,
-              EncodingThreadCount: 2,
-            } as EncodingOptionsSchema;
+          testCases.forEach(
+            ({
+              currentValue,
+              desiredValue,
+            }: {
+              currentValue: boolean;
+              desiredValue: boolean;
+            }) => {
+              // Arrange
+              const current: EncodingOptionsSchema = {
+                EnableDecodingColorDepth10Hevc: currentValue,
+                EncodingThreadCount: 2,
+              } as EncodingOptionsSchema;
 
-            const desired: EncodingOptionsConfig = {
-              enableDecodingColorDepth10Hevc: desiredValue,
-            };
+              const desired: EncodingOptionsConfig = {
+                enableDecodingColorDepth10Hevc: desiredValue,
+              };
 
-            // Act
-            const result: EncodingOptionsSchema | undefined =
-              calculateEncodingDiff(current, desired);
+              // Act
+              const result: EncodingOptionsSchema | undefined =
+                calculateEncodingDiff(current, desired);
 
-            // Assert
-            expect(result?.EnableDecodingColorDepth10Hevc).toBe(desiredValue);
-            expect(result?.EncodingThreadCount).toBe(2);
-          });
+              // Assert
+              expect(result?.EnableDecodingColorDepth10Hevc).toBe(desiredValue);
+              expect(result?.EncodingThreadCount).toBe(2);
+            },
+          );
         });
 
         it("should not modify EnableDecodingColorDepth10Hevc when undefined", () => {
@@ -909,25 +955,33 @@ describe("apply/encoding", () => {
             { currentValue: true, desiredValue: false },
           ];
 
-          testCases.forEach(({ currentValue, desiredValue }) => {
-            // Arrange
-            const current: EncodingOptionsSchema = {
-              EnableDecodingColorDepth10Vp9: currentValue,
-              EncodingThreadCount: 3,
-            } as EncodingOptionsSchema;
+          testCases.forEach(
+            ({
+              currentValue,
+              desiredValue,
+            }: {
+              currentValue: boolean;
+              desiredValue: boolean;
+            }) => {
+              // Arrange
+              const current: EncodingOptionsSchema = {
+                EnableDecodingColorDepth10Vp9: currentValue,
+                EncodingThreadCount: 3,
+              } as EncodingOptionsSchema;
 
-            const desired: EncodingOptionsConfig = {
-              enableDecodingColorDepth10Vp9: desiredValue,
-            };
+              const desired: EncodingOptionsConfig = {
+                enableDecodingColorDepth10Vp9: desiredValue,
+              };
 
-            // Act
-            const result: EncodingOptionsSchema | undefined =
-              calculateEncodingDiff(current, desired);
+              // Act
+              const result: EncodingOptionsSchema | undefined =
+                calculateEncodingDiff(current, desired);
 
-            // Assert
-            expect(result?.EnableDecodingColorDepth10Vp9).toBe(desiredValue);
-            expect(result?.EncodingThreadCount).toBe(3);
-          });
+              // Assert
+              expect(result?.EnableDecodingColorDepth10Vp9).toBe(desiredValue);
+              expect(result?.EncodingThreadCount).toBe(3);
+            },
+          );
         });
 
         it("should log when EnableDecodingColorDepth10Vp9 changes", () => {
@@ -966,27 +1020,35 @@ describe("apply/encoding", () => {
             { currentValue: true, desiredValue: false },
           ];
 
-          testCases.forEach(({ currentValue, desiredValue }) => {
-            // Arrange
-            const current: EncodingOptionsSchema = {
-              EnableDecodingColorDepth10HevcRext: currentValue,
-              EncodingThreadCount: 4,
-            } as EncodingOptionsSchema;
-
-            const desired: EncodingOptionsConfig = {
-              enableDecodingColorDepth10HevcRext: desiredValue,
-            };
-
-            // Act
-            const result: EncodingOptionsSchema | undefined =
-              calculateEncodingDiff(current, desired);
-
-            // Assert
-            expect(result?.EnableDecodingColorDepth10HevcRext).toBe(
+          testCases.forEach(
+            ({
+              currentValue,
               desiredValue,
-            );
-            expect(result?.EncodingThreadCount).toBe(4);
-          });
+            }: {
+              currentValue: boolean;
+              desiredValue: boolean;
+            }) => {
+              // Arrange
+              const current: EncodingOptionsSchema = {
+                EnableDecodingColorDepth10HevcRext: currentValue,
+                EncodingThreadCount: 4,
+              } as EncodingOptionsSchema;
+
+              const desired: EncodingOptionsConfig = {
+                enableDecodingColorDepth10HevcRext: desiredValue,
+              };
+
+              // Act
+              const result: EncodingOptionsSchema | undefined =
+                calculateEncodingDiff(current, desired);
+
+              // Assert
+              expect(result?.EnableDecodingColorDepth10HevcRext).toBe(
+                desiredValue,
+              );
+              expect(result?.EncodingThreadCount).toBe(4);
+            },
+          );
         });
 
         it("should log when EnableDecodingColorDepth10HevcRext changes", () => {
@@ -1025,27 +1087,35 @@ describe("apply/encoding", () => {
             { currentValue: true, desiredValue: false },
           ];
 
-          testCases.forEach(({ currentValue, desiredValue }) => {
-            // Arrange
-            const current: EncodingOptionsSchema = {
-              EnableDecodingColorDepth12HevcRext: currentValue,
-              EncodingThreadCount: 5,
-            } as EncodingOptionsSchema;
-
-            const desired: EncodingOptionsConfig = {
-              enableDecodingColorDepth12HevcRext: desiredValue,
-            };
-
-            // Act
-            const result: EncodingOptionsSchema | undefined =
-              calculateEncodingDiff(current, desired);
-
-            // Assert
-            expect(result?.EnableDecodingColorDepth12HevcRext).toBe(
+          testCases.forEach(
+            ({
+              currentValue,
               desiredValue,
-            );
-            expect(result?.EncodingThreadCount).toBe(5);
-          });
+            }: {
+              currentValue: boolean;
+              desiredValue: boolean;
+            }) => {
+              // Arrange
+              const current: EncodingOptionsSchema = {
+                EnableDecodingColorDepth12HevcRext: currentValue,
+                EncodingThreadCount: 5,
+              } as EncodingOptionsSchema;
+
+              const desired: EncodingOptionsConfig = {
+                enableDecodingColorDepth12HevcRext: desiredValue,
+              };
+
+              // Act
+              const result: EncodingOptionsSchema | undefined =
+                calculateEncodingDiff(current, desired);
+
+              // Assert
+              expect(result?.EnableDecodingColorDepth12HevcRext).toBe(
+                desiredValue,
+              );
+              expect(result?.EncodingThreadCount).toBe(5);
+            },
+          );
         });
 
         it("should log when EnableDecodingColorDepth12HevcRext changes", () => {
@@ -1087,25 +1157,33 @@ describe("apply/encoding", () => {
             { currentValue: true, desiredValue: false },
           ];
 
-          testCases.forEach(({ currentValue, desiredValue }) => {
-            // Arrange
-            const current: EncodingOptionsSchema = {
-              AllowHevcEncoding: currentValue,
-              EncodingThreadCount: 6,
-            } as EncodingOptionsSchema;
+          testCases.forEach(
+            ({
+              currentValue,
+              desiredValue,
+            }: {
+              currentValue: boolean;
+              desiredValue: boolean;
+            }) => {
+              // Arrange
+              const current: EncodingOptionsSchema = {
+                AllowHevcEncoding: currentValue,
+                EncodingThreadCount: 6,
+              } as EncodingOptionsSchema;
 
-            const desired: EncodingOptionsConfig = {
-              allowHevcEncoding: desiredValue,
-            };
+              const desired: EncodingOptionsConfig = {
+                allowHevcEncoding: desiredValue,
+              };
 
-            // Act
-            const result: EncodingOptionsSchema | undefined =
-              calculateEncodingDiff(current, desired);
+              // Act
+              const result: EncodingOptionsSchema | undefined =
+                calculateEncodingDiff(current, desired);
 
-            // Assert
-            expect(result?.AllowHevcEncoding).toBe(desiredValue);
-            expect(result?.EncodingThreadCount).toBe(6);
-          });
+              // Assert
+              expect(result?.AllowHevcEncoding).toBe(desiredValue);
+              expect(result?.EncodingThreadCount).toBe(6);
+            },
+          );
         });
 
         it("should not modify AllowHevcEncoding when undefined", () => {
@@ -1161,25 +1239,33 @@ describe("apply/encoding", () => {
             { currentValue: true, desiredValue: false },
           ];
 
-          testCases.forEach(({ currentValue, desiredValue }) => {
-            // Arrange
-            const current: EncodingOptionsSchema = {
-              AllowAv1Encoding: currentValue,
-              EncodingThreadCount: 7,
-            } as EncodingOptionsSchema;
+          testCases.forEach(
+            ({
+              currentValue,
+              desiredValue,
+            }: {
+              currentValue: boolean;
+              desiredValue: boolean;
+            }) => {
+              // Arrange
+              const current: EncodingOptionsSchema = {
+                AllowAv1Encoding: currentValue,
+                EncodingThreadCount: 7,
+              } as EncodingOptionsSchema;
 
-            const desired: EncodingOptionsConfig = {
-              allowAv1Encoding: desiredValue,
-            };
+              const desired: EncodingOptionsConfig = {
+                allowAv1Encoding: desiredValue,
+              };
 
-            // Act
-            const result: EncodingOptionsSchema | undefined =
-              calculateEncodingDiff(current, desired);
+              // Act
+              const result: EncodingOptionsSchema | undefined =
+                calculateEncodingDiff(current, desired);
 
-            // Assert
-            expect(result?.AllowAv1Encoding).toBe(desiredValue);
-            expect(result?.EncodingThreadCount).toBe(7);
-          });
+              // Assert
+              expect(result?.AllowAv1Encoding).toBe(desiredValue);
+              expect(result?.EncodingThreadCount).toBe(7);
+            },
+          );
         });
 
         it("should not modify AllowAv1Encoding when undefined", () => {

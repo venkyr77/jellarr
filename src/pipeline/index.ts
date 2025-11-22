@@ -26,7 +26,7 @@ import type { UserConfig } from "../types/config/users";
 import { createJellyfinClient } from "../api/jellyfin_client";
 import { type JellyfinClient } from "../api/jellyfin.types";
 import { RootConfigType, type RootConfig } from "../types/config/root";
-import { type ZodSafeParseResult } from "zod";
+import { type ZodSafeParseResult, type z } from "zod";
 
 export async function runPipeline(path: string): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
@@ -35,7 +35,7 @@ export async function runPipeline(path: string): Promise<void> {
     RootConfigType.safeParse(YAML.parse(raw));
   if (!validationResult.success) {
     const errorMessages: string = validationResult.error.issues
-      .map((err) => `${err.path.join(".")}: ${err.message}`)
+      .map((err: z.core.$ZodIssue) => `${err.path.join(".")}: ${err.message}`)
       .join("\n");
     throw new Error(`Configuration validation failed:\n${errorMessages}`);
   }

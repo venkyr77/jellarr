@@ -88,17 +88,19 @@ describe("EncodingOptionsConfig", () => {
       },
     ];
 
-    validConfigs.forEach((config) => {
-      // Act
-      const result: ZodSafeParseResult<EncodingOptionsConfig> =
-        EncodingOptionsConfigType.safeParse(config);
+    validConfigs.forEach(
+      (config: z.input<typeof EncodingOptionsConfigType>) => {
+        // Act
+        const result: ZodSafeParseResult<EncodingOptionsConfig> =
+          EncodingOptionsConfigType.safeParse(config);
 
-      // Assert
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data).toEqual(config);
-      }
-    });
+        // Assert
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data).toEqual(config);
+        }
+      },
+    );
   });
 
   it("should reject invalid hardwareAccelerationType values", () => {
@@ -121,7 +123,7 @@ describe("EncodingOptionsConfig", () => {
 
       // Find the error related to hardwareAccelerationType
       const hasEnumError: boolean = result.error.issues.some(
-        (issue) =>
+        (issue: z.core.$ZodIssue) =>
           issue.code === "invalid_value" &&
           issue.path[0] === "hardwareAccelerationType",
       );
@@ -138,17 +140,19 @@ describe("EncodingOptionsConfig", () => {
       { vaapiDevice: "/path/to/device", qsvDevice: "/another/path" },
     ];
 
-    validConfigs.forEach((config) => {
-      // Act
-      const result: ZodSafeParseResult<EncodingOptionsConfig> =
-        EncodingOptionsConfigType.safeParse(config);
+    validConfigs.forEach(
+      (config: z.input<typeof EncodingOptionsConfigType>) => {
+        // Act
+        const result: ZodSafeParseResult<EncodingOptionsConfig> =
+          EncodingOptionsConfigType.safeParse(config);
 
-      // Assert
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data).toEqual(config);
-      }
-    });
+        // Assert
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data).toEqual(config);
+        }
+      },
+    );
   });
 
   it("should reject non-string vaapiDevice and qsvDevice", () => {
@@ -162,14 +166,16 @@ describe("EncodingOptionsConfig", () => {
       { vaapiDevice: null },
     ];
 
-    invalidConfigs.forEach((config) => {
-      // Act
-      const result: ZodSafeParseResult<EncodingOptionsConfig> =
-        EncodingOptionsConfigType.safeParse(config);
+    invalidConfigs.forEach(
+      (config: z.input<typeof EncodingOptionsConfigType>) => {
+        // Act
+        const result: ZodSafeParseResult<EncodingOptionsConfig> =
+          EncodingOptionsConfigType.safeParse(config);
 
-      // Assert
-      expect(result.success).toBe(false);
-    });
+        // Assert
+        expect(result.success).toBe(false);
+      },
+    );
   });
 
   it("should validate hardwareDecodingCodecs array with valid codec values", () => {
@@ -191,17 +197,19 @@ describe("EncodingOptionsConfig", () => {
       { hardwareDecodingCodecs: [] },
     ];
 
-    validConfigs.forEach((config) => {
-      // Act
-      const result: ZodSafeParseResult<EncodingOptionsConfig> =
-        EncodingOptionsConfigType.safeParse(config);
+    validConfigs.forEach(
+      (config: z.input<typeof EncodingOptionsConfigType>) => {
+        // Act
+        const result: ZodSafeParseResult<EncodingOptionsConfig> =
+          EncodingOptionsConfigType.safeParse(config);
 
-      // Assert
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data).toEqual(config);
-      }
-    });
+        // Assert
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data).toEqual(config);
+        }
+      },
+    );
   });
 
   it("should reject invalid hardwareDecodingCodecs values", () => {
@@ -217,14 +225,16 @@ describe("EncodingOptionsConfig", () => {
       { hardwareDecodingCodecs: [123] },
     ];
 
-    invalidConfigs.forEach((config) => {
-      // Act
-      const result: ZodSafeParseResult<EncodingOptionsConfig> =
-        EncodingOptionsConfigType.safeParse(config);
+    invalidConfigs.forEach(
+      (config: z.input<typeof EncodingOptionsConfigType>) => {
+        // Act
+        const result: ZodSafeParseResult<EncodingOptionsConfig> =
+          EncodingOptionsConfigType.safeParse(config);
 
-      // Assert
-      expect(result.success).toBe(false);
-    });
+        // Assert
+        expect(result.success).toBe(false);
+      },
+    );
   });
 
   it("should validate all decoding color depth boolean fields", () => {
@@ -246,17 +256,19 @@ describe("EncodingOptionsConfig", () => {
       },
     ];
 
-    validConfigs.forEach((config) => {
-      // Act
-      const result: ZodSafeParseResult<EncodingOptionsConfig> =
-        EncodingOptionsConfigType.safeParse(config);
+    validConfigs.forEach(
+      (config: z.input<typeof EncodingOptionsConfigType>) => {
+        // Act
+        const result: ZodSafeParseResult<EncodingOptionsConfig> =
+          EncodingOptionsConfigType.safeParse(config);
 
-      // Assert
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data).toEqual(config);
-      }
-    });
+        // Assert
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data).toEqual(config);
+        }
+      },
+    );
   });
 
   it("should reject non-boolean decoding color depth fields", () => {
@@ -272,14 +284,16 @@ describe("EncodingOptionsConfig", () => {
       { enableDecodingColorDepth12HevcRext: [] },
     ];
 
-    invalidConfigs.forEach((config) => {
-      // Act
-      const result: ZodSafeParseResult<EncodingOptionsConfig> =
-        EncodingOptionsConfigType.safeParse(config);
+    invalidConfigs.forEach(
+      (config: z.input<typeof EncodingOptionsConfigType>) => {
+        // Act
+        const result: ZodSafeParseResult<EncodingOptionsConfig> =
+          EncodingOptionsConfigType.safeParse(config);
 
-      // Assert
-      expect(result.success).toBe(false);
-    });
+        // Assert
+        expect(result.success).toBe(false);
+      },
+    );
   });
 
   it("should validate encoding format boolean fields", () => {
@@ -293,17 +307,19 @@ describe("EncodingOptionsConfig", () => {
       { allowHevcEncoding: false, allowAv1Encoding: true },
     ];
 
-    validConfigs.forEach((config) => {
-      // Act
-      const result: ZodSafeParseResult<EncodingOptionsConfig> =
-        EncodingOptionsConfigType.safeParse(config);
+    validConfigs.forEach(
+      (config: z.input<typeof EncodingOptionsConfigType>) => {
+        // Act
+        const result: ZodSafeParseResult<EncodingOptionsConfig> =
+          EncodingOptionsConfigType.safeParse(config);
 
-      // Assert
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data).toEqual(config);
-      }
-    });
+        // Assert
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data).toEqual(config);
+        }
+      },
+    );
   });
 
   it("should reject non-boolean encoding format fields", () => {
@@ -317,14 +333,16 @@ describe("EncodingOptionsConfig", () => {
       { allowHevcEncoding: null },
     ];
 
-    invalidConfigs.forEach((config) => {
-      // Act
-      const result: ZodSafeParseResult<EncodingOptionsConfig> =
-        EncodingOptionsConfigType.safeParse(config);
+    invalidConfigs.forEach(
+      (config: z.input<typeof EncodingOptionsConfigType>) => {
+        // Act
+        const result: ZodSafeParseResult<EncodingOptionsConfig> =
+          EncodingOptionsConfigType.safeParse(config);
 
-      // Assert
-      expect(result.success).toBe(false);
-    });
+        // Assert
+        expect(result.success).toBe(false);
+      },
+    );
   });
 
   it("should validate complete encoding config with all fields", () => {
@@ -372,7 +390,9 @@ describe("EncodingOptionsConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const strictError: z.core.$ZodIssue | undefined =
-        result.error.issues.find((err) => err.code === "unrecognized_keys");
+        result.error.issues.find(
+          (err: z.core.$ZodIssue) => err.code === "unrecognized_keys",
+        );
       expect(strictError?.code).toBe("unrecognized_keys");
     }
   });

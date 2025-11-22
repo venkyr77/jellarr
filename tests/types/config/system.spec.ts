@@ -72,7 +72,9 @@ describe("SystemConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const strictError: z.core.$ZodIssue | undefined =
-        result.error.issues.find((err) => err.code === "unrecognized_keys");
+        result.error.issues.find(
+          (err: z.core.$ZodIssue) => err.code === "unrecognized_keys",
+        );
       expect(strictError?.code).toBe("unrecognized_keys");
     }
   });
@@ -116,7 +118,7 @@ describe("PluginRepositoryConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const nameError: z.core.$ZodIssue | undefined = result.error.issues.find(
-        (err) => err.path.includes("name"),
+        (err: z.core.$ZodIssue) => err.path.includes("name"),
       );
       expect(nameError?.message).toContain("cannot be empty");
     }
@@ -140,7 +142,7 @@ describe("PluginRepositoryConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const urlError: z.core.$ZodIssue | undefined = result.error.issues.find(
-        (err) => err.path.includes("url"),
+        (err: z.core.$ZodIssue) => err.path.includes("url"),
       );
       expect(urlError?.message).toContain("must be a valid URL");
     }

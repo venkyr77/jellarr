@@ -37,10 +37,14 @@ export default defineConfig(
       "@typescript-eslint/typedef": [
         "error",
         {
+          arrayDestructuring: true,
+          arrowParameter: true,
           memberVariableDeclaration: true,
+          objectDestructuring: true,
           parameter: true,
           propertyDeclaration: true,
           variableDeclaration: true,
+          variableDeclarationIgnoreFunction: false,
         },
       ],
 
@@ -56,7 +60,7 @@ export default defineConfig(
           format: ["camelCase", "PascalCase", "snake_case"],
         },
         {
-          selector: "default", 
+          selector: "default",
           format: ["camelCase"],
         },
         {
@@ -74,5 +78,12 @@ export default defineConfig(
       ],
     },
   },
-  [globalIgnores(["**bundle.cjs", "esbuild.ts", "eslint.config.mjs", "generated/**"])],
+  [
+    globalIgnores([
+      "**bundle.cjs",
+      "esbuild.ts",
+      "eslint.config.mjs",
+      "generated/**",
+    ]),
+  ],
 );

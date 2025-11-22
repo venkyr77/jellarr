@@ -51,7 +51,7 @@ describe("types/config/library", () => {
         "mixed",
       ] as const;
 
-      types.forEach((collectionType) => {
+      types.forEach((collectionType: VirtualFolderConfig["collectionType"]) => {
         const config: z.input<typeof VirtualFolderConfigType> = {
           name: `Test ${collectionType}`,
           collectionType,

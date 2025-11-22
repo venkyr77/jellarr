@@ -10,7 +10,7 @@ export function mapVirtualFolderConfigToAddVirtualFolderDto(
 ): AddVirtualFolderDtoSchema {
   const libraryOptions: LibraryOptionsSchema = {
     PathInfos: desired.libraryOptions.pathInfos.map(
-      (pathInfo): MediaPathInfoSchema => ({
+      (pathInfo: { path: string }): MediaPathInfoSchema => ({
         Path: pathInfo.path,
       }),
     ),

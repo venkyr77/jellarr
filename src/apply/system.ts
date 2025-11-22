@@ -38,7 +38,8 @@ function arePluginRepositoryConfigsEqual(
     repos: PluginRepositoryConfig[],
   ): PluginRepositoryConfig[] =>
     [...repos].sort(
-      (a, b) => a.name.localeCompare(b.name) || a.url.localeCompare(b.url),
+      (a: PluginRepositoryConfig, b: PluginRepositoryConfig) =>
+        a.name.localeCompare(b.name) || a.url.localeCompare(b.url),
     );
 
   return deepEqual(sortByNameAndUrl(a), sortByNameAndUrl(b));

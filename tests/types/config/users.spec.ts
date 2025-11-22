@@ -27,7 +27,9 @@ describe("UserConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const refineError: z.core.$ZodIssue | undefined =
-        result.error.issues.find((err) => err.code === "custom");
+        result.error.issues.find(
+          (err: z.core.$ZodIssue) => err.code === "custom",
+        );
       expect(refineError?.message).toContain(
         "Must specify exactly one of 'password' or 'passwordFile'",
       );
@@ -87,7 +89,7 @@ describe("UserConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const nameError: z.core.$ZodIssue | undefined = result.error.issues.find(
-        (err) => err.path.includes("name"),
+        (err: z.core.$ZodIssue) => err.path.includes("name"),
       );
       expect(nameError?.message).toContain("User name is required");
     }
@@ -126,7 +128,9 @@ describe("UserConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const refineError: z.core.$ZodIssue | undefined =
-        result.error.issues.find((err) => err.code === "custom");
+        result.error.issues.find(
+          (err: z.core.$ZodIssue) => err.code === "custom",
+        );
       expect(refineError?.message).toContain(
         "Must specify exactly one of 'password' or 'passwordFile'",
       );
@@ -149,7 +153,9 @@ describe("UserConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const refineError: z.core.$ZodIssue | undefined =
-        result.error.issues.find((err) => err.code === "custom");
+        result.error.issues.find(
+          (err: z.core.$ZodIssue) => err.code === "custom",
+        );
       expect(refineError?.message).toContain(
         "Must specify exactly one of 'password' or 'passwordFile'",
       );
@@ -173,7 +179,9 @@ describe("UserConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const refineError: z.core.$ZodIssue | undefined =
-        result.error.issues.find((err) => err.code === "custom");
+        result.error.issues.find(
+          (err: z.core.$ZodIssue) => err.code === "custom",
+        );
       expect(refineError?.message).toContain(
         "Must specify exactly one of 'password' or 'passwordFile'",
       );
@@ -197,7 +205,9 @@ describe("UserConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const refineError: z.core.$ZodIssue | undefined =
-        result.error.issues.find((err) => err.code === "custom");
+        result.error.issues.find(
+          (err: z.core.$ZodIssue) => err.code === "custom",
+        );
       expect(refineError?.message).toContain(
         "Must specify exactly one of 'password' or 'passwordFile'",
       );
@@ -221,7 +231,9 @@ describe("UserConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const refineError: z.core.$ZodIssue | undefined =
-        result.error.issues.find((err) => err.code === "custom");
+        result.error.issues.find(
+          (err: z.core.$ZodIssue) => err.code === "custom",
+        );
       expect(refineError?.message).toContain(
         "Must specify exactly one of 'password' or 'passwordFile'",
       );
@@ -245,7 +257,9 @@ describe("UserConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const refineError: z.core.$ZodIssue | undefined =
-        result.error.issues.find((err) => err.code === "custom");
+        result.error.issues.find(
+          (err: z.core.$ZodIssue) => err.code === "custom",
+        );
       expect(refineError?.message).toContain(
         "Must specify exactly one of 'password' or 'passwordFile'",
       );
@@ -271,7 +285,9 @@ describe("UserConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const strictError: z.core.$ZodIssue | undefined =
-        result.error.issues.find((err) => err.code === "unrecognized_keys");
+        result.error.issues.find(
+          (err: z.core.$ZodIssue) => err.code === "unrecognized_keys",
+        );
       expect(strictError?.code).toBe("unrecognized_keys");
     }
   });
@@ -385,17 +401,19 @@ describe("UserPolicyConfig", () => {
       { loginAttemptsBeforeLockout: 10 },
     ];
 
-    validConfigs.forEach((validConfig) => {
-      // Act
-      const result: ZodSafeParseResult<UserPolicyConfig> =
-        UserPolicyConfigType.safeParse(validConfig);
+    validConfigs.forEach(
+      (validConfig: z.input<typeof UserPolicyConfigType>) => {
+        // Act
+        const result: ZodSafeParseResult<UserPolicyConfig> =
+          UserPolicyConfigType.safeParse(validConfig);
 
-      // Assert
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data).toEqual(validConfig);
-      }
-    });
+        // Assert
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data).toEqual(validConfig);
+        }
+      },
+    );
   });
 
   it("should reject negative loginAttemptsBeforeLockout", () => {
@@ -414,7 +432,8 @@ describe("UserPolicyConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const numError: z.core.$ZodIssue | undefined = result.error.issues.find(
-        (err) => err.path.includes("loginAttemptsBeforeLockout"),
+        (err: z.core.$ZodIssue) =>
+          err.path.includes("loginAttemptsBeforeLockout"),
       );
       expect(numError?.message).toContain(">=1");
     }
@@ -436,7 +455,8 @@ describe("UserPolicyConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const numError: z.core.$ZodIssue | undefined = result.error.issues.find(
-        (err) => err.path.includes("loginAttemptsBeforeLockout"),
+        (err: z.core.$ZodIssue) =>
+          err.path.includes("loginAttemptsBeforeLockout"),
       );
       expect(numError?.message).toContain(">=1");
     }
@@ -458,7 +478,8 @@ describe("UserPolicyConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const intError: z.core.$ZodIssue | undefined = result.error.issues.find(
-        (err) => err.path.includes("loginAttemptsBeforeLockout"),
+        (err: z.core.$ZodIssue) =>
+          err.path.includes("loginAttemptsBeforeLockout"),
       );
       expect(intError?.message).toContain("int");
     }
@@ -471,14 +492,16 @@ describe("UserPolicyConfig", () => {
       { isAdministrator: "true" },
     ];
 
-    invalidConfigs.forEach((invalidConfig) => {
-      // Act
-      const result: ZodSafeParseResult<UserPolicyConfig> =
-        UserPolicyConfigType.safeParse(invalidConfig);
+    invalidConfigs.forEach(
+      (invalidConfig: z.input<typeof UserPolicyConfigType>) => {
+        // Act
+        const result: ZodSafeParseResult<UserPolicyConfig> =
+          UserPolicyConfigType.safeParse(invalidConfig);
 
-      // Assert
-      expect(result.success).toBe(false);
-    });
+        // Assert
+        expect(result.success).toBe(false);
+      },
+    );
   });
 });
 

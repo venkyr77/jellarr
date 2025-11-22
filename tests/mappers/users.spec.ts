@@ -282,14 +282,22 @@ describe("mappers/users", () => {
         },
       ];
 
-      testCases.forEach(({ config, expected }) => {
-        // Act
-        const result: Partial<UserPolicySchema> =
-          mapUserPolicyConfigToSchema(config);
+      testCases.forEach(
+        ({
+          config,
+          expected,
+        }: {
+          config: UserPolicyConfig;
+          expected: Partial<UserPolicySchema>;
+        }) => {
+          // Act
+          const result: Partial<UserPolicySchema> =
+            mapUserPolicyConfigToSchema(config);
 
-        // Assert
-        expect(result).toEqual(expected);
-      });
+          // Assert
+          expect(result).toEqual(expected);
+        },
+      );
     });
 
     it("should return empty object when no fields provided", () => {
