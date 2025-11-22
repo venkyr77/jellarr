@@ -5,9 +5,16 @@ import {
   getPasswordFromFile,
   getPassword,
   mapUserConfigToCreateSchema,
+  mapUserPolicyConfigToSchema,
 } from "../../src/mappers/users";
-import { type UserConfig } from "../../src/types/config/users";
-import { type CreateUserByNameSchema } from "../../src/types/schema/users";
+import {
+  type UserConfig,
+  type UserPolicyConfig,
+} from "../../src/types/config/users";
+import {
+  type CreateUserByNameSchema,
+  type UserPolicySchema,
+} from "../../src/types/schema/users";
 
 describe("mappers/users", () => {
   const testPasswordFile: string = "/tmp/test-user-password";
@@ -232,6 +239,119 @@ describe("mappers/users", () => {
       expect(result).toEqual({
         Name: "test-user",
         Password: "",
+      });
+    });
+  });
+
+  describe("mapUserPolicyConfigToSchema", () => {
+    it("should map all policy fields to schema", () => {
+      // Arrange
+      const config: UserPolicyConfig = {
+        isAdministrator: true,
+        loginAttemptsBeforeLockout: 5,
+      };
+
+      // Act
+      const result: Partial<UserPolicySchema> =
+        mapUserPolicyConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({
+        IsAdministrator: true,
+        LoginAttemptsBeforeLockout: 5,
+      });
+    });
+
+    it("should map individual policy fields", () => {
+      // Arrange
+      const testCases: Array<{
+        config: UserPolicyConfig;
+        expected: Partial<UserPolicySchema>;
+      }> = [
+        {
+          config: { isAdministrator: true },
+          expected: { IsAdministrator: true },
+        },
+        {
+          config: { isAdministrator: false },
+          expected: { IsAdministrator: false },
+        },
+        {
+          config: { loginAttemptsBeforeLockout: 10 },
+          expected: { LoginAttemptsBeforeLockout: 10 },
+        },
+      ];
+
+      testCases.forEach(({ config, expected }) => {
+        // Act
+        const result: Partial<UserPolicySchema> =
+          mapUserPolicyConfigToSchema(config);
+
+        // Assert
+        expect(result).toEqual(expected);
+      });
+    });
+
+    it("should return empty object when no fields provided", () => {
+      // Arrange
+      const config: UserPolicyConfig = {};
+
+      // Act
+      const result: Partial<UserPolicySchema> =
+        mapUserPolicyConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({});
+    });
+
+    it("should not include undefined fields in result", () => {
+      // Arrange
+      const config: UserPolicyConfig = {
+        isAdministrator: true,
+      };
+
+      // Act
+      const result: Partial<UserPolicySchema> =
+        mapUserPolicyConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({
+        IsAdministrator: true,
+      });
+      expect(result).not.toHaveProperty("LoginAttemptsBeforeLockout");
+    });
+
+    it("should handle mixed defined and undefined fields", () => {
+      // Arrange
+      const config: UserPolicyConfig = {
+        isAdministrator: false,
+        loginAttemptsBeforeLockout: 3,
+      };
+
+      // Act
+      const result: Partial<UserPolicySchema> =
+        mapUserPolicyConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({
+        IsAdministrator: false,
+        LoginAttemptsBeforeLockout: 3,
+      });
+    });
+
+    it("should handle zero value for loginAttemptsBeforeLockout", () => {
+      // Arrange
+      const config: UserPolicyConfig = {
+        loginAttemptsBeforeLockout: 0,
+      };
+
+      // Act
+      const result: Partial<UserPolicySchema> =
+        mapUserPolicyConfigToSchema(config);
+
+      // Assert
+      expect(result).toEqual({
+        LoginAttemptsBeforeLockout: 0,
       });
     });
   });
