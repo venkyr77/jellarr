@@ -10,13 +10,18 @@ import {
   calculateBrandingOptionsDiff,
   applyBrandingOptions,
 } from "../apply/branding-options";
-import { calculateUsersDiff, applyUsers } from "../apply/users";
+import {
+  calculateNewUsersDiff,
+  applyNewUsers,
+  calculateUserPoliciesDiff,
+  applyUserPolicies,
+} from "../apply/users";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
 import type { LibraryConfig } from "../types/config/library";
 import { type ServerConfigurationSchema } from "../types/schema/system";
 import { type EncodingOptionsSchema } from "../types/schema/encoding-options";
 import { type BrandingOptionsDtoSchema } from "../types/schema/branding-options";
-import type { UserDtoSchema } from "../types/schema/users";
+import type { UserDtoSchema, UserPolicySchema } from "../types/schema/users";
 import type { UserConfig } from "../types/config/users";
 import { createJellyfinClient } from "../api/jellyfin_client";
 import { type JellyfinClient } from "../api/jellyfin.types";
@@ -116,19 +121,29 @@ export async function runPipeline(path: string): Promise<void> {
 
   // user management
   if (cfg.users) {
-    const currentUsers: UserDtoSchema[] = await jellyfinClient.getUsers();
+    let currentUsers: UserDtoSchema[] = await jellyfinClient.getUsers();
 
-    const usersToCreate: UserConfig[] | undefined = calculateUsersDiff(
+    const usersToCreate: UserConfig[] | undefined = calculateNewUsersDiff(
       currentUsers,
       cfg.users,
     );
 
     if (usersToCreate) {
       console.log("→ creating users");
-      await applyUsers(jellyfinClient, usersToCreate);
+      await applyNewUsers(jellyfinClient, usersToCreate);
       console.log("✓ created users");
+      currentUsers = await jellyfinClient.getUsers();
+    }
+
+    const userPoliciesToUpdate: Map<string, UserPolicySchema> | undefined =
+      calculateUserPoliciesDiff(currentUsers, cfg.users);
+
+    if (userPoliciesToUpdate) {
+      console.log("→ updating user policies");
+      await applyUserPolicies(jellyfinClient, userPoliciesToUpdate);
+      console.log("✓ updated user policies");
     } else {
-      console.log("✓ users already up to date");
+      console.log("✓ user policies already up to date");
     }
   }
 }

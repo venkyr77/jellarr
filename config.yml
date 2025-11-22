@@ -37,5 +37,13 @@ branding:
 users:
   - name: "test-jellarr-1"
     password: "test"
+    policy:
+      isAdministrator: true
+      loginAttemptsBeforeLockout: 5
   - name: "test-jellarr-2"
     passwordFile: "./test-pass-file"
+    policy:
+      isAdministrator: false
+      loginAttemptsBeforeLockout: 3
+  - name: "test-jellarr-3"
+    password: "plainpass"

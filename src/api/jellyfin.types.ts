@@ -9,6 +9,7 @@ import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options"
 import type {
   UserDtoSchema,
   CreateUserByNameSchema,
+  UserPolicySchema,
 } from "../types/schema/users";
 
 export interface ApiResponse<T = unknown> {
@@ -27,7 +28,8 @@ export type PostVirtualFolderResponse = ApiResponse<void>;
 export type GetBrandingConfigurationResponse = ApiResponse;
 export type PostBrandingConfigurationResponse = ApiResponse<void>;
 export type GetUsersResponse = ApiResponse<UserDtoSchema[]>;
-export type PostUserResponse = ApiResponse<UserDtoSchema>;
+export type PostNewUserResponse = ApiResponse<UserDtoSchema>;
+export type PostUserPolicyResponse = ApiResponse<void>;
 
 export interface JellyfinClient {
   getSystemConfiguration(): Promise<ServerConfigurationSchema>;
@@ -50,4 +52,5 @@ export interface JellyfinClient {
   ): Promise<void>;
   getUsers(): Promise<UserDtoSchema[]>;
   createUser(body: CreateUserByNameSchema): Promise<void>;
+  updateUserPolicy(userId: string, body: UserPolicySchema): Promise<void>;
 }

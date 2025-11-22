@@ -236,13 +236,20 @@ branding:
 version: 1
 base_url: "http://localhost:8096"
 users:
-  # User with plaintext password (development only)
-  - name: "admin-user"
+  # Regular user with plaintext password (development only)
+  - name: "regular-user"
     password: "secure-password"
 
-  # User with password file (production recommended)
+  # Regular user with password file (production recommended)
   - name: "viewer-user"
     passwordFile: "/run/secrets/viewer-password"
+
+  # Admin user with policy configuration
+  - name: "admin-user"
+    passwordFile: "/run/secrets/admin-password"
+    policy:
+      isAdministrator: true
+      loginAttemptsBeforeLockout: 3
 ```
 
 **Password Security:**
@@ -369,10 +376,15 @@ branding:
     @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");
   splashscreenEnabled: false
 users:
-  - name: "admin-user"
+  - name: "regular-user"
     password: "secure-password"
   - name: "viewer-user"
     passwordFile: "/run/secrets/viewer-password"
+  - name: "admin-user"
+    passwordFile: "/run/secrets/admin-password"
+    policy:
+      isAdministrator: true
+      loginAttemptsBeforeLockout: 3
 ```
 
 ---

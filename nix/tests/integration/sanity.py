@@ -59,18 +59,25 @@ def setup_jellyfin_with_api_key(server):
         raise Exception("Jellyfin authenticated API never became ready")
 
 
-def get_jellyfin_config(server, endpoint=""):
-    """Get configuration from Jellyfin API using curl"""
-    url = f"http://localhost:8096/System/Configuration{endpoint}"
-    result = server.succeed(f"curl -sf '{url}' -H 'X-Emby-Token: test'")
+def jellyfin_api_call(server, endpoint, method="GET", data=None):
+    url = f"http://localhost:8096{endpoint}"
+    cmd = f"curl -sf '{url}' -H 'X-Emby-Token: test'"
+
+    if method == "POST":
+        cmd += " -H 'Content-Type: application/json'"
+        if data:
+            cmd += f" -d '{data}'"
+
+    result = server.succeed(cmd)
     return json.loads(result)
+
+
+def get_jellyfin_config(server, endpoint=""):
+    return jellyfin_api_call(server, f"/System/Configuration{endpoint}")
 
 
 def get_jellyfin_data(server, endpoint):
-    """Get data from Jellyfin API using curl"""
-    url = f"http://localhost:8096{endpoint}"
-    result = server.succeed(f"curl -sf '{url}' -H 'X-Emby-Token: test'")
-    return json.loads(result)
+    return jellyfin_api_call(server, endpoint)
 
 
 def validate_initial_state(server):
@@ -259,18 +266,62 @@ def validate_user_management(server):
                     has_key("Id"),
                     has_entry("HasPassword", True),
                     has_entry("HasConfiguredPassword", True),
+                    has_entry(
+                        "Policy",
+                        all_of(
+                            has_entry("IsAdministrator", True),
+                            has_entry("LoginAttemptsBeforeLockout", 3),
+                        ),
+                    ),
                 ),
                 all_of(
                     has_entry("Name", "test-jellarr-2"),
                     has_key("Id"),
                     has_entry("HasPassword", True),
                     has_entry("HasConfiguredPassword", True),
+                    has_entry(
+                        "Policy",
+                        all_of(
+                            has_entry("IsAdministrator", False),
+                            has_entry("LoginAttemptsBeforeLockout", 5),
+                        ),
+                    ),
                 ),
             ),
         ),
     )
 
-    print("✓ User management validated")
+    print("✓ User management validated (users + policies)")
+
+
+def validate_user_authentication(server):
+    auth_payload_1 = json.dumps({"Username": "test-jellarr-1", "Pw": "test"})
+    auth_payload_2 = json.dumps({"Username": "test-jellarr-2", "Pw": "test"})
+
+    auth_response_1 = jellyfin_api_call(
+        server, "/Users/AuthenticateByName", "POST", auth_payload_1
+    )
+    auth_response_2 = jellyfin_api_call(
+        server, "/Users/AuthenticateByName", "POST", auth_payload_2
+    )
+
+    assert_that(
+        auth_response_1,
+        all_of(
+            has_entry("User", has_entry("Name", "test-jellarr-1")),
+            has_key("AccessToken"),
+        ),
+    )
+
+    assert_that(
+        auth_response_2,
+        all_of(
+            has_entry("User", has_entry("Name", "test-jellarr-2")),
+            has_key("AccessToken"),
+        ),
+    )
+
+    print("✓ User authentication validated (passwords working)")
 
 
 def setup_files_and_folders(server):
@@ -305,6 +356,7 @@ def run_sanity_test(server):
     validate_library_configuration(server)
     validate_branding_configuration(server)
     validate_user_management(server)
+    validate_user_authentication(server)
     print(
         "✅ SANITY test passed: Full configuration applied and validated successfully"
     )

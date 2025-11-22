@@ -69,10 +69,18 @@ pkgs.testers.runNixOSTest {
         {
           name = "test-jellarr-1";
           password = "test";
+          policy = {
+            isAdministrator = true;
+            loginAttemptsBeforeLockout = 3;
+          };
         }
         {
           name = "test-jellarr-2";
           passwordFile = "/tmp/test-pass-file";
+          policy = {
+            isAdministrator = false;
+            loginAttemptsBeforeLockout = 5;
+          };
         }
       ];
       version = 1;

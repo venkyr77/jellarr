@@ -20,6 +20,7 @@ import type { BrandingOptionsDtoSchema } from "../../src/types/schema/branding-o
 import type {
   UserDtoSchema,
   CreateUserByNameSchema,
+  UserPolicySchema,
 } from "../../src/types/schema/users";
 
 const baseUrl: string = "http://localhost:8096/";
@@ -631,5 +632,53 @@ describe("api/jf Users façade", () => {
     await expect(jellyfinClient.createUser(createBody)).rejects.toThrow(
       /POST \/Users\/New failed/i,
     );
+  });
+
+  it("when POST /Users/{userId}/Policy succeeds then it sends JSON body and resolves", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(204);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const policyBody: UserPolicySchema = {
+      IsAdministrator: true,
+      LoginAttemptsBeforeLockout: 5,
+    } as UserPolicySchema;
+    await jellyfinClient.updateUserPolicy("user-id-123", policyBody);
+
+    // Assert
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/Users\/user-id-123\/Policy/);
+    expect(req.headers.get("content-type")).toBe("application/json");
+    expect(req.headers.get("X-Emby-Token")).toBe(apiKey);
+
+    const bodyText: string = await req.text();
+    expect(bodyText).toContain("IsAdministrator");
+    expect(bodyText).toContain("LoginAttemptsBeforeLockout");
+  });
+
+  it("when POST /Users/{userId}/Policy fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 400 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const policyBody: UserPolicySchema = {
+      IsAdministrator: false,
+    } as UserPolicySchema;
+
+    // Assert
+    await expect(
+      jellyfinClient.updateUserPolicy("user-id-123", policyBody),
+    ).rejects.toThrow(/POST \/Users\/\{userId\}\/Policy failed/i);
   });
 });
