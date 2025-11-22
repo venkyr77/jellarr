@@ -5,6 +5,7 @@ import tseslint from "typescript-eslint";
 export default defineConfig(
   eslint.configs.recommended,
   tseslint.configs.strictTypeChecked,
+  tseslint.configs.stylisticTypeChecked,
   {
     languageOptions: {
       parserOptions: {
@@ -75,6 +76,25 @@ export default defineConfig(
           selector: "import",
           format: ["camelCase", "PascalCase", "UPPER_CASE"],
         },
+      ],
+
+      // conflicts with typedef strictness
+      "@typescript-eslint/no-inferrable-types": "off",
+      // conflicts with strict rules
+      "@typescript-eslint/non-nullable-type-assertion-style": "off",
+
+      // enforce array-simple for better readability on complex types
+      "@typescript-eslint/array-type": [
+        "error",
+        {
+          default: "array-simple",
+          readonly: "array-simple",
+        },
+      ],
+      // keep generics on left side for consistency
+      "@typescript-eslint/consistent-generic-constructors": [
+        "error",
+        "type-annotation",
       ],
     },
   },

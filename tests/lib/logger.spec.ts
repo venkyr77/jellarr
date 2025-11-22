@@ -4,7 +4,9 @@ import { logger } from "../../src/lib/logger";
 describe("lib/logger", () => {
   it("whenInfoCalled_thenWritesToConsoleLog()", () => {
     // Arrange
-    const spy: Mock = vi.spyOn(console, "log").mockImplementation(() => {});
+    const spy: Mock = vi
+      .spyOn(console, "log")
+      .mockImplementation(() => undefined);
 
     // Act
     logger.info("hello");
@@ -17,7 +19,9 @@ describe("lib/logger", () => {
 
   it("whenWarnCalled_thenWritesToConsoleWarn()", () => {
     // Arrange
-    const spy: Mock = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const spy: Mock = vi
+      .spyOn(console, "warn")
+      .mockImplementation(() => undefined);
 
     // Act
     logger.warn("w");
@@ -30,7 +34,9 @@ describe("lib/logger", () => {
 
   it("whenErrorCalled_thenWritesToConsoleError()", () => {
     // Arrange
-    const spy: Mock = vi.spyOn(console, "error").mockImplementation(() => {});
+    const spy: Mock = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
 
     // Act
     logger.error("e");

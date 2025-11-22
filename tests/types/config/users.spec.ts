@@ -395,7 +395,7 @@ describe("UserPolicyConfig", () => {
 
   it("should validate policy with individual fields", () => {
     // Arrange
-    const validConfigs: z.input<typeof UserPolicyConfigType>[] = [
+    const validConfigs: Array<z.input<typeof UserPolicyConfigType>> = [
       { isAdministrator: true },
       { isAdministrator: false },
       { loginAttemptsBeforeLockout: 10 },
@@ -487,7 +487,7 @@ describe("UserPolicyConfig", () => {
 
   it("should reject non-boolean policy fields", () => {
     // Arrange
-    const invalidConfigs: z.input<typeof UserPolicyConfigType>[] = [
+    const invalidConfigs: Array<z.input<typeof UserPolicyConfigType>> = [
       // @ts-expect-error intentional bad types for test
       { isAdministrator: "true" },
     ];

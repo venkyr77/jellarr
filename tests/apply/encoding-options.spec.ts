@@ -306,7 +306,7 @@ describe("apply/encoding", () => {
 
     it("should not modify HardwareAccelerationType when value is the same", () => {
       // Arrange
-      const testCases: Array<string> = [
+      const testCases: string[] = [
         "none",
         "amf",
         "qsv",

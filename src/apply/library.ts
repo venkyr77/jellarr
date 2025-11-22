@@ -34,7 +34,7 @@ export function calculateLibraryDiff(
       virtualFoldersToCreate.push(desiredVF);
     } else {
       // Check if locations differ
-      const currentLocations: string[] = existingVF.Locations || [];
+      const currentLocations: string[] = existingVF.Locations ?? [];
       const desiredLocations: string[] = desiredVF.libraryOptions.pathInfos.map(
         (p: { path: string }) => p.path,
       );
