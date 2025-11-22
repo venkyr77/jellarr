@@ -10,7 +10,7 @@ import {
   calculateBrandingOptionsDiff,
   applyBrandingOptions,
 } from "../apply/branding-options";
-import { calculateUsersDiff, applyUsers } from "../apply/users";
+import { calculateNewUsersDiff, applyNewUsers } from "../apply/users";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
 import type { LibraryConfig } from "../types/config/library";
 import { type ServerConfigurationSchema } from "../types/schema/system";
@@ -118,14 +118,14 @@ export async function runPipeline(path: string): Promise<void> {
   if (cfg.users) {
     const currentUsers: UserDtoSchema[] = await jellyfinClient.getUsers();
 
-    const usersToCreate: UserConfig[] | undefined = calculateUsersDiff(
+    const usersToCreate: UserConfig[] | undefined = calculateNewUsersDiff(
       currentUsers,
       cfg.users,
     );
 
     if (usersToCreate) {
       console.log("→ creating users");
-      await applyUsers(jellyfinClient, usersToCreate);
+      await applyNewUsers(jellyfinClient, usersToCreate);
       console.log("✓ created users");
     } else {
       console.log("✓ users already up to date");

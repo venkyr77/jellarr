@@ -21,7 +21,7 @@ import type {
   GetBrandingConfigurationResponse,
   PostBrandingConfigurationResponse,
   GetUsersResponse,
-  PostUserResponse,
+  PostNewUserResponse,
 } from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";
@@ -192,7 +192,7 @@ export function createJellyfinClient(
     },
 
     async createUser(body: CreateUserByNameSchema): Promise<void> {
-      const res: PostUserResponse = await client.POST("/Users/New", {
+      const res: PostNewUserResponse = await client.POST("/Users/New", {
         body,
       });
 

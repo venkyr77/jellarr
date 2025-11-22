@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { calculateUsersDiff, applyUsers } from "../../src/apply/users";
+import { calculateNewUsersDiff, applyNewUsers } from "../../src/apply/users";
 import type { JellyfinClient } from "../../src/api/jellyfin.types";
 import type { UserConfig, UserConfigList } from "../../src/types/config/users";
 import type { UserDtoSchema } from "../../src/types/schema/users";
@@ -11,7 +11,7 @@ vi.mock("../../src/mappers/users", () => ({
   })),
 }));
 
-describe("calculateUsersDiff", () => {
+describe("calculateNewUsersDiff", () => {
   const currentUsers: UserDtoSchema[] = [
     {
       Name: "existing-user",
@@ -30,7 +30,7 @@ describe("calculateUsersDiff", () => {
     const config: UserConfigList = [];
 
     // Act
-    const result: UserConfig[] | undefined = calculateUsersDiff(
+    const result: UserConfig[] | undefined = calculateNewUsersDiff(
       currentUsers,
       config,
     );
@@ -53,7 +53,7 @@ describe("calculateUsersDiff", () => {
     ];
 
     // Act
-    const result: UserConfig[] | undefined = calculateUsersDiff(
+    const result: UserConfig[] | undefined = calculateNewUsersDiff(
       currentUsers,
       config,
     );
@@ -76,7 +76,7 @@ describe("calculateUsersDiff", () => {
     ];
 
     // Act
-    const result: UserConfig[] | undefined = calculateUsersDiff(
+    const result: UserConfig[] | undefined = calculateNewUsersDiff(
       currentUsers,
       config,
     );
@@ -104,7 +104,7 @@ describe("calculateUsersDiff", () => {
     ];
 
     // Act
-    const result: UserConfig[] | undefined = calculateUsersDiff(
+    const result: UserConfig[] | undefined = calculateNewUsersDiff(
       currentUsers,
       config,
     );
@@ -144,7 +144,7 @@ describe("calculateUsersDiff", () => {
     ];
 
     // Act
-    const result: UserConfig[] | undefined = calculateUsersDiff(
+    const result: UserConfig[] | undefined = calculateNewUsersDiff(
       currentUsers,
       config,
     );
@@ -172,7 +172,7 @@ describe("calculateUsersDiff", () => {
     ];
 
     // Act
-    const result: UserConfig[] | undefined = calculateUsersDiff([], config);
+    const result: UserConfig[] | undefined = calculateNewUsersDiff([], config);
 
     // Assert
     expect(result).toBeDefined();
@@ -197,7 +197,7 @@ describe("calculateUsersDiff", () => {
     ];
 
     // Act
-    const result: UserConfig[] | undefined = calculateUsersDiff(
+    const result: UserConfig[] | undefined = calculateNewUsersDiff(
       currentUsers,
       config,
     );
@@ -229,7 +229,7 @@ describe("calculateUsersDiff", () => {
     ];
 
     // Act
-    const result: UserConfig[] | undefined = calculateUsersDiff(
+    const result: UserConfig[] | undefined = calculateNewUsersDiff(
       currentUsersWithUndefined,
       config,
     );
@@ -239,7 +239,7 @@ describe("calculateUsersDiff", () => {
   });
 });
 
-describe("applyUsers", () => {
+describe("applyNewUsers", () => {
   const mockClient: JellyfinClient = {
     createUser: vi.fn(),
   } as unknown as JellyfinClient;
@@ -253,7 +253,7 @@ describe("applyUsers", () => {
     const createUserSpy: Mock = vi.spyOn(mockClient, "createUser");
 
     // Act
-    await applyUsers(mockClient, undefined);
+    await applyNewUsers(mockClient, undefined);
 
     // Assert
     expect(createUserSpy).not.toHaveBeenCalled();
@@ -270,7 +270,7 @@ describe("applyUsers", () => {
     ];
 
     // Act
-    await applyUsers(mockClient, usersToCreate);
+    await applyNewUsers(mockClient, usersToCreate);
 
     // Assert
     expect(createUserSpy).toHaveBeenCalledTimes(1);
@@ -295,7 +295,7 @@ describe("applyUsers", () => {
     ];
 
     // Act
-    await applyUsers(mockClient, usersToCreate);
+    await applyNewUsers(mockClient, usersToCreate);
 
     // Assert
     expect(createUserSpy).toHaveBeenCalledTimes(2);
@@ -315,7 +315,7 @@ describe("applyUsers", () => {
     const usersToCreate: UserConfig[] = [];
 
     // Act
-    await applyUsers(mockClient, usersToCreate);
+    await applyNewUsers(mockClient, usersToCreate);
 
     // Assert
     expect(createUserSpy).not.toHaveBeenCalled();

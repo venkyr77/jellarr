@@ -27,7 +27,7 @@ export type PostVirtualFolderResponse = ApiResponse<void>;
 export type GetBrandingConfigurationResponse = ApiResponse;
 export type PostBrandingConfigurationResponse = ApiResponse<void>;
 export type GetUsersResponse = ApiResponse<UserDtoSchema[]>;
-export type PostUserResponse = ApiResponse<UserDtoSchema>;
+export type PostNewUserResponse = ApiResponse<UserDtoSchema>;
 
 export interface JellyfinClient {
   getSystemConfiguration(): Promise<ServerConfigurationSchema>;
