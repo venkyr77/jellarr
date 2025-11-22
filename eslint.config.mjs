@@ -43,7 +43,36 @@ export default defineConfig(
           variableDeclaration: true,
         },
       ],
+
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          selector: ["property"],
+          modifiers: ["requiresQuotes"],
+          format: null,
+        },
+        {
+          selector: "property",
+          format: ["camelCase", "PascalCase", "snake_case"],
+        },
+        {
+          selector: "default", 
+          format: ["camelCase"],
+        },
+        {
+          selector: "variable",
+          format: ["camelCase", "UPPER_CASE", "PascalCase"],
+        },
+        {
+          selector: "typeLike",
+          format: ["PascalCase"],
+        },
+        {
+          selector: "import",
+          format: ["camelCase", "PascalCase", "UPPER_CASE"],
+        },
+      ],
     },
   },
-  [globalIgnores(["**bundle.cjs", "esbuild.ts", "eslint.config.mjs"])],
+  [globalIgnores(["**bundle.cjs", "esbuild.ts", "eslint.config.mjs", "generated/**"])],
 );
