@@ -24,7 +24,7 @@ export const UserConfigType: z.ZodObject<{
   })
   .strict()
   .refine(
-    (data) => {
+    (data: { password?: string; passwordFile?: string }) => {
       const hasPassword: boolean =
         data.password !== undefined && data.password.trim() !== "";
       const hasPasswordFile: boolean =

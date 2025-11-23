@@ -22,7 +22,7 @@ export function calculateNewUsersDiff(
 
   for (const desiredUser of desired) {
     const existingUser: UserDtoSchema | undefined = currentUsers.find(
-      (user) => user.Name === desiredUser.name,
+      (user: UserDtoSchema) => user.Name === desiredUser.name,
     );
 
     if (!existingUser) {
@@ -57,15 +57,15 @@ export function calculateUserPoliciesDiff(
 
   for (const desiredUser of desired) {
     const existingUser: UserDtoSchema | undefined = currentUsers.find(
-      (user) => user.Name === desiredUser.name,
+      (user: UserDtoSchema) => user.Name === desiredUser.name,
     );
 
-    if (existingUser && existingUser.Id && desiredUser.policy) {
+    if (existingUser?.Id && desiredUser.policy) {
       const updatedPolicy: Partial<UserPolicySchema> =
         mapUserPolicyConfigToSchema(desiredUser.policy);
 
       const currentPolicy: Partial<UserPolicySchema> =
-        existingUser.Policy || {};
+        existingUser.Policy ?? {};
       const newPolicy: UserPolicySchema = {
         ...currentPolicy,
         ...updatedPolicy,

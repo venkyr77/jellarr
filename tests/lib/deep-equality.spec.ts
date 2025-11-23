@@ -9,10 +9,8 @@ describe("lib/deep-equality", () => {
       const obj2: { c: number; b: number; a: number } = { c: 3, b: 2, a: 1 };
 
       // Act & Assert
-      // deep equality should correctly identify these as equal
       expect(deepEqual(obj1, obj2)).toBe(true);
 
-      // JSON.stringify would incorrectly identify these as different
       expect(JSON.stringify(obj1) === JSON.stringify(obj2)).toBe(false);
     });
 
@@ -22,16 +20,13 @@ describe("lib/deep-equality", () => {
       const obj2: { a: number; b: undefined } = { a: 1, b: undefined };
 
       // Act & Assert
-      // deep equality should correctly handle undefined
       expect(deepEqual(obj1, obj2)).toBe(true);
 
-      // JSON.stringify would not serialize undefined values at all
       expect(JSON.stringify(obj1) === JSON.stringify(obj2)).toBe(true);
 
-      // But JSON.stringify would miss differences involving undefined
       const obj3: { a: number } = { a: 1 };
       expect(deepEqual(obj1, obj3)).toBe(false);
-      expect(JSON.stringify(obj1) === JSON.stringify(obj3)).toBe(true); // false positive!
+      expect(JSON.stringify(obj1) === JSON.stringify(obj3)).toBe(true);
     });
 
     it("should handle nested objects correctly", () => {
@@ -64,14 +59,13 @@ describe("lib/deep-equality", () => {
 
       // Act & Assert
       expect(deepEqual(obj1, obj2)).toBe(true);
-      expect(JSON.stringify(obj1) === JSON.stringify(obj2)).toBe(true); // works but converts to string
+      expect(JSON.stringify(obj1) === JSON.stringify(obj2)).toBe(true);
 
-      // But deepEqual preserves type information
       const obj3: { timestamp: string } = {
         timestamp: "2024-01-01T00:00:00.000Z",
       };
-      expect(deepEqual(obj1, obj3)).toBe(false); // correctly different types
-      expect(JSON.stringify(obj1) === JSON.stringify(obj3)).toBe(true); // false positive!
+      expect(deepEqual(obj1, obj3)).toBe(false);
+      expect(JSON.stringify(obj1) === JSON.stringify(obj3)).toBe(true);
     });
   });
 });

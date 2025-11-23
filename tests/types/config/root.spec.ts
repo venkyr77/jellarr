@@ -169,7 +169,9 @@ describe("RootConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const versionError: z.core.$ZodIssue | undefined =
-        result.error.issues.find((err) => err.path.includes("version"));
+        result.error.issues.find((err: z.core.$ZodIssue) =>
+          err.path.includes("version"),
+        );
       expect(versionError?.message).toContain("positive integer");
     }
   });
@@ -192,7 +194,7 @@ describe("RootConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const urlError: z.core.$ZodIssue | undefined = result.error.issues.find(
-        (err) => err.path.includes("base_url"),
+        (err: z.core.$ZodIssue) => err.path.includes("base_url"),
       );
       expect(urlError?.message).toContain("must be a valid URL");
     }
@@ -202,7 +204,6 @@ describe("RootConfig", () => {
     // Arrange
     const invalidConfig: Partial<z.input<typeof RootConfigType>> = {
       version: 1,
-      // missing base_url and system
     };
 
     // Act
@@ -560,7 +561,9 @@ describe("RootConfig", () => {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
       const strictError: z.core.$ZodIssue | undefined =
-        result.error.issues.find((err) => err.code === "unrecognized_keys");
+        result.error.issues.find(
+          (err: z.core.$ZodIssue) => err.code === "unrecognized_keys",
+        );
       expect(strictError?.code).toBe("unrecognized_keys");
     }
   });

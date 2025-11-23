@@ -51,7 +51,7 @@ describe("types/config/library", () => {
         "mixed",
       ] as const;
 
-      types.forEach((collectionType) => {
+      types.forEach((collectionType: VirtualFolderConfig["collectionType"]) => {
         const config: z.input<typeof VirtualFolderConfigType> = {
           name: `Test ${collectionType}`,
           collectionType,
@@ -169,7 +169,6 @@ describe("types/config/library", () => {
         },
       };
 
-      // Type assertions to verify correct inference
       expect(typeof parsed.name).toBe("string");
       expect(parsed.collectionType).toMatch(
         /^(movies|tvshows|music|musicvideos|homevideos|boxsets|books|mixed)$/,
@@ -248,7 +247,7 @@ describe("types/config/library", () => {
             },
           },
           {
-            name: "", // Invalid - empty name
+            name: "",
             collectionType: "tvshows",
             libraryOptions: {
               pathInfos: [{ path: "/test" }],
@@ -292,9 +291,7 @@ describe("types/config/library", () => {
         virtualFolders: [
           // @ts-expect-error intentional invalid object for test
           {
-            // Missing required fields
             name: "Test",
-            // Missing collectionType and libraryOptions
           },
         ],
       };
@@ -304,7 +301,6 @@ describe("types/config/library", () => {
     });
 
     it("should properly type virtualFolders as optional", () => {
-      // Type test - should compile without errors
       const config1: LibraryConfig = {};
       const config2: LibraryConfig = { virtualFolders: undefined };
       const config3: LibraryConfig = { virtualFolders: [] };
@@ -320,7 +316,6 @@ describe("types/config/library", () => {
         ],
       };
 
-      // Runtime assertions
       expect(config1.virtualFolders).toBeUndefined();
       expect(config2.virtualFolders).toBeUndefined();
       expect(config3.virtualFolders).toEqual([]);

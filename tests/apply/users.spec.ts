@@ -24,7 +24,7 @@ vi.mock("../../src/lib/logger", () => ({
 vi.mock("../../src/mappers/users", () => ({
   mapUserConfigToCreateSchema: vi.fn((config: UserConfig) => ({
     Name: config.name,
-    Password: config.password || "mocked-password-from-file",
+    Password: config.password ?? "mocked-password-from-file",
   })),
   mapUserPolicyConfigToSchema: vi.fn(
     (policy: {

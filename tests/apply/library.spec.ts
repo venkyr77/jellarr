@@ -14,8 +14,8 @@ describe("apply/library", () => {
     vi.clearAllMocks();
 
     addVirtualFolderSpy = vi.fn();
-    loggerSpy = vi.spyOn(logger, "info").mockImplementation(() => {});
-    vi.spyOn(logger, "warn").mockImplementation(() => {});
+    loggerSpy = vi.spyOn(logger, "info").mockImplementation(() => undefined);
+    vi.spyOn(logger, "warn").mockImplementation(() => undefined);
 
     mockClient = {
       addVirtualFolder: addVirtualFolderSpy,
@@ -158,7 +158,7 @@ describe("apply/library", () => {
       // Arrange
       const warnSpy: Mock = vi
         .spyOn(logger, "warn")
-        .mockImplementation(() => {});
+        .mockImplementation(() => undefined);
       const currentVirtualFolders: VirtualFolderInfoSchema[] = [
         {
           Name: "Movies",

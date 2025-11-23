@@ -79,7 +79,7 @@ describe("mappers/library", () => {
         "mixed",
       ] as const;
 
-      types.forEach((collectionType) => {
+      types.forEach((collectionType: VirtualFolderConfig["collectionType"]) => {
         // Arrange
         const config: VirtualFolderConfig = {
           name: `Test ${collectionType}`,
@@ -114,7 +114,7 @@ describe("mappers/library", () => {
         name: "Complex Paths",
         collectionType: "movies",
         libraryOptions: {
-          pathInfos: locations.map((path) => ({ path })),
+          pathInfos: locations.map((path: string) => ({ path })),
         },
       };
 
@@ -124,7 +124,7 @@ describe("mappers/library", () => {
 
       // Assert
       expect(result.LibraryOptions?.PathInfos).toHaveLength(locations.length);
-      locations.forEach((location, index) => {
+      locations.forEach((location: string, index: number) => {
         expect(result.LibraryOptions?.PathInfos?.[index]).toEqual({
           Path: location,
         });

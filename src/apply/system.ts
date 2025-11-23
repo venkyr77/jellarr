@@ -31,14 +31,14 @@ function arePluginRepositoryConfigsEqual(
   a: PluginRepositoryConfig[],
   b: PluginRepositoryConfig[],
 ): boolean {
-  // Order-independent comparison using deepEqual with sorted arrays
   const sortByNameAndUrl: (
     repos: PluginRepositoryConfig[],
   ) => PluginRepositoryConfig[] = (
     repos: PluginRepositoryConfig[],
   ): PluginRepositoryConfig[] =>
     [...repos].sort(
-      (a, b) => a.name.localeCompare(b.name) || a.url.localeCompare(b.url),
+      (a: PluginRepositoryConfig, b: PluginRepositoryConfig) =>
+        a.name.localeCompare(b.name) || a.url.localeCompare(b.url),
     );
 
   return deepEqual(sortByNameAndUrl(a), sortByNameAndUrl(b));
