@@ -1,28 +1,30 @@
 {
   lib,
   pkgs,
-  system,
   ...
 }: {
   projectRootFile = "flake.nix";
 
   programs = {
+    deadnix = {
+      enable = true;
+      priority = 10;
+    };
+
+    statix = {
+      enable = true;
+      priority = 20;
+    };
+
     alejandra = {
       enable = true;
       priority = 30;
     };
 
-    black = {
+    prettier = {
       enable = true;
-      includes = [
-        "*.py"
-      ];
-      priority = 80;
-    };
-
-    deadnix = {
-      enable = true;
-      priority = 10;
+      priority = 50;
+      settings.editorconfig = true;
     };
 
     deno = {
@@ -42,15 +44,12 @@
       profile = "black";
     };
 
-    prettier = {
+    black = {
       enable = true;
-      priority = 50;
-      settings.editorconfig = true;
-    };
-
-    statix = {
-      enable = true;
-      priority = 20;
+      includes = [
+        "*.py"
+      ];
+      priority = 80;
     };
   };
 
