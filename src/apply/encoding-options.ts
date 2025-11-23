@@ -38,7 +38,6 @@ function hasHardwareDecodingCodecsChanged(
   const cur: string[] = current.HardwareDecodingCodecs ?? [];
   const next: string[] = desired.hardwareDecodingCodecs;
 
-  // Order-independent comparison using deepEqual with sorted arrays
   return !deepEqual([...cur].sort(), [...next].sort());
 }
 

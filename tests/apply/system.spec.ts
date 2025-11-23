@@ -38,7 +38,6 @@ import type { ServerConfigurationSchema } from "../../src/types/schema/system";
 import type { SystemConfig } from "../../src/types/config/system";
 import * as loggerModule from "../../src/lib/logger";
 
-// Mock the logger
 vi.mock("../../src/lib/logger", () => ({
   logger: {
     info: vi.fn(),
@@ -595,7 +594,7 @@ describe("apply/system", () => {
 
         // Assert
         expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true);
-        expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(true); // Should preserve
+        expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(true);
         expect(result?.EnableMetrics).toBe(false);
         expect(result?.PluginRepositories).toEqual([]);
       });
@@ -620,7 +619,7 @@ describe("apply/system", () => {
           calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true); // Should preserve
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true);
         expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(true);
         expect(result?.EnableMetrics).toBe(false);
         expect(result?.PluginRepositories).toEqual([]);
@@ -743,8 +742,8 @@ describe("apply/system", () => {
 
         const desired: SystemConfig = {
           trickplayOptions: {
-            enableHwAcceleration: true, // Same
-            enableHwEncoding: true, // Different
+            enableHwAcceleration: true,
+            enableHwEncoding: true,
           },
         };
 
@@ -887,7 +886,7 @@ describe("apply/system", () => {
         expect(result?.PluginRepositories).toEqual([
           { Name: "New", Url: "https://new.com", Enabled: false },
         ]);
-        expect(result?.TrickplayOptions).toEqual(existingTrickplay); // Preserved
+        expect(result?.TrickplayOptions).toEqual(existingTrickplay);
       });
 
       it("should update two fields while preserving the third (enableMetrics + trickplayOptions)", () => {
@@ -919,15 +918,15 @@ describe("apply/system", () => {
 
         // Assert
         expect(result?.EnableMetrics).toBe(true);
-        expect(result?.PluginRepositories).toEqual(existingRepos); // Preserved
+        expect(result?.PluginRepositories).toEqual(existingRepos);
         expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true);
-        expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(false); // Preserved within object
+        expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(false);
       });
 
       it("should update two fields while preserving the third (pluginRepositories + trickplayOptions)", () => {
         // Arrange
         const current: ServerConfigurationSchema = {
-          EnableMetrics: true, // Will be preserved
+          EnableMetrics: true,
           PluginRepositories: [
             { Name: "Old", Url: "https://old.com", Enabled: true },
           ],
@@ -951,11 +950,11 @@ describe("apply/system", () => {
           calculateSystemDiff(current, desired);
 
         // Assert
-        expect(result?.EnableMetrics).toBe(true); // Preserved
+        expect(result?.EnableMetrics).toBe(true);
         expect(result?.PluginRepositories).toEqual([
           { Name: "New", Url: "https://new.com", Enabled: false },
         ]);
-        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false); // Preserved within object
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
         expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(true);
       });
 

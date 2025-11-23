@@ -50,7 +50,6 @@ export async function runPipeline(path: string): Promise<void> {
     apiKey,
   );
 
-  // Handle system configuration
   const currentServerConfigurationSchema: ServerConfigurationSchema =
     await jellyfinClient.getSystemConfiguration();
 
@@ -69,7 +68,6 @@ export async function runPipeline(path: string): Promise<void> {
     console.log("✓ system config already up to date");
   }
 
-  // Handle encoding configuration if provided
   if (cfg.encoding) {
     const currentEncodingOptionsSchema: EncodingOptionsSchema =
       await jellyfinClient.getEncodingConfiguration();
@@ -86,7 +84,6 @@ export async function runPipeline(path: string): Promise<void> {
     }
   }
 
-  // Handle library configuration if provided
   if (cfg.library) {
     const currentVirtualFolders: VirtualFolderInfoSchema[] =
       await jellyfinClient.getVirtualFolders();
@@ -102,7 +99,6 @@ export async function runPipeline(path: string): Promise<void> {
     }
   }
 
-  // branding configuration
   if (cfg.branding) {
     const currentBrandingSchema: BrandingOptionsDtoSchema =
       await jellyfinClient.getBrandingConfiguration();
@@ -119,7 +115,6 @@ export async function runPipeline(path: string): Promise<void> {
     }
   }
 
-  // user management
   if (cfg.users) {
     let currentUsers: UserDtoSchema[] = await jellyfinClient.getUsers();
 

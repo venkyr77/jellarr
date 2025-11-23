@@ -23,7 +23,6 @@ export function calculateLibraryDiff(
   const virtualFoldersToCreate: VirtualFolderConfig[] = [];
   let hasUpdates: boolean = false;
 
-  // Check each desired virtual folder
   for (const desiredVF of desired.virtualFolders) {
     const existingVF: VirtualFolderInfoSchema | undefined =
       currentVirtualFolders.find(
@@ -33,7 +32,6 @@ export function calculateLibraryDiff(
     if (!existingVF) {
       virtualFoldersToCreate.push(desiredVF);
     } else {
-      // Check if locations differ
       const currentLocations: string[] = existingVF.Locations ?? [];
       const desiredLocations: string[] = desiredVF.libraryOptions.pathInfos.map(
         (p: { path: string }) => p.path,
@@ -67,7 +65,6 @@ export async function applyLibrary(
     return;
   }
 
-  // Create missing virtual folders
   for (const virtualFolder of libraryConfig.virtualFolders) {
     logger.info(`Creating virtual folder: ${virtualFolder.name}`);
 

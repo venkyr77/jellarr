@@ -204,7 +204,6 @@ describe("RootConfig", () => {
     // Arrange
     const invalidConfig: Partial<z.input<typeof RootConfigType>> = {
       version: 1,
-      // missing base_url and system
     };
 
     // Act

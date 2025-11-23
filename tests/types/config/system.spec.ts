@@ -152,7 +152,6 @@ describe("PluginRepositoryConfig", () => {
     // Arrange
     const invalidConfig: Partial<z.input<typeof PluginRepositoryConfigType>> = {
       name: "Test Repository",
-      // missing url and enabled
     };
 
     // Act

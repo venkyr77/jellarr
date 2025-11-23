@@ -31,7 +31,6 @@ function arePluginRepositoryConfigsEqual(
   a: PluginRepositoryConfig[],
   b: PluginRepositoryConfig[],
 ): boolean {
-  // Order-independent comparison using deepEqual with sorted arrays
   const sortByNameAndUrl: (
     repos: PluginRepositoryConfig[],
   ) => PluginRepositoryConfig[] = (

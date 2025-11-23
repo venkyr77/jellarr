@@ -117,11 +117,9 @@ describe("EncodingOptionsConfig", () => {
     // Assert
     expect(result.success).toBe(false);
     if (!result.success) {
-      // Should have an invalid_enum_value error for hardwareAccelerationType
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
 
-      // Find the error related to hardwareAccelerationType
       const hasEnumError: boolean = result.error.issues.some(
         (issue: z.core.$ZodIssue) =>
           issue.code === "invalid_value" &&

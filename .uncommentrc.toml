@@ -1,0 +1,7 @@
+[global]
+remove_todos = false
+remove_fixme = false
+remove_docs = false
+preserve_patterns = ["Arrange", "Act", "Assert", "IMPORTANT", "NOTE", "WARNING", "HACK", "TODO", "FIXME"]
+use_default_ignores = true
+respect_gitignore = true
