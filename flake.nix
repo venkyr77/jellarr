@@ -31,15 +31,17 @@
 
       perSystem = {system, ...}: let
         pkgs = nixpkgs.legacyPackages.${system};
-        treefmtEval = treefmt-nix.lib.evalModule pkgs ./nix/formatting/treefmt.nix;
+        treefmtFormatEval = treefmt-nix.lib.evalModule pkgs ./nix/formatting/treefmt-format.nix;
+        treefmtLintEval = treefmt-nix.lib.evalModule pkgs ./nix/formatting/treefmt-lint.nix;
       in {
         checks =
           {
-            formatting = treefmtEval.config.build.check inputs.self;
+            formatting = treefmtFormatEval.config.build.check inputs.self;
+            linting = treefmtLintEval.config.build.check inputs.self;
           }
           // import ./nix/tests/integration {inherit pkgs;};
 
-        formatter = treefmtEval.config.build.wrapper;
+        formatter = treefmtFormatEval.config.build.wrapper;
 
         packages = let
           package = import ./nix/package.nix {
