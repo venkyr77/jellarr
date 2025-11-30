@@ -682,3 +682,50 @@ describe("api/jf Users façade", () => {
     ).rejects.toThrow(/POST \/Users\/\{userId\}\/Policy failed/i);
   });
 });
+
+describe("api/jf Startup façade", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  afterEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("when POST /Startup/Complete succeeds then it resolves", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(204);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await jellyfinClient.completeStartupWizard();
+
+    // Assert
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/Startup\/Complete$/);
+    expect(req.headers.get("X-Emby-Token")).toBe(apiKey);
+  });
+
+  it("when POST /Startup/Complete fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 500 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(jellyfinClient.completeStartupWizard()).rejects.toThrow(
+      /POST \/Startup\/Complete failed/i,
+    );
+  });
+});

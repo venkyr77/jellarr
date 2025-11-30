@@ -290,6 +290,19 @@ users:
 }
 ```
 
+### Startup Configuration
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+system: {}
+startup:
+  completeStartupWizard: true # Mark startup wizard as complete
+```
+
+Useful for automated deployments where you want to skip the interactive startup
+wizard.
+
 ---
 
 ## Secret Management
@@ -385,6 +398,8 @@ users:
     policy:
       isAdministrator: true
       loginAttemptsBeforeLockout: 3
+startup:
+  completeStartupWizard: true
 ```
 
 ---
