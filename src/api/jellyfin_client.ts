@@ -24,6 +24,7 @@ import type {
   GetUsersResponse,
   PostNewUserResponse,
   PostUserPolicyResponse,
+  PostStartupCompleteResponse,
 } from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";
@@ -221,6 +222,17 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /Users/{userId}/Policy failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async completeStartupWizard(): Promise<void> {
+      const res: PostStartupCompleteResponse =
+        await client.POST("/Startup/Complete");
+
+      if (res.error) {
+        throw new Error(
+          `POST /Startup/Complete failed: ${res.response.status.toString()}`,
         );
       }
     },

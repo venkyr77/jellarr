@@ -47,3 +47,5 @@ users:
       loginAttemptsBeforeLockout: 3
   - name: "test-jellarr-3"
     password: "plainpass"
+startup:
+  completeStartupWizard: true
