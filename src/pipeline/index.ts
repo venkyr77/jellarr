@@ -141,4 +141,10 @@ export async function runPipeline(path: string): Promise<void> {
       console.log("✓ user policies already up to date");
     }
   }
+
+  if (cfg.startup?.completeStartupWizard) {
+    console.log("→ marking startup wizard as complete");
+    await jellyfinClient.completeStartupWizard();
+    console.log("✓ marked startup wizard as complete");
+  }
 }
