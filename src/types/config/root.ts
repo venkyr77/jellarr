@@ -4,6 +4,7 @@ import { EncodingOptionsConfigType } from "./encoding-options";
 import { LibraryConfigType } from "./library";
 import { BrandingOptionsConfigType } from "./branding-options";
 import { UserConfigListType } from "./users";
+import { StartupConfigType } from "./startup";
 
 export const RootConfigType: z.ZodObject<{
   version: z.ZodNumber;
@@ -13,6 +14,7 @@ export const RootConfigType: z.ZodObject<{
   library: z.ZodOptional<typeof LibraryConfigType>;
   branding: z.ZodOptional<typeof BrandingOptionsConfigType>;
   users: z.ZodOptional<typeof UserConfigListType>;
+  startup: z.ZodOptional<typeof StartupConfigType>;
 }> = z
   .object({
     version: z.number().int().positive("Version must be a positive integer"),
@@ -22,6 +24,7 @@ export const RootConfigType: z.ZodObject<{
     library: LibraryConfigType.optional(),
     branding: BrandingOptionsConfigType.optional(),
     users: UserConfigListType.optional(),
+    startup: StartupConfigType.optional(),
   })
   .strict();
 

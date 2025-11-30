@@ -567,4 +567,90 @@ describe("RootConfig", () => {
       expect(strictError?.code).toBe("unrecognized_keys");
     }
   });
+
+  it("should validate root config with startup section", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+      startup: {
+        completeStartupWizard: true,
+      },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.startup).toBeDefined();
+      expect(result.data.startup?.completeStartupWizard).toBe(true);
+    }
+  });
+
+  it("should validate root config with empty startup section", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+      startup: {},
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.startup).toBeDefined();
+    }
+  });
+
+  it("should validate root config without startup section", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.startup).toBeUndefined();
+    }
+  });
+
+  it("should reject invalid startup configuration", () => {
+    // Arrange
+    const invalidConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+      startup: {
+        // @ts-expect-error intentional invalid field for test
+        invalidField: "not allowed",
+      },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(invalidConfig);
+
+    // Assert
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toBeDefined();
+      expect(result.error.issues.length).toBeGreaterThan(0);
+    }
+  });
 });
