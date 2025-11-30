@@ -30,6 +30,7 @@ export type PostBrandingConfigurationResponse = ApiResponse<void>;
 export type GetUsersResponse = ApiResponse<UserDtoSchema[]>;
 export type PostNewUserResponse = ApiResponse<UserDtoSchema>;
 export type PostUserPolicyResponse = ApiResponse<void>;
+export type PostStartupCompleteResponse = ApiResponse<void>;
 
 export interface JellyfinClient {
   getSystemConfiguration(): Promise<ServerConfigurationSchema>;
@@ -53,4 +54,5 @@ export interface JellyfinClient {
   getUsers(): Promise<UserDtoSchema[]>;
   createUser(body: CreateUserByNameSchema): Promise<void>;
   updateUserPolicy(userId: string, body: UserPolicySchema): Promise<void>;
+  completeStartupWizard(): Promise<void>;
 }
