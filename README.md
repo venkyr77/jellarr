@@ -345,6 +345,56 @@ docker run -e JELLARR_API_KEY=your_api_key \
   ghcr.io/venkyr77/jellarr:v0.0.1
 ```
 
+### API Key Bootstrap (NixOS, Same Host Only)
+
+For NixOS deployments where Jellarr runs on the **same host** as Jellyfin, you
+can use the bootstrap feature to automatically provision the API key into
+Jellyfin's database:
+
+```nix
+{
+  sops.secrets.jellarr-api-key.sopsFile = ./secrets/jellarr-api-key;
+
+  services.jellarr = {
+    enable = true;
+    config = {
+      base_url = "http://localhost:8096";
+      # ... your config ...
+    };
+
+    # Bootstrap: automatically inserts API key into Jellyfin's database
+    bootstrap = {
+      enable = true;
+      apiKeyFile = config.sops.secrets.jellarr-api-key.path;
+      # Optional settings (showing defaults):
+      # apiKeyName = "jellarr";
+      # jellyfinDataDir = "/var/lib/jellyfin";
+      # jellyfinService = "jellyfin.service";
+    };
+  };
+}
+```
+
+**How it works:**
+
+1. The `jellarr-api-key-bootstrap` systemd service runs after Jellyfin starts
+2. It waits for Jellyfin's database to exist
+3. If the API key doesn't already exist, it stops Jellyfin, inserts the key into
+   the SQLite database, and restarts Jellyfin
+4. The `jellarr` service has `After=jellarr-api-key-bootstrap.service`, ensuring
+   proper ordering
+
+**Important notes:**
+
+- This **only works when Jellarr and Jellyfin are on the same host** - it
+  requires direct access to Jellyfin's database file
+- The bootstrap service runs as `root` (required for stopping/starting Jellyfin
+  and writing to the database)
+- The insertion is idempotent - if a key with the same name exists, it skips
+- For deployments where Jellarr runs on a **different host** than Jellyfin, you
+  must provision the API key manually (via Jellyfin's web UI or a separate
+  script) and provide it via `environmentFile`
+
 ---
 
 ## Full Configuration Example

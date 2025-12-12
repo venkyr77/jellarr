@@ -15,22 +15,18 @@ from hamcrest import (
 )
 
 
-def setup_jellyfin_with_api_key(server):
+def wait_for_bootstrap(server):
     print("=== Starting the VM / Server ===")
     server.start()
-    server.wait_for_unit("jellyfin.service")
-    server.wait_for_open_port(8096)
 
-    print("=== Setting up API key ===")
-    time.sleep(15)
-    server.succeed("test -f /var/lib/jellyfin/data/jellyfin.db")
-    server.succeed("systemctl stop jellyfin.service")
-    time.sleep(3)
-    server.succeed(
-        "sqlite3 /var/lib/jellyfin/data/jellyfin.db \"INSERT OR IGNORE INTO ApiKeys (AccessToken, Name, DateCreated, DateLastActivity) VALUES ('test', 'jellarr-test', datetime('now'), datetime('now'));\""
+    print("=== Waiting for API key bootstrap service ===")
+    # wait_until_succeeds handles the case where the oneshot service already completed
+    server.wait_until_succeeds(
+        "systemctl show jellarr-api-key-bootstrap.service --property=ExecMainStatus | grep -q 'ExecMainStatus=0'"
     )
-    server.succeed("echo 'JELLARR_API_KEY=test' > /tmp/jellarr-env")
-    server.succeed("systemctl start jellyfin.service")
+    print("✓ Bootstrap service completed successfully")
+
+    # Jellyfin was restarted by bootstrap, wait for it
     server.wait_for_unit("jellyfin.service")
     server.wait_for_open_port(8096)
 
@@ -49,7 +45,7 @@ def setup_jellyfin_with_api_key(server):
     for i in range(30):
         try:
             server.succeed(
-                "curl -sf 'http://localhost:8096/System/Configuration' -H 'X-Emby-Token: test'"
+                "curl -sf 'http://localhost:8096/System/Configuration' -H 'X-Emby-Token: test-api-key'"
             )
             print("✓ Jellyfin authenticated API ready")
             break
@@ -61,7 +57,7 @@ def setup_jellyfin_with_api_key(server):
 
 def jellyfin_api_call(server, endpoint, method="GET", data=None):
     url = f"http://localhost:8096{endpoint}"
-    cmd = f"curl -sf '{url}' -H 'X-Emby-Token: test'"
+    cmd = f"curl -sf '{url}' -H 'X-Emby-Token: test-api-key'"
 
     if method == "POST":
         cmd += " -H 'Content-Type: application/json'"
@@ -339,7 +335,7 @@ def wait_for_ready(server):
 def run_sanity_test(server):
     # Arrange
     wait_for_ready(server)
-    setup_jellyfin_with_api_key(server)
+    wait_for_bootstrap(server)
     setup_files_and_folders(server)
     validate_initial_state(server)
 
