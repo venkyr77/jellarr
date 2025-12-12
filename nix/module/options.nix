@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: {
   options.services.jellarr = {
@@ -59,7 +60,7 @@
     config = lib.mkOption {
       default = {};
       description = "configuration as attrset which will be converted to YAML.";
-      type = lib.types.attrs;
+      inherit (pkgs.formats.yaml {}) type;
     };
 
     dataDir = lib.mkOption {
