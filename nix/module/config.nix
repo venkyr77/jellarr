@@ -9,9 +9,27 @@
   bootstrapEnabled = cfg.enable && bootstrapCfg.enable;
 
   pkg = import ../package.nix {inherit lib pkgs;};
+
+  hasNonEmptyString = s: s != null && builtins.stringLength (lib.strings.trim s) > 0;
+  userPasswordValid = user: let
+    hasPassword = hasNonEmptyString user.password;
+    hasPasswordFile = user.passwordFile != null;
+  in
+    hasPassword != hasPasswordFile;
+
+  userAssertions =
+    if cfg.config.users == null
+    then []
+    else
+      lib.imap1 (i: user: {
+        assertion = userPasswordValid user;
+        message = "services.jellarr.config.users[${toString (i - 1)}] (name: \"${user.name}\"): Must specify exactly one of 'password' or 'passwordFile'.";
+      })
+      cfg.config.users;
 in {
   config = lib.mkMerge [
     (lib.mkIf cfg.enable {
+      assertions = userAssertions;
       systemd = {
         services.jellarr = {
           after =

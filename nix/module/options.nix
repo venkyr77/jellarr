@@ -1,9 +1,10 @@
 {
   config,
   lib,
-  pkgs,
   ...
-}: {
+}: let
+  jellarrTypes = import ./types.nix {inherit lib;};
+in {
   options.services.jellarr = {
     bootstrap = {
       enable = lib.mkEnableOption ''
@@ -58,9 +59,22 @@
     };
 
     config = lib.mkOption {
-      default = {};
-      description = "configuration as attrset which will be converted to YAML.";
-      inherit (pkgs.formats.yaml {}) type;
+      type = jellarrTypes.rootConfigType;
+      description = ''
+        Jellarr configuration. This is validated at build time against
+        the same schema as the runtime Zod validation.
+
+        See https://github.com/venkyr77/jellarr for configuration options.
+      '';
+      example = lib.literalExpression ''
+        {
+          version = 1;
+          base_url = "http://localhost:8096";
+          system = {
+            enableMetrics = true;
+          };
+        }
+      '';
     };
 
     dataDir = lib.mkOption {
