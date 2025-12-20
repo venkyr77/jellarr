@@ -23,7 +23,6 @@
  */
 import { describe, it, expect } from "vitest";
 import {
-  fromPluginRepositorySchemas,
   toPluginRepositorySchemas,
   mapSystemConfigurationConfigToSchema,
 } from "../../src/mappers/system";
@@ -35,70 +34,6 @@ import type {
 } from "../../src/types/schema/system";
 
 describe("mappers/system", () => {
-  describe("fromPluginRepositorySchemas", () => {
-    it("should convert empty server schema array to empty config array", () => {
-      // Arrange
-      const jfRepos: PluginRepositorySchema[] = [];
-
-      // Act
-      const result: PluginRepositoryConfig[] =
-        fromPluginRepositorySchemas(jfRepos);
-
-      // Assert
-      expect(result).toEqual([]);
-    });
-
-    it("should convert server schema to config format with proper field mapping", () => {
-      // Arrange
-      const jfRepos: PluginRepositorySchema[] = [
-        { Name: "Repository A", Url: "https://repo-a.com", Enabled: true },
-        { Name: "Repository B", Url: "https://repo-b.com", Enabled: false },
-      ];
-
-      // Act
-      const result: PluginRepositoryConfig[] =
-        fromPluginRepositorySchemas(jfRepos);
-
-      // Assert
-      expect(result).toEqual([
-        { name: "Repository A", url: "https://repo-a.com", enabled: true },
-        { name: "Repository B", url: "https://repo-b.com", enabled: false },
-      ]);
-    });
-
-    it("should handle single repository conversion", () => {
-      // Arrange
-      const jfRepos: PluginRepositorySchema[] = [
-        { Name: "Single Repo", Url: "https://single.com", Enabled: true },
-      ];
-
-      // Act
-      const result: PluginRepositoryConfig[] =
-        fromPluginRepositorySchemas(jfRepos);
-
-      // Assert
-      expect(result).toEqual([
-        { name: "Single Repo", url: "https://single.com", enabled: true },
-      ]);
-    });
-
-    it("should convert disabled repositories correctly", () => {
-      // Arrange
-      const jfRepos: PluginRepositorySchema[] = [
-        { Name: "Disabled Repo", Url: "https://disabled.com", Enabled: false },
-      ];
-
-      // Act
-      const result: PluginRepositoryConfig[] =
-        fromPluginRepositorySchemas(jfRepos);
-
-      // Assert
-      expect(result).toEqual([
-        { name: "Disabled Repo", url: "https://disabled.com", enabled: false },
-      ]);
-    });
-  });
-
   describe("toPluginRepositorySchemas", () => {
     it("should convert empty config array to empty server schema array", () => {
       // Arrange

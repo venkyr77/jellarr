@@ -3,17 +3,20 @@ import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options"
 import { mapBrandingOptionsConfigToSchema } from "../mappers/branding-options";
 import type { JellyfinClient } from "../api/jellyfin.types";
 import { logger } from "../lib/logger";
-import { diff, applyChangeset, type IChange, Operation } from "json-diff-ts";
+import { diff, applyChangeset, type IChange } from "json-diff-ts";
+import { ChangeSetBuilder } from "../lib/changeset";
 
 export function calculateBrandingOptionsDiff(
   current: BrandingOptionsDtoSchema,
   desired: BrandingOptionsConfig,
 ): BrandingOptionsDtoSchema | undefined {
-  const patch: IChange[] = diff(
-    current,
-    mapBrandingOptionsConfigToSchema(desired),
-    { treatTypeChangeAsReplace: false },
-  ).filter((change: IChange) => change.type !== Operation.REMOVE);
+  const patch: IChange[] = new ChangeSetBuilder(
+    diff(current, mapBrandingOptionsConfigToSchema(desired), {
+      treatTypeChangeAsReplace: false,
+    }),
+  )
+    .withoutRemoves()
+    .toArray();
 
   if (patch.length != 0) {
     logger.info(JSON.stringify(patch));

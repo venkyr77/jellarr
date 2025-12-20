@@ -9,19 +9,6 @@ import {
   type PluginRepositorySchema,
 } from "../types/schema/system";
 
-export function fromPluginRepositorySchemas(
-  inRepos: PluginRepositorySchema[] | undefined,
-): PluginRepositoryConfig[] {
-  if (!inRepos) return [];
-  return inRepos.map(
-    (r: PluginRepositorySchema): PluginRepositoryConfig => ({
-      name: r.Name ?? "",
-      url: r.Url ?? "",
-      enabled: Boolean(r.Enabled),
-    }),
-  );
-}
-
 export function toPluginRepositorySchemas(
   inRepos: PluginRepositoryConfig[],
 ): PluginRepositorySchema[] {
@@ -34,34 +21,32 @@ export function toPluginRepositorySchemas(
   );
 }
 
+export function toTrickplayOptionsSchema(
+  cfg: TrickplayOptionsConfig,
+): TrickplayOptionsSchema {
+  const out: TrickplayOptionsSchema = {};
+  out.EnableHwAcceleration = cfg.enableHwAcceleration;
+  out.EnableHwEncoding = cfg.enableHwEncoding;
+  return out;
+}
+
 export function mapSystemConfigurationConfigToSchema(
   desired: SystemConfig,
 ): Partial<ServerConfigurationSchema> {
   const out: Partial<ServerConfigurationSchema> = {};
 
-  if (typeof desired.enableMetrics !== "undefined") {
+  if (desired.enableMetrics !== undefined) {
     out.EnableMetrics = desired.enableMetrics;
   }
 
-  if (typeof desired.pluginRepositories !== "undefined") {
+  if (desired.pluginRepositories !== undefined) {
     out.PluginRepositories = toPluginRepositorySchemas(
       desired.pluginRepositories,
     );
   }
 
-  if (typeof desired.trickplayOptions !== "undefined") {
-    const cfg: TrickplayOptionsConfig = desired.trickplayOptions;
-    const next: TrickplayOptionsSchema = {};
-
-    if ("enableHwAcceleration" in cfg) {
-      next.EnableHwAcceleration = cfg.enableHwAcceleration;
-    }
-
-    if ("enableHwEncoding" in cfg) {
-      next.EnableHwEncoding = cfg.enableHwEncoding;
-    }
-
-    out.TrickplayOptions = next;
+  if (desired.trickplayOptions !== undefined) {
+    out.TrickplayOptions = toTrickplayOptionsSchema(desired.trickplayOptions);
   }
 
   return out;
