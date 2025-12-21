@@ -43,10 +43,12 @@ in {
             ExecStart = lib.getExe pkg;
             Group = cfg.group;
             Type = "oneshot";
+            RemainAfterExit = true;
             User = cfg.user;
             WorkingDirectory = cfg.dataDir;
           };
           wants = ["network-online.target"];
+          wantedBy = ["multi-user.target"];
         };
 
         timers.jellarr = {
