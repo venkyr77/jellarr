@@ -86,7 +86,7 @@ Add to your `flake.nix`:
 
 ```nix
 {
-  inputs.jellarr.url = "github:venkyr77/jellarr/v0.0.1";
+  inputs.jellarr.url = "github:venkyr77/jellarr";
 
   outputs = { self, nixpkgs, jellarr, ... }: {
     nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
