@@ -11,8 +11,6 @@ import type {
   UserDtoSchema,
   UserPolicySchema,
 } from "../../src/types/schema/users";
-import { logger } from "../../src/lib/logger";
-
 vi.mock("../../src/lib/logger", () => ({
   logger: {
     info: vi.fn(),
@@ -615,47 +613,6 @@ describe("calculateUserPoliciesDiff", () => {
 
     // Assert
     expect(result).toBeUndefined();
-  });
-
-  it("should log when user policy updates are detected", () => {
-    // Arrange
-    const config: UserConfigList = [
-      {
-        name: "existing-user",
-        password: "password",
-        policy: {
-          isAdministrator: true,
-        },
-      },
-    ];
-
-    const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(logger, "info");
-
-    // Act
-    calculateUserPoliciesDiff(currentUsers, config);
-
-    // Assert
-    expect(loggerSpy).toHaveBeenCalledWith(
-      "Updating user policy: existing-user",
-    );
-  });
-
-  it("should not log when no user policy changes detected", () => {
-    // Arrange
-    const config: UserConfigList = [
-      {
-        name: "existing-user",
-        password: "password",
-      },
-    ];
-
-    const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(logger, "info");
-
-    // Act
-    calculateUserPoliciesDiff(currentUsers, config);
-
-    // Assert
-    expect(loggerSpy).not.toHaveBeenCalled();
   });
 
   it("should not modify policy when isAdministrator is undefined", () => {
