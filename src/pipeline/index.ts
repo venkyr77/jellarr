@@ -26,8 +26,17 @@ import { createJellyfinClient } from "../api/jellyfin_client";
 import { type JellyfinClient } from "../api/jellyfin.types";
 import { RootConfigType, type RootConfig } from "../types/config/root";
 import { type ZodSafeParseResult, type z } from "zod";
-import { type PluginInfoSchema } from "../types/schema/plugins";
-import { calculatePluginsToInstall, installPlugins } from "../apply/plugins";
+import {
+  type PluginInfoSchema,
+  type BasePluginConfigurationSchema,
+} from "../types/schema/plugins";
+import {
+  calculatePluginsToInstall,
+  installPlugins,
+  calculatePluginConfigurationsDiff,
+  applyPluginConfigurations,
+  getPluginConfigurationSchemaByName,
+} from "../apply/plugins";
 import type { PluginConfig } from "../types/config/plugins";
 
 export async function runPipeline(path: string): Promise<void> {
@@ -145,7 +154,7 @@ export async function runPipeline(path: string): Promise<void> {
   }
 
   if (cfg.plugins) {
-    const installedPlugins: PluginInfoSchema[] =
+    let installedPlugins: PluginInfoSchema[] =
       await jellyfinClient.getPlugins();
 
     const pluginsToInstall: PluginConfig[] | undefined =
@@ -155,8 +164,30 @@ export async function runPipeline(path: string): Promise<void> {
       console.log("→ installing plugins");
       await installPlugins(jellyfinClient, pluginsToInstall);
       console.log("✓ installed plugins");
+      installedPlugins = await jellyfinClient.getPlugins();
     } else {
       console.log("✓ plugins already up to date");
+    }
+
+    const pluginConfigurationsToUpdate:
+      | Map<string, BasePluginConfigurationSchema>
+      | undefined = calculatePluginConfigurationsDiff(
+      await getPluginConfigurationSchemaByName(
+        jellyfinClient,
+        installedPlugins,
+      ),
+      cfg.plugins,
+    );
+
+    if (pluginConfigurationsToUpdate) {
+      console.log("→ updating plugin configurations");
+      await applyPluginConfigurations(
+        jellyfinClient,
+        pluginConfigurationsToUpdate,
+      );
+      console.log("✓ updated plugin configurations");
+    } else {
+      console.log("✓ plugin configurations already up to date");
     }
   }
 

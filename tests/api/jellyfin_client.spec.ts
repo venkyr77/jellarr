@@ -22,7 +22,10 @@ import type {
   CreateUserByNameSchema,
   UserPolicySchema,
 } from "../../src/types/schema/users";
-import type { PluginInfoSchema } from "../../src/types/schema/plugins";
+import type {
+  PluginInfoSchema,
+  BasePluginConfigurationSchema,
+} from "../../src/types/schema/plugins";
 
 const baseUrl: string = "http://localhost:8096/";
 const apiKey: string = "test-key";
@@ -863,5 +866,93 @@ describe("api/jf Plugins façade", () => {
     await expect(jellyfinClient.installPackage("NonExistent")).rejects.toThrow(
       /POST \/Packages\/Installed\/NonExistent failed/i,
     );
+  });
+
+  it("when GET /Plugins/{pluginId}/Configuration returns JSON then it returns the parsed object", async (): Promise<void> => {
+    // Arrange
+    const payload: BasePluginConfigurationSchema = {
+      TraktUsers: [{ ExtraLogging: false, Scrobble: true }],
+    } as unknown as BasePluginConfigurationSchema;
+    mockFetchJson(payload);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const out: BasePluginConfigurationSchema =
+      await jellyfinClient.getPluginConfiguration("plugin-id-123");
+
+    // Assert
+    expect(out).toEqual(payload);
+
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("GET");
+    expect(req.url).toMatch(/\/Plugins\/plugin-id-123\/Configuration$/);
+    expect(req.headers.get("X-Emby-Token")).toBe(apiKey);
+  });
+
+  it("when GET /Plugins/{pluginId}/Configuration fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 404 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(
+      jellyfinClient.getPluginConfiguration("nonexistent-id"),
+    ).rejects.toThrow(/GET \/Plugins\/nonexistent-id\/Configuration failed/i);
+  });
+
+  it("when POST /Plugins/{pluginId}/Configuration succeeds then it sends JSON body and resolves", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(204);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const configBody: BasePluginConfigurationSchema = {
+      TraktUsers: [{ ExtraLogging: true, Scrobble: false }],
+    } as unknown as BasePluginConfigurationSchema;
+    await jellyfinClient.updatePluginConfiguration("plugin-id-123", configBody);
+
+    // Assert
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/Plugins\/plugin-id-123\/Configuration$/);
+    expect(req.headers.get("content-type")).toBe("application/json");
+    expect(req.headers.get("X-Emby-Token")).toBe(apiKey);
+
+    const bodyText: string = await req.text();
+    expect(bodyText).toContain("TraktUsers");
+    expect(bodyText).toContain("ExtraLogging");
+  });
+
+  it("when POST /Plugins/{pluginId}/Configuration fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 400 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const configBody: BasePluginConfigurationSchema =
+      {} as BasePluginConfigurationSchema;
+
+    // Assert
+    await expect(
+      jellyfinClient.updatePluginConfiguration("plugin-id-123", configBody),
+    ).rejects.toThrow(/POST \/Plugins\/plugin-id-123\/Configuration failed/i);
   });
 });

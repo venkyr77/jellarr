@@ -102,6 +102,73 @@ describe("PluginConfig", () => {
       expect(strictError?.code).toBe("unrecognized_keys");
     }
   });
+
+  it("should validate plugin config with configuration field", () => {
+    // Arrange
+    const validConfig: z.input<typeof PluginConfigType> = {
+      name: "Trakt",
+      configuration: {
+        TraktUsers: [{ ExtraLogging: true }],
+      },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<PluginConfig> =
+      PluginConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.name).toBe("Trakt");
+      expect(result.data.configuration).toEqual({
+        TraktUsers: [{ ExtraLogging: true }],
+      });
+    }
+  });
+
+  it("should validate configuration with any key-value pairs", () => {
+    // Arrange
+    const validConfig: z.input<typeof PluginConfigType> = {
+      name: "SomePlugin",
+      configuration: {
+        stringValue: "test",
+        numberValue: 123,
+        booleanValue: true,
+        nestedObject: { key: "value" },
+        arrayValue: [1, 2, 3],
+      },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<PluginConfig> =
+      PluginConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.configuration?.stringValue).toBe("test");
+      expect(result.data.configuration?.numberValue).toBe(123);
+      expect(result.data.configuration?.booleanValue).toBe(true);
+    }
+  });
+
+  it("should validate plugin config without configuration (optional)", () => {
+    // Arrange
+    const validConfig: z.input<typeof PluginConfigType> = {
+      name: "Trakt",
+    };
+
+    // Act
+    const result: ZodSafeParseResult<PluginConfig> =
+      PluginConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.name).toBe("Trakt");
+      expect(result.data.configuration).toBeUndefined();
+    }
+  });
 });
 
 describe("PluginConfigList", () => {
@@ -156,6 +223,29 @@ describe("PluginConfigList", () => {
     if (!result.success) {
       expect(result.error.issues).toBeDefined();
       expect(result.error.issues.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("should validate array with plugins containing configuration", () => {
+    // Arrange
+    const validConfigs: z.input<typeof PluginConfigListType> = [
+      {
+        name: "Trakt",
+        configuration: { TraktUsers: [{ ExtraLogging: true }] },
+      },
+      { name: "Playback Reporting" },
+    ];
+
+    // Act
+    const result: ZodSafeParseResult<PluginConfigList> =
+      PluginConfigListType.safeParse(validConfigs);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toHaveLength(2);
+      expect(result.data[0].configuration).toBeDefined();
+      expect(result.data[1].configuration).toBeUndefined();
     }
   });
 });

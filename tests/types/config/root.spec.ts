@@ -523,7 +523,12 @@ describe("RootConfig", () => {
           passwordFile: "/secrets/viewer_password",
         },
       ],
-      plugins: [{ name: "Trakt" }],
+      plugins: [
+        {
+          name: "Trakt",
+          configuration: { TraktUsers: [{ ExtraLogging: true }] },
+        },
+      ],
       startup: {
         completeStartupWizard: true,
       },
@@ -681,6 +686,35 @@ describe("RootConfig", () => {
       expect(result.data.plugins).toHaveLength(2);
       expect(result.data.plugins?.[0].name).toBe("Trakt");
       expect(result.data.plugins?.[1].name).toBe("Playback Reporting");
+    }
+  });
+
+  it("should validate root config with plugins containing configuration", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+      plugins: [
+        {
+          name: "Trakt",
+          configuration: { TraktUsers: [{ ExtraLogging: true }] },
+        },
+        { name: "Playback Reporting" },
+      ],
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.plugins).toBeDefined();
+      expect(result.data.plugins).toHaveLength(2);
+      expect(result.data.plugins?.[0].configuration).toBeDefined();
+      expect(result.data.plugins?.[1].configuration).toBeUndefined();
     }
   });
 
