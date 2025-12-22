@@ -12,9 +12,9 @@ import {
 } from "../apply/branding-options";
 import {
   calculateNewUsersDiff,
-  applyNewUsers,
   calculateUserPoliciesDiff,
   applyUserPolicies,
+  createNewUsers,
 } from "../apply/users";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
 import { type ServerConfigurationSchema } from "../types/schema/system";
@@ -124,7 +124,7 @@ export async function runPipeline(path: string): Promise<void> {
 
     if (usersToCreate) {
       console.log("→ creating users");
-      await applyNewUsers(jellyfinClient, usersToCreate);
+      await createNewUsers(jellyfinClient, usersToCreate);
       console.log("✓ created users");
       currentUsers = await jellyfinClient.getUsers();
     }

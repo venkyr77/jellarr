@@ -1,93 +1,99 @@
-import { deepEqual } from "fast-equals";
 import type { JellyfinClient } from "../api/jellyfin.types";
+import { ChangeSetBuilder } from "../lib/changeset";
 import { logger } from "../lib/logger";
-import type { UserConfig, UserConfigList } from "../types/config/users";
 import type {
-  UserDtoSchema,
-  CreateUserByNameSchema,
-  UserPolicySchema,
-} from "../types/schema/users";
+  UserConfig,
+  UserConfigList,
+  UserPolicyConfig,
+} from "../types/config/users";
+import type { UserDtoSchema, UserPolicySchema } from "../types/schema/users";
 import {
   mapUserConfigToCreateSchema,
   mapUserPolicyConfigToSchema,
 } from "../mappers/users";
+import { applyChangeset, diff, type IChange } from "json-diff-ts";
 
 export function calculateNewUsersDiff(
-  currentUsers: UserDtoSchema[],
+  current: UserDtoSchema[],
   desired: UserConfigList,
 ): UserConfig[] | undefined {
   if (desired.length === 0) return undefined;
 
-  const usersToCreate: UserConfig[] = [];
+  const out: UserConfig[] = desired.filter(
+    (desiredUser: UserConfig) =>
+      !current.find((user: UserDtoSchema) => user.Name === desiredUser.name),
+  );
 
-  for (const desiredUser of desired) {
-    const existingUser: UserDtoSchema | undefined = currentUsers.find(
-      (user: UserDtoSchema) => user.Name === desiredUser.name,
-    );
-
-    if (!existingUser) {
-      logger.info(`Creating user: ${desiredUser.name}`);
-      usersToCreate.push(desiredUser);
-    }
-  }
-
-  return usersToCreate.length > 0 ? usersToCreate : undefined;
+  return out.length === 0 ? undefined : out;
 }
 
-export async function applyNewUsers(
+export async function createNewUsers(
   client: JellyfinClient,
-  usersToCreate: UserConfig[] | undefined,
+  users: UserConfig[] | undefined,
 ): Promise<void> {
-  if (!usersToCreate) return;
+  if (!users) return;
 
-  for (const userConfig of usersToCreate) {
-    const createSchema: CreateUserByNameSchema =
-      mapUserConfigToCreateSchema(userConfig);
-    await client.createUser(createSchema);
+  for (const userConfig of users) {
+    await client.createUser(mapUserConfigToCreateSchema(userConfig));
   }
+}
+
+export function calculateUserPolicyDiff(
+  current: UserPolicySchema,
+  desired: UserPolicyConfig,
+): UserPolicySchema | undefined {
+  const patch: IChange[] = new ChangeSetBuilder(
+    diff(current, mapUserPolicyConfigToSchema(desired)),
+  )
+    .atomize()
+    .withoutRemoves()
+    .toArray();
+
+  if (patch.length > 0) {
+    return applyChangeset(current, patch) as UserPolicySchema;
+  }
+
+  return undefined;
 }
 
 export function calculateUserPoliciesDiff(
-  currentUsers: UserDtoSchema[],
+  current: UserDtoSchema[],
   desired: UserConfigList,
 ): Map<string, UserPolicySchema> | undefined {
   if (desired.length === 0) return undefined;
 
   const userPoliciesToUpdate: Map<string, UserPolicySchema> = new Map();
 
-  for (const desiredUser of desired) {
-    const existingUser: UserDtoSchema | undefined = currentUsers.find(
-      (user: UserDtoSchema) => user.Name === desiredUser.name,
+  desired.forEach((userConfig: UserConfig) => {
+    const currentUserDtoSchema: UserDtoSchema | undefined = current.find(
+      (curr: UserDtoSchema) => curr.Name === userConfig.name,
     );
 
-    if (existingUser?.Id && desiredUser.policy) {
-      const updatedPolicy: Partial<UserPolicySchema> =
-        mapUserPolicyConfigToSchema(desiredUser.policy);
+    if (
+      currentUserDtoSchema?.Id &&
+      currentUserDtoSchema.Policy &&
+      userConfig.policy
+    ) {
+      const userPolicyDiff: UserPolicySchema | undefined =
+        calculateUserPolicyDiff(currentUserDtoSchema.Policy, userConfig.policy);
 
-      const currentPolicy: Partial<UserPolicySchema> =
-        existingUser.Policy ?? {};
-      const newPolicy: UserPolicySchema = {
-        ...currentPolicy,
-        ...updatedPolicy,
-      } as UserPolicySchema;
-
-      if (!deepEqual(currentPolicy, newPolicy)) {
-        logger.info(`Updating user policy: ${desiredUser.name}`);
-        userPoliciesToUpdate.set(existingUser.Id, newPolicy);
+      if (userPolicyDiff) {
+        logger.info(`Updating user policy: ${userConfig.name}`);
+        userPoliciesToUpdate.set(currentUserDtoSchema.Id, userPolicyDiff);
       }
     }
-  }
+  });
 
   return userPoliciesToUpdate.size > 0 ? userPoliciesToUpdate : undefined;
 }
 
 export async function applyUserPolicies(
   client: JellyfinClient,
-  userPolicies: Map<string, UserPolicySchema> | undefined,
+  policies: Map<string, UserPolicySchema> | undefined,
 ): Promise<void> {
-  if (!userPolicies) return;
+  if (!policies) return;
 
-  for (const [userId, policy] of userPolicies) {
+  for (const [userId, policy] of policies) {
     await client.updateUserPolicy(userId, policy);
   }
 }
