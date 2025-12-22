@@ -523,6 +523,15 @@ describe("RootConfig", () => {
           passwordFile: "/secrets/viewer_password",
         },
       ],
+      plugins: [
+        {
+          name: "Trakt",
+          configuration: { TraktUsers: [{ ExtraLogging: true }] },
+        },
+      ],
+      startup: {
+        completeStartupWizard: true,
+      },
     };
 
     // Act
@@ -538,6 +547,9 @@ describe("RootConfig", () => {
       expect(result.data.branding).toBeDefined();
       expect(result.data.users).toBeDefined();
       expect(result.data.users).toHaveLength(2);
+      expect(result.data.plugins).toBeDefined();
+      expect(result.data.plugins).toHaveLength(1);
+      expect(result.data.startup).toBeDefined();
     }
   });
 
@@ -640,6 +652,119 @@ describe("RootConfig", () => {
         // @ts-expect-error intentional invalid field for test
         invalidField: "not allowed",
       },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(invalidConfig);
+
+    // Assert
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toBeDefined();
+      expect(result.error.issues.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("should validate root config with plugins section", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+      plugins: [{ name: "Trakt" }, { name: "Playback Reporting" }],
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.plugins).toBeDefined();
+      expect(result.data.plugins).toHaveLength(2);
+      expect(result.data.plugins?.[0].name).toBe("Trakt");
+      expect(result.data.plugins?.[1].name).toBe("Playback Reporting");
+    }
+  });
+
+  it("should validate root config with plugins containing configuration", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+      plugins: [
+        {
+          name: "Trakt",
+          configuration: { TraktUsers: [{ ExtraLogging: true }] },
+        },
+        { name: "Playback Reporting" },
+      ],
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.plugins).toBeDefined();
+      expect(result.data.plugins).toHaveLength(2);
+      expect(result.data.plugins?.[0].configuration).toBeDefined();
+      expect(result.data.plugins?.[1].configuration).toBeUndefined();
+    }
+  });
+
+  it("should validate root config with empty plugins section", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+      plugins: [],
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.plugins).toBeDefined();
+      expect(result.data.plugins).toHaveLength(0);
+    }
+  });
+
+  it("should validate root config without plugins section", () => {
+    // Arrange
+    const validConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+    };
+
+    // Act
+    const result: ZodSafeParseResult<RootConfig> =
+      RootConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.plugins).toBeUndefined();
+    }
+  });
+
+  it("should reject invalid plugins configuration", () => {
+    // Arrange
+    const invalidConfig: z.input<typeof RootConfigType> = {
+      version: 1,
+      base_url: "http://10.0.0.76:8096",
+      system: {},
+      plugins: [{ name: "" }],
     };
 
     // Act

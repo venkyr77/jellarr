@@ -49,3 +49,8 @@ users:
     password: "plainpass"
 startup:
   completeStartupWizard: true
+plugins:
+  - name: "Trakt"
+    configuration:
+      TraktUsers:
+        - ExtraLogging: true

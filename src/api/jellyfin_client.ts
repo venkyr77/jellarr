@@ -25,10 +25,18 @@ import type {
   PostNewUserResponse,
   PostUserPolicyResponse,
   PostStartupCompleteResponse,
+  GetPluginsResponse,
+  PostInstallPackageResponse,
+  GetPluginConfigurationResponse,
+  PostPluginConfigurationResponse,
 } from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";
 import type { Client } from "openapi-fetch";
+import {
+  type PluginInfoSchema,
+  type BasePluginConfigurationSchema,
+} from "../types/schema/plugins";
 
 export function createJellyfinClient(
   baseUrl: string,
@@ -233,6 +241,65 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /Startup/Complete failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getPlugins(): Promise<PluginInfoSchema[]> {
+      const res: GetPluginsResponse = await client.GET("/Plugins");
+      if (res.error) {
+        throw new Error(
+          `GET /Plugins failed: ${res.response.status.toString()}`,
+        );
+      }
+      return res.data as PluginInfoSchema[];
+    },
+
+    async installPackage(name: string): Promise<void> {
+      const res: PostInstallPackageResponse = await client.POST(
+        "/Packages/Installed/{name}",
+        {
+          params: { path: { name } },
+        },
+      );
+      if (res.error) {
+        throw new Error(
+          `POST /Packages/Installed/${name} failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getPluginConfiguration(
+      pluginId: string,
+    ): Promise<BasePluginConfigurationSchema> {
+      const res: GetPluginConfigurationResponse = await client.GET(
+        "/Plugins/{pluginId}/Configuration",
+        {
+          params: { path: { pluginId } },
+        },
+      );
+      if (res.error) {
+        throw new Error(
+          `GET /Plugins/${pluginId}/Configuration failed: ${res.response.status.toString()}`,
+        );
+      }
+      return res.data as BasePluginConfigurationSchema;
+    },
+
+    async updatePluginConfiguration(
+      pluginId: string,
+      body: BasePluginConfigurationSchema,
+    ): Promise<void> {
+      const res: PostPluginConfigurationResponse = await client.POST(
+        "/Plugins/{pluginId}/Configuration",
+        {
+          params: { path: { pluginId } },
+          body,
+        } as unknown as { params: { path: { pluginId: string } } },
+      );
+      if (res.error) {
+        throw new Error(
+          `POST /Plugins/${pluginId}/Configuration failed: ${res.response.status.toString()}`,
         );
       }
     },
