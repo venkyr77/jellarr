@@ -22,6 +22,12 @@ abstract class BaseChangeSetBuilder<T extends IChangeBase> {
     );
   }
 
+  withoutUpdates(): this {
+    return this.create(
+      this.changes.filter((c: IChange) => c.type !== Operation.UPDATE),
+    );
+  }
+
   withKey(key: string): this {
     return this.create(this.changes.filter((c: IChange) => c.key === key));
   }

@@ -17,7 +17,6 @@ import {
   applyUserPolicies,
 } from "../apply/users";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
-import type { LibraryConfig } from "../types/config/library";
 import { type ServerConfigurationSchema } from "../types/schema/system";
 import { type EncodingOptionsSchema } from "../types/schema/encoding-options";
 import { type BrandingOptionsDtoSchema } from "../types/schema/branding-options";
@@ -84,15 +83,15 @@ export async function runPipeline(path: string): Promise<void> {
     }
   }
 
-  if (cfg.library) {
+  if (cfg.library?.virtualFolders) {
     const currentVirtualFolders: VirtualFolderInfoSchema[] =
       await jellyfinClient.getVirtualFolders();
-    const updatedLibraryConfig: LibraryConfig | undefined =
-      calculateLibraryDiff(currentVirtualFolders, cfg.library);
+    const foldersToCreate: VirtualFolderInfoSchema[] | undefined =
+      calculateLibraryDiff(currentVirtualFolders, cfg.library.virtualFolders);
 
-    if (updatedLibraryConfig) {
+    if (foldersToCreate) {
       console.log("→ updating library config");
-      await applyLibrary(jellyfinClient, updatedLibraryConfig);
+      await applyLibrary(jellyfinClient, foldersToCreate);
       console.log("✓ updated library config");
     } else {
       console.log("✓ library config already up to date");
