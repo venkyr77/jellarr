@@ -28,8 +28,8 @@ export function calculateEncodingDiff(
         treatTypeChangeAsReplace: false,
       }),
     )
-      .withoutRemoves()
       .withKey("HardwareDecodingCodecs")
+      .withoutRemoves()
       .toArray(),
   ];
 
