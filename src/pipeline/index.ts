@@ -26,6 +26,9 @@ import { createJellyfinClient } from "../api/jellyfin_client";
 import { type JellyfinClient } from "../api/jellyfin.types";
 import { RootConfigType, type RootConfig } from "../types/config/root";
 import { type ZodSafeParseResult, type z } from "zod";
+import { type PluginInfoSchema } from "../types/schema/plugins";
+import { calculatePluginsToInstall, installPlugins } from "../apply/plugins";
+import type { PluginConfig } from "../types/config/plugins";
 
 export async function runPipeline(path: string): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
@@ -138,6 +141,22 @@ export async function runPipeline(path: string): Promise<void> {
       console.log("✓ updated user policies");
     } else {
       console.log("✓ user policies already up to date");
+    }
+  }
+
+  if (cfg.plugins) {
+    const installedPlugins: PluginInfoSchema[] =
+      await jellyfinClient.getPlugins();
+
+    const pluginsToInstall: PluginConfig[] | undefined =
+      calculatePluginsToInstall(installedPlugins, cfg.plugins);
+
+    if (pluginsToInstall) {
+      console.log("→ installing plugins");
+      await installPlugins(jellyfinClient, pluginsToInstall);
+      console.log("✓ installed plugins");
+    } else {
+      console.log("✓ plugins already up to date");
     }
   }
 

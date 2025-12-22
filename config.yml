@@ -49,3 +49,5 @@ users:
     password: "plainpass"
 startup:
   completeStartupWizard: true
+plugins:
+  - name: "Trakt"
