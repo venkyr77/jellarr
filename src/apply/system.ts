@@ -17,8 +17,8 @@ export function calculateSystemDiff(
     ...new ChangeSetBuilder(
       diff(current, next, { treatTypeChangeAsReplace: false }),
     )
-      .withoutRemoves()
       .withKey("EnableMetrics")
+      .withoutRemoves()
       .atomize()
       .toArray(),
 
@@ -28,16 +28,16 @@ export function calculateSystemDiff(
         treatTypeChangeAsReplace: false,
       }),
     )
-      .withoutRemoves()
       .withKey("PluginRepositories")
+      .withoutRemoves()
       .atomize()
       .toArray(),
 
     ...new ChangeSetBuilder(
       diff(current, next, { treatTypeChangeAsReplace: false }),
     )
-      .withoutRemoves()
       .withKey("TrickplayOptions")
+      .withoutRemoves()
       .atomize()
       .withoutRemoves()
       .toArray(),

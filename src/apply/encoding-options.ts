@@ -19,6 +19,7 @@ export function calculateEncodingDiff(
     )
       .withoutRemoves()
       .toArray(),
+
     ...new ChangeSetBuilder(
       diff(current, mapEncodingOptionsConfigToSchema(desired), {
         embeddedObjKeys: { HardwareDecodingCodecs: "$value" },

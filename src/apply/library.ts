@@ -50,6 +50,7 @@ export async function applyLibrary(
 
   for (const virtualFolder of virtualFoldersToAdd) {
     const name: string = virtualFolder.Name as string;
+
     const collectionType: CollectionTypeSchema =
       virtualFolder.CollectionType as CollectionTypeSchema;
 
