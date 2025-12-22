@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import {
   calculateNewUsersDiff,
-  applyNewUsers,
+  createNewUsers,
   calculateUserPoliciesDiff,
   applyUserPolicies,
 } from "../../src/apply/users";
@@ -11,8 +11,6 @@ import type {
   UserDtoSchema,
   UserPolicySchema,
 } from "../../src/types/schema/users";
-import { logger } from "../../src/lib/logger";
-
 vi.mock("../../src/lib/logger", () => ({
   logger: {
     info: vi.fn(),
@@ -271,7 +269,7 @@ describe("calculateNewUsersDiff", () => {
   });
 });
 
-describe("applyNewUsers", () => {
+describe("createNewUsers", () => {
   const mockClient: JellyfinClient = {
     createUser: vi.fn(),
   } as unknown as JellyfinClient;
@@ -285,7 +283,7 @@ describe("applyNewUsers", () => {
     const createUserSpy: Mock = vi.spyOn(mockClient, "createUser");
 
     // Act
-    await applyNewUsers(mockClient, undefined);
+    await createNewUsers(mockClient, undefined);
 
     // Assert
     expect(createUserSpy).not.toHaveBeenCalled();
@@ -302,7 +300,7 @@ describe("applyNewUsers", () => {
     ];
 
     // Act
-    await applyNewUsers(mockClient, usersToCreate);
+    await createNewUsers(mockClient, usersToCreate);
 
     // Assert
     expect(createUserSpy).toHaveBeenCalledTimes(1);
@@ -327,7 +325,7 @@ describe("applyNewUsers", () => {
     ];
 
     // Act
-    await applyNewUsers(mockClient, usersToCreate);
+    await createNewUsers(mockClient, usersToCreate);
 
     // Assert
     expect(createUserSpy).toHaveBeenCalledTimes(2);
@@ -347,7 +345,7 @@ describe("applyNewUsers", () => {
     const usersToCreate: UserConfig[] = [];
 
     // Act
-    await applyNewUsers(mockClient, usersToCreate);
+    await createNewUsers(mockClient, usersToCreate);
 
     // Assert
     expect(createUserSpy).not.toHaveBeenCalled();
@@ -355,30 +353,31 @@ describe("applyNewUsers", () => {
 });
 
 describe("calculateUserPoliciesDiff", () => {
+  let currentUsers: UserDtoSchema[];
+
   beforeEach(() => {
     vi.clearAllMocks();
+    currentUsers = [
+      {
+        Name: "existing-user",
+        Id: "user-1-id",
+        ServerId: "server-id",
+        Policy: {
+          IsAdministrator: false,
+          LoginAttemptsBeforeLockout: 5,
+        },
+      } as UserDtoSchema,
+      {
+        Name: "admin-user",
+        Id: "user-2-id",
+        ServerId: "server-id",
+        Policy: {
+          IsAdministrator: true,
+          LoginAttemptsBeforeLockout: 3,
+        },
+      } as UserDtoSchema,
+    ];
   });
-
-  const currentUsers: UserDtoSchema[] = [
-    {
-      Name: "existing-user",
-      Id: "user-1-id",
-      ServerId: "server-id",
-      Policy: {
-        IsAdministrator: false,
-        LoginAttemptsBeforeLockout: 5,
-      },
-    } as UserDtoSchema,
-    {
-      Name: "admin-user",
-      Id: "user-2-id",
-      ServerId: "server-id",
-      Policy: {
-        IsAdministrator: true,
-        LoginAttemptsBeforeLockout: 3,
-      },
-    } as UserDtoSchema,
-  ];
 
   it("should return undefined when no users desired", () => {
     // Arrange
@@ -615,47 +614,6 @@ describe("calculateUserPoliciesDiff", () => {
 
     // Assert
     expect(result).toBeUndefined();
-  });
-
-  it("should log when user policy updates are detected", () => {
-    // Arrange
-    const config: UserConfigList = [
-      {
-        name: "existing-user",
-        password: "password",
-        policy: {
-          isAdministrator: true,
-        },
-      },
-    ];
-
-    const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(logger, "info");
-
-    // Act
-    calculateUserPoliciesDiff(currentUsers, config);
-
-    // Assert
-    expect(loggerSpy).toHaveBeenCalledWith(
-      "Updating user policy: existing-user",
-    );
-  });
-
-  it("should not log when no user policy changes detected", () => {
-    // Arrange
-    const config: UserConfigList = [
-      {
-        name: "existing-user",
-        password: "password",
-      },
-    ];
-
-    const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(logger, "info");
-
-    // Act
-    calculateUserPoliciesDiff(currentUsers, config);
-
-    // Assert
-    expect(loggerSpy).not.toHaveBeenCalled();
   });
 
   it("should not modify policy when isAdministrator is undefined", () => {

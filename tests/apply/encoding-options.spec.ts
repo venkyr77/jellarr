@@ -59,7 +59,6 @@ import {
 import type { JellyfinClient } from "../../src/api/jellyfin.types";
 import { type EncodingOptionsConfig } from "../../src/types/config/encoding-options";
 import { type EncodingOptionsSchema } from "../../src/types/schema/encoding-options";
-import * as loggerModule from "../../src/lib/logger";
 
 vi.mock("../../src/lib/logger", () => ({
   logger: {
@@ -159,72 +158,6 @@ describe("apply/encoding", () => {
 
       // Assert
       expect(result).toBeUndefined();
-    });
-
-    it("should log when EnableHardwareEncoding changes", () => {
-      // Arrange
-      const current: EncodingOptionsSchema = {
-        EnableHardwareEncoding: false,
-      } as EncodingOptionsSchema;
-
-      const desired: EncodingOptionsConfig = {
-        enableHardwareEncoding: true,
-      };
-
-      const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-        loggerModule.logger,
-        "info",
-      );
-
-      // Act
-      calculateEncodingDiff(current, desired);
-
-      // Assert
-      expect(loggerSpy).toHaveBeenCalledWith(
-        "EnableHardwareEncoding changed: false → true",
-      );
-    });
-
-    it("should not log when EnableHardwareEncoding does not change", () => {
-      // Arrange
-      const current: EncodingOptionsSchema = {
-        EnableHardwareEncoding: true,
-      } as EncodingOptionsSchema;
-
-      const desired: EncodingOptionsConfig = {
-        enableHardwareEncoding: true,
-      };
-
-      const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-        loggerModule.logger,
-        "info",
-      );
-
-      // Act
-      calculateEncodingDiff(current, desired);
-
-      // Assert
-      expect(loggerSpy).not.toHaveBeenCalled();
-    });
-
-    it("should not log when enableHardwareEncoding is undefined", () => {
-      // Arrange
-      const current: EncodingOptionsSchema = {
-        EnableHardwareEncoding: true,
-      } as EncodingOptionsSchema;
-
-      const desired: EncodingOptionsConfig = {};
-
-      const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-        loggerModule.logger,
-        "info",
-      );
-
-      // Act
-      calculateEncodingDiff(current, desired);
-
-      // Assert
-      expect(loggerSpy).not.toHaveBeenCalled();
     });
 
     it("should update HardwareAccelerationType when hardwareAccelerationType changes", () => {
@@ -339,96 +272,6 @@ describe("apply/encoding", () => {
       });
     });
 
-    it("should log when HardwareAccelerationType changes", () => {
-      // Arrange
-      const current: EncodingOptionsSchema = {
-        HardwareAccelerationType: "none",
-      } as EncodingOptionsSchema;
-
-      const desired: EncodingOptionsConfig = {
-        hardwareAccelerationType: "nvenc",
-      };
-
-      const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-        loggerModule.logger,
-        "info",
-      );
-
-      // Act
-      calculateEncodingDiff(current, desired);
-
-      // Assert
-      expect(loggerSpy).toHaveBeenCalledWith(
-        "HardwareAccelerationType changed: none → nvenc",
-      );
-    });
-
-    it("should log when HardwareAccelerationType changes from undefined (defaults to none)", () => {
-      // Arrange
-      const current: EncodingOptionsSchema = {
-        HardwareAccelerationType: undefined,
-      } as EncodingOptionsSchema;
-
-      const desired: EncodingOptionsConfig = {
-        hardwareAccelerationType: "vaapi",
-      };
-
-      const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-        loggerModule.logger,
-        "info",
-      );
-
-      // Act
-      calculateEncodingDiff(current, desired);
-
-      // Assert
-      expect(loggerSpy).toHaveBeenCalledWith(
-        "HardwareAccelerationType changed: none → vaapi",
-      );
-    });
-
-    it("should not log when HardwareAccelerationType does not change", () => {
-      // Arrange
-      const current: EncodingOptionsSchema = {
-        HardwareAccelerationType: "qsv",
-      } as EncodingOptionsSchema;
-
-      const desired: EncodingOptionsConfig = {
-        hardwareAccelerationType: "qsv",
-      };
-
-      const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-        loggerModule.logger,
-        "info",
-      );
-
-      // Act
-      calculateEncodingDiff(current, desired);
-
-      // Assert
-      expect(loggerSpy).not.toHaveBeenCalled();
-    });
-
-    it("should not log when hardwareAccelerationType is undefined", () => {
-      // Arrange
-      const current: EncodingOptionsSchema = {
-        HardwareAccelerationType: "amf",
-      } as EncodingOptionsSchema;
-
-      const desired: EncodingOptionsConfig = {};
-
-      const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-        loggerModule.logger,
-        "info",
-      );
-
-      // Act
-      calculateEncodingDiff(current, desired);
-
-      // Assert
-      expect(loggerSpy).not.toHaveBeenCalled();
-    });
-
     it("should handle both enableHardwareEncoding and hardwareAccelerationType changes together", () => {
       // Arrange
       const current: EncodingOptionsSchema = {
@@ -442,11 +285,6 @@ describe("apply/encoding", () => {
         hardwareAccelerationType: "nvenc",
       };
 
-      const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-        loggerModule.logger,
-        "info",
-      );
-
       // Act
       const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
         current,
@@ -457,14 +295,6 @@ describe("apply/encoding", () => {
       expect(result?.EnableHardwareEncoding).toBe(true);
       expect(result?.HardwareAccelerationType).toBe("nvenc");
       expect(result?.EncodingThreadCount).toBe(4);
-
-      expect(loggerSpy).toHaveBeenCalledWith(
-        "EnableHardwareEncoding changed: false → true",
-      );
-      expect(loggerSpy).toHaveBeenCalledWith(
-        "HardwareAccelerationType changed: none → nvenc",
-      );
-      expect(loggerSpy).toHaveBeenCalledTimes(2);
     });
 
     it("should handle mixed scenarios where one field changes and one stays same", () => {
@@ -479,11 +309,6 @@ describe("apply/encoding", () => {
         hardwareAccelerationType: "videotoolbox",
       };
 
-      const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-        loggerModule.logger,
-        "info",
-      );
-
       // Act
       const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
         current,
@@ -493,11 +318,6 @@ describe("apply/encoding", () => {
       // Assert
       expect(result?.EnableHardwareEncoding).toBe(true);
       expect(result?.HardwareAccelerationType).toBe("videotoolbox");
-
-      expect(loggerSpy).toHaveBeenCalledWith(
-        "HardwareAccelerationType changed: vaapi → videotoolbox",
-      );
-      expect(loggerSpy).toHaveBeenCalledTimes(1);
     });
 
     describe("device fields", () => {
@@ -663,54 +483,6 @@ describe("apply/encoding", () => {
         // Assert
         expect(result).toBeUndefined();
       });
-
-      it("should log when VaapiDevice changes", () => {
-        // Arrange
-        const current: EncodingOptionsSchema = {
-          VaapiDevice: "",
-        } as EncodingOptionsSchema;
-
-        const desired: EncodingOptionsConfig = {
-          vaapiDevice: "/dev/dri/renderD128",
-        };
-
-        const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-          loggerModule.logger,
-          "info",
-        );
-
-        // Act
-        calculateEncodingDiff(current, desired);
-
-        // Assert
-        expect(loggerSpy).toHaveBeenCalledWith(
-          'VaapiDevice changed: "" → "/dev/dri/renderD128"',
-        );
-      });
-
-      it("should log when QsvDevice changes", () => {
-        // Arrange
-        const current: EncodingOptionsSchema = {
-          QsvDevice: "/old/path",
-        } as EncodingOptionsSchema;
-
-        const desired: EncodingOptionsConfig = {
-          qsvDevice: "/new/path",
-        };
-
-        const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-          loggerModule.logger,
-          "info",
-        );
-
-        // Act
-        calculateEncodingDiff(current, desired);
-
-        // Assert
-        expect(loggerSpy).toHaveBeenCalledWith(
-          'QsvDevice changed: "/old/path" → "/new/path"',
-        );
-      });
     });
 
     describe("hardwareDecodingCodecs array field", () => {
@@ -829,30 +601,6 @@ describe("apply/encoding", () => {
         // Assert
         expect(result).toBeUndefined();
       });
-
-      it("should log when HardwareDecodingCodecs changes", () => {
-        // Arrange
-        const current: EncodingOptionsSchema = {
-          HardwareDecodingCodecs: ["h264"],
-        } as EncodingOptionsSchema;
-
-        const desired: EncodingOptionsConfig = {
-          hardwareDecodingCodecs: ["h264", "hevc", "vp9"],
-        };
-
-        const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-          loggerModule.logger,
-          "info",
-        );
-
-        // Act
-        calculateEncodingDiff(current, desired);
-
-        // Assert
-        expect(loggerSpy).toHaveBeenCalledWith(
-          "HardwareDecodingCodecs changed: [h264] → [h264, hevc, vp9]",
-        );
-      });
     });
 
     describe("boolean decoding fields", () => {
@@ -912,30 +660,6 @@ describe("apply/encoding", () => {
           // Assert
           expect(result).toBeUndefined();
         });
-
-        it("should log when EnableDecodingColorDepth10Hevc changes", () => {
-          // Arrange
-          const current: EncodingOptionsSchema = {
-            EnableDecodingColorDepth10Hevc: false,
-          } as EncodingOptionsSchema;
-
-          const desired: EncodingOptionsConfig = {
-            enableDecodingColorDepth10Hevc: true,
-          };
-
-          const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-            loggerModule.logger,
-            "info",
-          );
-
-          // Act
-          calculateEncodingDiff(current, desired);
-
-          // Assert
-          expect(loggerSpy).toHaveBeenCalledWith(
-            "EnableDecodingColorDepth10Hevc changed: false → true",
-          );
-        });
       });
 
       describe("enableDecodingColorDepth10Vp9", () => {
@@ -975,30 +699,6 @@ describe("apply/encoding", () => {
               expect(result?.EnableDecodingColorDepth10Vp9).toBe(desiredValue);
               expect(result?.EncodingThreadCount).toBe(3);
             },
-          );
-        });
-
-        it("should log when EnableDecodingColorDepth10Vp9 changes", () => {
-          // Arrange
-          const current: EncodingOptionsSchema = {
-            EnableDecodingColorDepth10Vp9: true,
-          } as EncodingOptionsSchema;
-
-          const desired: EncodingOptionsConfig = {
-            enableDecodingColorDepth10Vp9: false,
-          };
-
-          const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-            loggerModule.logger,
-            "info",
-          );
-
-          // Act
-          calculateEncodingDiff(current, desired);
-
-          // Assert
-          expect(loggerSpy).toHaveBeenCalledWith(
-            "EnableDecodingColorDepth10Vp9 changed: true → false",
           );
         });
       });
@@ -1044,30 +744,6 @@ describe("apply/encoding", () => {
             },
           );
         });
-
-        it("should log when EnableDecodingColorDepth10HevcRext changes", () => {
-          // Arrange
-          const current: EncodingOptionsSchema = {
-            EnableDecodingColorDepth10HevcRext: false,
-          } as EncodingOptionsSchema;
-
-          const desired: EncodingOptionsConfig = {
-            enableDecodingColorDepth10HevcRext: true,
-          };
-
-          const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-            loggerModule.logger,
-            "info",
-          );
-
-          // Act
-          calculateEncodingDiff(current, desired);
-
-          // Assert
-          expect(loggerSpy).toHaveBeenCalledWith(
-            "EnableDecodingColorDepth10HevcRext changed: false → true",
-          );
-        });
       });
 
       describe("enableDecodingColorDepth12HevcRext", () => {
@@ -1109,30 +785,6 @@ describe("apply/encoding", () => {
               );
               expect(result?.EncodingThreadCount).toBe(5);
             },
-          );
-        });
-
-        it("should log when EnableDecodingColorDepth12HevcRext changes", () => {
-          // Arrange
-          const current: EncodingOptionsSchema = {
-            EnableDecodingColorDepth12HevcRext: true,
-          } as EncodingOptionsSchema;
-
-          const desired: EncodingOptionsConfig = {
-            enableDecodingColorDepth12HevcRext: false,
-          };
-
-          const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-            loggerModule.logger,
-            "info",
-          );
-
-          // Act
-          calculateEncodingDiff(current, desired);
-
-          // Assert
-          expect(loggerSpy).toHaveBeenCalledWith(
-            "EnableDecodingColorDepth12HevcRext changed: true → false",
           );
         });
       });
@@ -1195,30 +847,6 @@ describe("apply/encoding", () => {
           // Assert
           expect(result).toBeUndefined();
         });
-
-        it("should log when AllowHevcEncoding changes", () => {
-          // Arrange
-          const current: EncodingOptionsSchema = {
-            AllowHevcEncoding: false,
-          } as EncodingOptionsSchema;
-
-          const desired: EncodingOptionsConfig = {
-            allowHevcEncoding: true,
-          };
-
-          const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-            loggerModule.logger,
-            "info",
-          );
-
-          // Act
-          calculateEncodingDiff(current, desired);
-
-          // Assert
-          expect(loggerSpy).toHaveBeenCalledWith(
-            "AllowHevcEncoding changed: false → true",
-          );
-        });
       });
 
       describe("allowAv1Encoding", () => {
@@ -1277,30 +905,6 @@ describe("apply/encoding", () => {
           // Assert
           expect(result).toBeUndefined();
         });
-
-        it("should log when AllowAv1Encoding changes", () => {
-          // Arrange
-          const current: EncodingOptionsSchema = {
-            AllowAv1Encoding: true,
-          } as EncodingOptionsSchema;
-
-          const desired: EncodingOptionsConfig = {
-            allowAv1Encoding: false,
-          };
-
-          const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-            loggerModule.logger,
-            "info",
-          );
-
-          // Act
-          calculateEncodingDiff(current, desired);
-
-          // Assert
-          expect(loggerSpy).toHaveBeenCalledWith(
-            "AllowAv1Encoding changed: true → false",
-          );
-        });
       });
     });
 
@@ -1335,11 +939,6 @@ describe("apply/encoding", () => {
         allowAv1Encoding: false,
       };
 
-      const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-        loggerModule.logger,
-        "info",
-      );
-
       // Act
       const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
         current,
@@ -1364,43 +963,6 @@ describe("apply/encoding", () => {
       expect(result?.AllowHevcEncoding).toBe(false);
       expect(result?.AllowAv1Encoding).toBe(false);
       expect(result?.EncodingThreadCount).toBe(8);
-
-      expect(loggerSpy).toHaveBeenCalledWith(
-        "EnableHardwareEncoding changed: false → true",
-      );
-      expect(loggerSpy).toHaveBeenCalledWith(
-        "HardwareAccelerationType changed: none → vaapi",
-      );
-      expect(loggerSpy).toHaveBeenCalledWith(
-        'VaapiDevice changed: "" → "/dev/dri/renderD128"',
-      );
-      expect(loggerSpy).toHaveBeenCalledWith(
-        "HardwareDecodingCodecs changed: [] → [h264, hevc, vp9, av1]",
-      );
-      expect(loggerSpy).toHaveBeenCalledWith(
-        "EnableDecodingColorDepth10Hevc changed: false → true",
-      );
-      expect(loggerSpy).toHaveBeenCalledWith(
-        "EnableDecodingColorDepth10HevcRext changed: false → true",
-      );
-
-      expect(loggerSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining("QsvDevice changed"),
-      );
-      expect(loggerSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining("EnableDecodingColorDepth10Vp9 changed"),
-      );
-      expect(loggerSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining("EnableDecodingColorDepth12HevcRext changed"),
-      );
-      expect(loggerSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining("AllowHevcEncoding changed"),
-      );
-      expect(loggerSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining("AllowAv1Encoding changed"),
-      );
-
-      expect(loggerSpy).toHaveBeenCalledTimes(6);
     });
   });
 

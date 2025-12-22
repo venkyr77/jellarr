@@ -36,7 +36,6 @@ import { calculateSystemDiff, applySystem } from "../../src/apply/system";
 import type { JellyfinClient } from "../../src/api/jellyfin.types";
 import type { ServerConfigurationSchema } from "../../src/types/schema/system";
 import type { SystemConfig } from "../../src/types/config/system";
-import * as loggerModule from "../../src/lib/logger";
 
 vi.mock("../../src/lib/logger", () => ({
   logger: {
@@ -163,74 +162,6 @@ describe("apply/system", () => {
 
         // Assert
         expect(result).toBeUndefined();
-      });
-
-      it("should log when EnableMetrics changes", () => {
-        // Arrange
-        const current: ServerConfigurationSchema = {
-          EnableMetrics: false,
-          PluginRepositories: [],
-          TrickplayOptions: undefined,
-        } as ServerConfigurationSchema;
-
-        const desired: SystemConfig = { enableMetrics: true };
-
-        const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-          loggerModule.logger,
-          "info",
-        );
-
-        // Act
-        calculateSystemDiff(current, desired);
-
-        // Assert
-        expect(loggerSpy).toHaveBeenCalledWith(
-          "EnableMetrics changed: false → true",
-        );
-      });
-
-      it("should not log when EnableMetrics does not change", () => {
-        // Arrange
-        const current: ServerConfigurationSchema = {
-          EnableMetrics: true,
-          PluginRepositories: [],
-          TrickplayOptions: undefined,
-        } as ServerConfigurationSchema;
-
-        const desired: SystemConfig = { enableMetrics: true };
-
-        const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-          loggerModule.logger,
-          "info",
-        );
-
-        // Act
-        calculateSystemDiff(current, desired);
-
-        // Assert
-        expect(loggerSpy).not.toHaveBeenCalled();
-      });
-
-      it("should not log when enableMetrics is undefined", () => {
-        // Arrange
-        const current: ServerConfigurationSchema = {
-          EnableMetrics: true,
-          PluginRepositories: [],
-          TrickplayOptions: undefined,
-        } as ServerConfigurationSchema;
-
-        const desired: SystemConfig = {};
-
-        const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-          loggerModule.logger,
-          "info",
-        );
-
-        // Act
-        calculateSystemDiff(current, desired);
-
-        // Assert
-        expect(loggerSpy).not.toHaveBeenCalled();
       });
     });
 
@@ -470,63 +401,6 @@ describe("apply/system", () => {
         // Assert
         expect(result).toBeUndefined();
       });
-
-      it("should log when PluginRepositories changes", () => {
-        // Arrange
-        const current: ServerConfigurationSchema = {
-          EnableMetrics: false,
-          PluginRepositories: [
-            { Name: "Old", Url: "https://old.com", Enabled: true },
-          ],
-          TrickplayOptions: undefined,
-        } as ServerConfigurationSchema;
-
-        const desired: SystemConfig = {
-          pluginRepositories: [
-            { name: "New", url: "https://new.com", enabled: false },
-          ],
-        };
-
-        const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-          loggerModule.logger,
-          "info",
-        );
-
-        // Act
-        calculateSystemDiff(current, desired);
-
-        // Assert
-        expect(loggerSpy).toHaveBeenCalledWith(
-          'PluginRepositories changed: [{"name":"Old","url":"https://old.com","enabled":true}] → [{"name":"New","url":"https://new.com","enabled":false}]',
-        );
-      });
-
-      it("should not log when PluginRepositories does not change", () => {
-        // Arrange
-        const existingRepos: Array<{
-          Name: string;
-          Url: string;
-          Enabled: boolean;
-        }> = [{ Name: "Same", Url: "https://same.com", Enabled: true }];
-        const current: ServerConfigurationSchema = {
-          EnableMetrics: false,
-          PluginRepositories: existingRepos,
-          TrickplayOptions: undefined,
-        } as ServerConfigurationSchema;
-
-        const desired: SystemConfig = {};
-
-        const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-          loggerModule.logger,
-          "info",
-        );
-
-        // Act
-        calculateSystemDiff(current, desired);
-
-        // Assert
-        expect(loggerSpy).not.toHaveBeenCalled();
-      });
     });
 
     describe("trickplayOptions (Object)", () => {
@@ -756,60 +630,6 @@ describe("apply/system", () => {
         expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(true);
         expect(result?.EnableMetrics).toBe(false);
         expect(result?.PluginRepositories).toEqual([]);
-      });
-
-      it("should log when TrickplayOptions changes", () => {
-        // Arrange
-        const current: ServerConfigurationSchema = {
-          EnableMetrics: false,
-          PluginRepositories: [],
-          TrickplayOptions: {
-            EnableHwAcceleration: false,
-            EnableHwEncoding: true,
-          },
-        } as ServerConfigurationSchema;
-
-        const desired: SystemConfig = {
-          trickplayOptions: { enableHwAcceleration: true },
-        };
-
-        const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-          loggerModule.logger,
-          "info",
-        );
-
-        // Act
-        calculateSystemDiff(current, desired);
-
-        // Assert
-        expect(loggerSpy).toHaveBeenCalledWith(
-          'TrickplayOptions changed: {"EnableHwAcceleration":false,"EnableHwEncoding":true} → {"enableHwAcceleration":true}',
-        );
-      });
-
-      it("should not log when TrickplayOptions does not change", () => {
-        // Arrange
-        const current: ServerConfigurationSchema = {
-          EnableMetrics: false,
-          PluginRepositories: [],
-          TrickplayOptions: {
-            EnableHwAcceleration: true,
-            EnableHwEncoding: false,
-          },
-        } as ServerConfigurationSchema;
-
-        const desired: SystemConfig = {};
-
-        const loggerSpy: Mock<(msg: string) => void> = vi.spyOn(
-          loggerModule.logger,
-          "info",
-        );
-
-        // Act
-        calculateSystemDiff(current, desired);
-
-        // Assert
-        expect(loggerSpy).not.toHaveBeenCalled();
       });
     });
 

@@ -1,22 +1,29 @@
 import type { VirtualFolderConfig } from "../types/config/library";
 import type {
-  AddVirtualFolderDtoSchema,
   LibraryOptionsSchema,
-  MediaPathInfoSchema,
+  VirtualFolderInfoSchema,
 } from "../types/schema/library";
 
-export function mapVirtualFolderConfigToAddVirtualFolderDto(
-  desired: VirtualFolderConfig,
-): AddVirtualFolderDtoSchema {
-  const libraryOptions: LibraryOptionsSchema = {
-    PathInfos: desired.libraryOptions.pathInfos.map(
-      (pathInfo: { path: string }): MediaPathInfoSchema => ({
-        Path: pathInfo.path,
-      }),
-    ),
-  } as LibraryOptionsSchema;
-
+export function mapVirtualFolderConfigToSchema(
+  config: VirtualFolderConfig,
+): Partial<VirtualFolderInfoSchema> {
   return {
-    LibraryOptions: libraryOptions,
+    Name: config.name,
+    CollectionType: config.collectionType,
+    LibraryOptions: {
+      PathInfos: config.libraryOptions.pathInfos.map(
+        (pathInfo: { path: string }) => ({
+          Path: pathInfo.path,
+        }),
+      ),
+    } as LibraryOptionsSchema,
+  };
+}
+
+export function mapVirtualFolderInfoSchemaToAddVirtualFolderDtoSchema(
+  virtualFolderInfoSchema: VirtualFolderInfoSchema,
+): { LibraryOptions: VirtualFolderInfoSchema["LibraryOptions"] } {
+  return {
+    LibraryOptions: virtualFolderInfoSchema.LibraryOptions,
   };
 }

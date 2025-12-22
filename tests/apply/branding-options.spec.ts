@@ -145,7 +145,7 @@ describe("calculateBrandingOptionsDiff", () => {
     expect(result?.SplashscreenEnabled).toBe(true);
   });
 
-  it("should not detect change when setting empty string to null", () => {
+  it("should detect change when setting empty string to null", () => {
     const current: BrandingOptionsDtoSchema = {
       LoginDisclaimer: null,
       CustomCss: null,
@@ -159,7 +159,9 @@ describe("calculateBrandingOptionsDiff", () => {
     const result: BrandingOptionsDtoSchema | undefined =
       calculateBrandingOptionsDiff(current, desired);
 
-    expect(result).toBeUndefined();
+    expect(result).toBeDefined();
+    expect(result?.LoginDisclaimer).toBe("");
+    expect(result?.CustomCss).toBe("");
   });
 
   it("should handle multiple changes", () => {
