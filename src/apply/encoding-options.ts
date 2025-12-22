@@ -10,9 +10,11 @@ export function calculateEncodingDiff(
   current: EncodingOptionsSchema,
   desired: EncodingOptionsConfig,
 ): EncodingOptionsSchema | undefined {
+  const next: EncodingOptionsSchema = mapEncodingOptionsConfigToSchema(desired);
+
   const patch: IChange[] = [
     ...new ChangeSetBuilder(
-      diff(current, mapEncodingOptionsConfigToSchema(desired), {
+      diff(current, next, {
         keysToSkip: ["HardwareDecodingCodecs"],
         treatTypeChangeAsReplace: false,
       }),
@@ -21,7 +23,7 @@ export function calculateEncodingDiff(
       .toArray(),
 
     ...new ChangeSetBuilder(
-      diff(current, mapEncodingOptionsConfigToSchema(desired), {
+      diff(current, next, {
         embeddedObjKeys: { HardwareDecodingCodecs: "$value" },
         treatTypeChangeAsReplace: false,
       }),
@@ -43,9 +45,7 @@ export async function applyEncoding(
   client: JellyfinClient,
   updatedSchema: EncodingOptionsSchema | undefined,
 ): Promise<void> {
-  if (!updatedSchema) {
-    return;
-  }
+  if (!updatedSchema) return;
 
   await client.updateEncodingConfiguration(updatedSchema);
 }

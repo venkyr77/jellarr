@@ -10,8 +10,11 @@ export function calculateBrandingOptionsDiff(
   current: BrandingOptionsDtoSchema,
   desired: BrandingOptionsConfig,
 ): BrandingOptionsDtoSchema | undefined {
+  const next: BrandingOptionsDtoSchema =
+    mapBrandingOptionsConfigToSchema(desired);
+
   const patch: IChange[] = new ChangeSetBuilder(
-    diff(current, mapBrandingOptionsConfigToSchema(desired), {
+    diff(current, next, {
       treatTypeChangeAsReplace: false,
     }),
   )

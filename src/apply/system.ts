@@ -57,9 +57,7 @@ export async function applySystem(
   client: JellyfinClient,
   updatedSchema: ServerConfigurationSchema | undefined,
 ): Promise<void> {
-  if (!updatedSchema) {
-    return;
-  }
+  if (!updatedSchema) return;
 
   await client.updateSystemConfiguration(updatedSchema);
 }

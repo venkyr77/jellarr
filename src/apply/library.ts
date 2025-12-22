@@ -21,8 +21,12 @@ export function calculateLibraryDiff(
     return undefined;
   }
 
+  const next: VirtualFolderInfoSchema[] = desired.map(
+    mapVirtualFolderConfigToSchema,
+  );
+
   const patch: IChange[] = new ChangeSetBuilder(
-    diff(current, desired.map(mapVirtualFolderConfigToSchema), {
+    diff(current, next, {
       embeddedObjKeys: { ".": "Name" },
       treatTypeChangeAsReplace: false,
     }),
@@ -44,9 +48,7 @@ export async function applyLibrary(
   client: JellyfinClient,
   virtualFoldersToAdd: VirtualFolderInfoSchema[] | undefined,
 ): Promise<void> {
-  if (!virtualFoldersToAdd) {
-    return;
-  }
+  if (!virtualFoldersToAdd) return;
 
   for (const virtualFolder of virtualFoldersToAdd) {
     const name: string = virtualFolder.Name as string;
