@@ -1,9 +1,10 @@
 {
   config,
   lib,
-  pkgs,
   ...
-}: {
+}: let
+  types = import ./types {inherit lib;};
+in {
   options.services.jellarr = {
     bootstrap = {
       enable = lib.mkEnableOption ''
@@ -58,9 +59,8 @@
     };
 
     config = lib.mkOption {
-      default = {};
-      description = "configuration as attrset which will be converted to YAML.";
-      inherit (pkgs.formats.yaml {}) type;
+      description = "Jellarr configuration.";
+      type = types.root.rootConfigType;
     };
 
     dataDir = lib.mkOption {

@@ -38,6 +38,7 @@
           {
             formatting = treefmtFormatEval.config.build.check inputs.self;
             linting = treefmtLintEval.config.build.check inputs.self;
+            module-types = import ./nix/tests/module/types {inherit pkgs;};
           }
           // import ./nix/tests/integration {inherit pkgs;};
 
