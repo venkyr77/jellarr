@@ -92,11 +92,21 @@ export async function runDump(baseUrl: string): Promise<void> {
     },
 
     encoding: {
-      encoderAppPath: encodingConfig.EncoderAppPath,
-      encoderAppPathDisplay: encodingConfig.EncoderAppPathDisplay,
-      enableFallbackFont: encodingConfig.EnableFallbackFont,
       enableHardwareEncoding: encodingConfig.EnableHardwareEncoding,
       hardwareAccelerationType: encodingConfig.HardwareAccelerationType,
+      vaapiDevice: encodingConfig.VaapiDevice,
+      qsvDevice: encodingConfig.QsvDevice,
+      hardwareDecodingCodecs: encodingConfig.HardwareDecodingCodecs,
+      enableDecodingColorDepth10Hevc:
+        encodingConfig.EnableDecodingColorDepth10Hevc,
+      enableDecodingColorDepth10Vp9:
+        encodingConfig.EnableDecodingColorDepth10Vp9,
+      enableDecodingColorDepth10HevcRext:
+        encodingConfig.EnableDecodingColorDepth10HevcRext,
+      enableDecodingColorDepth12HevcRext:
+        encodingConfig.EnableDecodingColorDepth12HevcRext,
+      allowHevcEncoding: encodingConfig.AllowHevcEncoding,
+      allowAv1Encoding: encodingConfig.AllowAv1Encoding,
     },
 
     library: {
