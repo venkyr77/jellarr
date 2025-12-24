@@ -10,10 +10,23 @@ system:
     enableHwAcceleration: true
     enableHwEncoding: true
 encoding:
-  encoderAppPathDisplay: /nix/store/1f2nvyz7cfalm8q38fbrba7j6155jnc2-jellyfin-ffmpeg-7.1.2-2-bin/bin/ffmpeg
-  enableFallbackFont: false
   enableHardwareEncoding: true
   hardwareAccelerationType: vaapi
+  vaapiDevice: /dev/dri/renderD128
+  hardwareDecodingCodecs:
+    - h264
+    - hevc
+    - mpeg2video
+    - vc1
+    - vp8
+    - vp9
+    - av1
+  enableDecodingColorDepth10Hevc: true
+  enableDecodingColorDepth10Vp9: true
+  enableDecodingColorDepth10HevcRext: true
+  enableDecodingColorDepth12HevcRext: true
+  allowHevcEncoding: false
+  allowAv1Encoding: false
 library:
   virtualFolders:
     - name: Movies - English
