@@ -1,84 +1,68 @@
-import { deepEqual } from "fast-equals";
 import { logger } from "../lib/logger";
+import { ChangeSetBuilder } from "../lib/changeset";
 import type { JellyfinClient } from "../api/jellyfin.types";
-import type {
-  LibraryConfig,
-  VirtualFolderConfig,
-} from "../types/config/library";
+import type { VirtualFolderConfig } from "../types/config/library";
 import type {
   VirtualFolderInfoSchema,
   CollectionTypeSchema,
   AddVirtualFolderDtoSchema,
 } from "../types/schema/library";
-import { mapVirtualFolderConfigToAddVirtualFolderDto } from "../mappers/library";
+import {
+  mapVirtualFolderConfigToSchema,
+  mapVirtualFolderInfoSchemaToAddVirtualFolderDtoSchema,
+} from "../mappers/library";
+import { applyChangeset, diff, type IChange } from "json-diff-ts";
 
 export function calculateLibraryDiff(
-  currentVirtualFolders: VirtualFolderInfoSchema[],
-  desired: LibraryConfig,
-): LibraryConfig | undefined {
-  if (!desired.virtualFolders || desired.virtualFolders.length === 0) {
+  current: VirtualFolderInfoSchema[],
+  desired: VirtualFolderConfig[],
+): VirtualFolderInfoSchema[] | undefined {
+  if (desired.length === 0) {
     return undefined;
   }
 
-  const virtualFoldersToCreate: VirtualFolderConfig[] = [];
-  let hasUpdates: boolean = false;
+  const next: VirtualFolderInfoSchema[] = desired.map(
+    mapVirtualFolderConfigToSchema,
+  );
 
-  for (const desiredVF of desired.virtualFolders) {
-    const existingVF: VirtualFolderInfoSchema | undefined =
-      currentVirtualFolders.find(
-        (vf: VirtualFolderInfoSchema) => vf.Name === desiredVF.name,
-      );
+  const patch: IChange[] = new ChangeSetBuilder(
+    diff(current, next, {
+      embeddedObjKeys: { ".": "Name" },
+      treatTypeChangeAsReplace: false,
+    }),
+  )
+    .atomize()
+    .withoutRemoves()
+    .withoutUpdates()
+    .toArray();
 
-    if (!existingVF) {
-      virtualFoldersToCreate.push(desiredVF);
-    } else {
-      const currentLocations: string[] = existingVF.Locations ?? [];
-      const desiredLocations: string[] = desiredVF.libraryOptions.pathInfos.map(
-        (p: { path: string }) => p.path,
-      );
-
-      if (
-        !deepEqual([...currentLocations].sort(), [...desiredLocations].sort())
-      ) {
-        hasUpdates = true;
-        logger.warn(
-          `Virtual folder ${desiredVF.name} exists but locations differ - updates not yet supported`,
-        );
-        logger.warn(`  Current: [${currentLocations.join(", ")}]`);
-        logger.warn(`  Desired: [${desiredLocations.join(", ")}]`);
-      }
-    }
+  if (patch.length !== 0) {
+    logger.info(JSON.stringify(patch));
+    return applyChangeset([], patch) as VirtualFolderInfoSchema[];
   }
 
-  if (virtualFoldersToCreate.length === 0 && !hasUpdates) {
-    return undefined;
-  }
-
-  return { virtualFolders: virtualFoldersToCreate };
+  return undefined;
 }
 
 export async function applyLibrary(
   client: JellyfinClient,
-  libraryConfig: LibraryConfig | undefined,
+  virtualFoldersToAdd: VirtualFolderInfoSchema[] | undefined,
 ): Promise<void> {
-  if (!libraryConfig?.virtualFolders) {
-    return;
-  }
+  if (!virtualFoldersToAdd) return;
 
-  for (const virtualFolder of libraryConfig.virtualFolders) {
-    logger.info(`Creating virtual folder: ${virtualFolder.name}`);
+  for (const virtualFolder of virtualFoldersToAdd) {
+    const name: string = virtualFolder.Name as string;
+
+    const collectionType: CollectionTypeSchema =
+      virtualFolder.CollectionType as CollectionTypeSchema;
+
+    logger.info(`Creating virtual folder: ${name}`);
 
     const addVirtualFolderDto: AddVirtualFolderDtoSchema =
-      mapVirtualFolderConfigToAddVirtualFolderDto(virtualFolder);
+      mapVirtualFolderInfoSchemaToAddVirtualFolderDtoSchema(virtualFolder);
 
-    await client.addVirtualFolder(
-      virtualFolder.name,
-      virtualFolder.collectionType as CollectionTypeSchema,
-      addVirtualFolderDto,
-    );
+    await client.addVirtualFolder(name, collectionType, addVirtualFolderDto);
 
-    logger.info(
-      `✓ Created virtual folder: ${virtualFolder.name} (${virtualFolder.collectionType})`,
-    );
+    logger.info(`✓ Created virtual folder: ${name} (${collectionType})`);
   }
 }

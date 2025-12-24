@@ -151,6 +151,26 @@ JELLARR_API_KEY=your_api_key node jellarr-v0.0.2.cjs --configFile path/to/config
 
 ---
 
+## Export Existing Configuration (Experimental)
+
+Already have a configured Jellyfin server? Use `dump` to export its current
+configuration as a starting point:
+
+```bash
+JELLARR_API_KEY=your_api_key jellarr dump --baseUrl http://localhost:8096 > config.yml
+```
+
+This exports system settings, encoding options, libraries, branding, users
+(without passwords), and plugin configurations. Edit the output to:
+
+- Remove fields you don't want to manage
+- Add `password` or `passwordFile` to users
+- Remove any default values you don't need
+
+See [`dumped-example.yml`](./dumped-example.yml) for sample output.
+
+---
+
 ## Configuration
 
 Jellarr uses a YAML configuration file (default: `config/config.yml`).
@@ -303,6 +323,55 @@ startup:
 Useful for automated deployments where you want to skip the interactive startup
 wizard.
 
+### Plugin Management
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+plugins:
+  # Install plugin by name (from configured repositories)
+  - name: "Trakt"
+
+  # Install and configure plugin
+  - name: "Trakt"
+    configuration:
+      TraktUsers:
+        - ExtraLogging: true
+
+  # Multiple plugins
+  - name: "Playback Reporting"
+  - name: "Fanart"
+    configuration:
+      EnableImages: true
+```
+
+**How it works:**
+
+- Plugins are installed from repositories configured in
+  `system.pluginRepositories`
+- Plugin names must match exactly (case-sensitive)
+- The `configuration` field accepts arbitrary key-value pairs specific to each
+  plugin
+- Only specified configuration fields are updated; unspecified fields are
+  preserved
+- Plugin configurations are applied after installation, allowing newly installed
+  plugins to be configured in the same run
+
+**Finding plugin configuration keys:**
+
+To discover available configuration options for a plugin, you can query the
+Jellyfin API:
+
+```bash
+# Get plugin ID
+curl -s -H "X-Emby-Token: $API_KEY" \
+  "http://localhost:8096/Plugins" | jq '.[] | select(.Name == "Trakt")'
+
+# Get plugin configuration
+curl -s -H "X-Emby-Token: $API_KEY" \
+  "http://localhost:8096/Plugins/{pluginId}/Configuration"
+```
+
 ---
 
 ## Secret Management
@@ -448,6 +517,12 @@ users:
     policy:
       isAdministrator: true
       loginAttemptsBeforeLockout: 3
+plugins:
+  - name: "Trakt"
+    configuration:
+      TraktUsers:
+        - ExtraLogging: true
+  - name: "Playback Reporting"
 startup:
   completeStartupWizard: true
 ```

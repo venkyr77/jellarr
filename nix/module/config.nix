@@ -8,6 +8,9 @@
   bootstrapCfg = cfg.bootstrap;
   bootstrapEnabled = cfg.enable && bootstrapCfg.enable;
 
+  types = import ./types {inherit lib;};
+  processedConfig = types.root.mkConfig cfg.config;
+
   pkg = import ../package.nix {inherit lib pkgs;};
 in {
   config = lib.mkMerge [
@@ -22,7 +25,7 @@ in {
             ++ lib.optional bootstrapEnabled "jellarr-api-key-bootstrap.service";
           description = "Run jellarr (packaged) once";
           preStart = let
-            configFile = pkgs.writeText "jellarr-config.yml" (pkgs.lib.generators.toYAML {} cfg.config);
+            configFile = pkgs.writeText "jellarr-config.yml" (pkgs.lib.generators.toYAML {} processedConfig);
           in
             # sh
             ''
@@ -30,11 +33,11 @@ in {
               chown ${cfg.user}:${cfg.group} ${cfg.dataDir}/config/config.yml
 
               for i in $(seq 1 120); do
-                ${pkgs.curl}/bin/curl -sf ${cfg.config.base_url}/System/Info/Public >/dev/null && exit 0
+                ${pkgs.curl}/bin/curl -sf ${processedConfig.base_url}/System/Info/Public >/dev/null && exit 0
                 sleep 1
               done
 
-              echo "Jellyfin not running or not ready at ${cfg.config.base_url}"
+              echo "Jellyfin not running or not ready at ${processedConfig.base_url}"
 
               exit 1
             '';

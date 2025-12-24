@@ -5,18 +5,8 @@ export function mapBrandingOptionsConfigToSchema(
   desired: BrandingOptionsConfig,
 ): Partial<BrandingOptionsDtoSchema> {
   const out: Partial<BrandingOptionsDtoSchema> = {};
-
-  if (desired.loginDisclaimer !== undefined) {
-    out.LoginDisclaimer = desired.loginDisclaimer;
-  }
-
-  if (desired.customCss !== undefined) {
-    out.CustomCss = desired.customCss;
-  }
-
-  if (desired.splashscreenEnabled !== undefined) {
-    out.SplashscreenEnabled = desired.splashscreenEnabled;
-  }
-
+  out.LoginDisclaimer = desired.loginDisclaimer;
+  out.CustomCss = desired.customCss;
+  out.SplashscreenEnabled = desired.splashscreenEnabled;
   return out;
 }

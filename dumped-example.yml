@@ -1,0 +1,85 @@
+version: 1
+base_url: http://10.0.0.76:8096
+system:
+  enableMetrics: true
+  pluginRepositories:
+    - name: Jellyfin Official
+      url: https://repo.jellyfin.org/releases/plugin/manifest.json
+      enabled: true
+  trickplayOptions:
+    enableHwAcceleration: true
+    enableHwEncoding: true
+encoding:
+  enableHardwareEncoding: true
+  hardwareAccelerationType: vaapi
+  vaapiDevice: /dev/dri/renderD128
+  hardwareDecodingCodecs:
+    - h264
+    - hevc
+    - mpeg2video
+    - vc1
+    - vp8
+    - vp9
+    - av1
+  enableDecodingColorDepth10Hevc: true
+  enableDecodingColorDepth10Vp9: true
+  enableDecodingColorDepth10HevcRext: true
+  enableDecodingColorDepth12HevcRext: true
+  allowHevcEncoding: false
+  allowAv1Encoding: false
+library:
+  virtualFolders:
+    - name: Movies - English
+      collectionType: movies
+      libraryOptions:
+        pathInfos:
+          - path: /mnt/movies/English
+    - name: Shows
+      collectionType: tvshows
+      libraryOptions:
+        pathInfos:
+          - path: /mnt/shows
+branding:
+  loginDisclaimer: |
+    Configured by <a href="https://github.com/venkyr77/jellarr">Jellarr</a>
+  customCss: |
+    @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");
+  splashscreenEnabled: false
+users:
+  - name: admin
+    policy:
+      isAdministrator: true
+      loginAttemptsBeforeLockout: -1
+plugins:
+  - name: AudioDB
+    configuration:
+      ReplaceAlbumName: false
+  - name: Fanart
+    configuration: {}
+  - name: MusicBrainz
+    configuration:
+      Server: https://musicbrainz.org
+      RateLimit: 1
+      ReplaceArtistName: false
+  - name: OMDb
+    configuration:
+      CastAndCrew: false
+  - name: Studio Images
+    configuration:
+      RepositoryUrl: https://raw.githubusercontent.com/jellyfin/emby-artwork/master/studios
+  - name: TMDb
+    configuration:
+      TmdbApiKey: ""
+      IncludeAdult: false
+      ExcludeTagsSeries: false
+      ExcludeTagsMovies: false
+      ImportSeasonName: false
+      MaxCastMembers: 15
+      MaxCrewMembers: 15
+      HideMissingCastMembers: false
+      HideMissingCrewMembers: false
+      PosterSize: original
+      BackdropSize: original
+      LogoSize: original
+      ProfileSize: original
+      StillSize: original

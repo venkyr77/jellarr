@@ -16,6 +16,9 @@ importers:
       fast-equals:
         specifier: ^5.3.2
         version: 5.3.2
+      json-diff-ts:
+        specifier: ^4.8.2
+        version: 4.8.2
       openapi-fetch:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1333,6 +1336,12 @@ packages:
         integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==,
       }
 
+  json-diff-ts@4.8.2:
+    resolution:
+      {
+        integrity: sha512-7LgOTnfK5XnBs0o0AtHTkry5QGZT7cSlAgu5GtiomUeoHqOavAUDcONNm/bCe4Lapt0AHnaidD5iSE+ItvxKkA==,
+      }
+
   json-schema-traverse@0.4.1:
     resolution:
       {
@@ -2563,6 +2572,8 @@ snapshots:
       argparse: 2.0.1
 
   json-buffer@3.0.1: {}
+
+  json-diff-ts@4.8.2: {}
 
   json-schema-traverse@0.4.1: {}
 
