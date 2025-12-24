@@ -54,8 +54,7 @@
     );
 
   mkUsersConfig = cfg:
-    cfg
-    |> map (user:
+    map (user:
       assert user.name != "" || throw "User name cannot be empty";
       assert (user.password != null)
       != (user.passwordFile != null)
@@ -64,7 +63,8 @@
         // {inherit (user) name;}
         // optionalAttrs (user.password != null) {inherit (user) password;}
         // optionalAttrs (user.passwordFile != null) {inherit (user) passwordFile;}
-        // optionalAttrs (user.policy != null) {policy = mkUserPolicyConfig user.policy;});
+        // optionalAttrs (user.policy != null) {policy = mkUserPolicyConfig user.policy;})
+    cfg;
 in {
   inherit usersConfigType mkUsersConfig;
 }

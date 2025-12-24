@@ -64,12 +64,11 @@
     {}
     // optionalAttrs (cfg.enableMetrics != null) {inherit (cfg) enableMetrics;}
     // optionalAttrs (cfg.pluginRepositories != null) {
-      pluginRepositories =
-        cfg.pluginRepositories
-        |> map (repo:
-          assert repo.name != "" || throw "Plugin repository name cannot be empty"; {
-            inherit (repo) name url enabled;
-          });
+      pluginRepositories = map (repo:
+        assert repo.name != "" || throw "Plugin repository name cannot be empty"; {
+          inherit (repo) name url enabled;
+        })
+      cfg.pluginRepositories;
     }
     // optionalAttrs (cfg.trickplayOptions != null) {
       trickplayOptions = mkTrickplayOptionsConfig cfg.trickplayOptions;
