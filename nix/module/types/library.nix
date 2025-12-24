@@ -60,19 +60,18 @@
   mkLibraryConfig = cfg:
     {}
     // optionalAttrs (cfg.virtualFolders != null) {
-      virtualFolders =
-        cfg.virtualFolders
-        |> map (folder:
-          assert (builtins.length folder.libraryOptions.pathInfos)
-          >= 1
-          || throw "Library '${folder.name}' must have at least one path in pathInfos"; {
-            inherit (folder) name collectionType;
-            libraryOptions = {
-              pathInfos =
-                folder.libraryOptions.pathInfos
-                |> map (pathInfo: {inherit (pathInfo) path;});
-            };
-          });
+      virtualFolders = map (folder:
+        assert (builtins.length folder.libraryOptions.pathInfos)
+        >= 1
+        || throw "Library '${folder.name}' must have at least one path in pathInfos"; {
+          inherit (folder) name collectionType;
+          libraryOptions = {
+            pathInfos =
+              map (pathInfo: {inherit (pathInfo) path;})
+              folder.libraryOptions.pathInfos;
+          };
+        })
+      cfg.virtualFolders;
     };
 in {
   inherit libraryConfigType mkLibraryConfig;

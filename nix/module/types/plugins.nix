@@ -20,12 +20,12 @@
   pluginsConfigType = nullOr (types.listOf pluginConfigType);
 
   mkPluginsConfig = cfg:
-    cfg
-    |> map (plugin:
+    map (plugin:
       assert plugin.name != "" || throw "Plugin name cannot be empty";
         {}
         // {inherit (plugin) name;}
-        // optionalAttrs (plugin.configuration != null) {inherit (plugin) configuration;});
+        // optionalAttrs (plugin.configuration != null) {inherit (plugin) configuration;})
+    cfg;
 in {
   inherit pluginsConfigType mkPluginsConfig;
 }
