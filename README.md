@@ -151,6 +151,26 @@ JELLARR_API_KEY=your_api_key node jellarr-v0.0.2.cjs --configFile path/to/config
 
 ---
 
+## Export Existing Configuration (Experimental)
+
+Already have a configured Jellyfin server? Use `dump` to export its current
+configuration as a starting point:
+
+```bash
+JELLARR_API_KEY=your_api_key jellarr dump --baseUrl http://localhost:8096 > config.yml
+```
+
+This exports system settings, encoding options, libraries, branding, users
+(without passwords), and plugin configurations. Edit the output to:
+
+- Remove fields you don't want to manage
+- Add `password` or `passwordFile` to users
+- Remove any default values you don't need
+
+See [`dumped-example.yml`](./dumped-example.yml) for sample output.
+
+---
+
 ## Configuration
 
 Jellarr uses a YAML configuration file (default: `config/config.yml`).
