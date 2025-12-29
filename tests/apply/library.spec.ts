@@ -14,52 +14,40 @@ import { logger } from "../../src/lib/logger";
 describe("apply/library", () => {
   let mockClient: JellyfinClient;
   let addVirtualFolderSpy: Mock;
-  let loggerSpy: Mock;
+  let updateLibraryOptionsSpy: Mock;
+  let loggerInfoSpy: Mock;
+  let loggerWarnSpy: Mock;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
     addVirtualFolderSpy = vi.fn();
-    loggerSpy = vi.spyOn(logger, "info").mockImplementation(() => undefined);
-    vi.spyOn(logger, "warn").mockImplementation(() => undefined);
+    updateLibraryOptionsSpy = vi.fn();
+    loggerInfoSpy = vi
+      .spyOn(logger, "info")
+      .mockImplementation(() => undefined);
+    loggerWarnSpy = vi
+      .spyOn(logger, "warn")
+      .mockImplementation(() => undefined);
 
     mockClient = {
       addVirtualFolder: addVirtualFolderSpy,
+      updateLibraryOptions: updateLibraryOptionsSpy,
     } as unknown as JellyfinClient;
   });
 
   describe("calculateLibraryDiff", () => {
     it("should return undefined when no virtual folders specified", () => {
-      // Arrange
-      const currentVirtualFolders: VirtualFolderInfoSchema[] = [];
-      const desired: VirtualFolderConfig[] = [];
-
-      // Act
-      const result: VirtualFolderInfoSchema[] | undefined =
-        calculateLibraryDiff(currentVirtualFolders, desired);
-
-      // Assert
+      const result = calculateLibraryDiff([], []);
       expect(result).toBeUndefined();
     });
 
     it("should return undefined when empty virtual folders array", () => {
-      // Arrange
-      const currentVirtualFolders: VirtualFolderInfoSchema[] = [];
-      const desired: LibraryConfig = { virtualFolders: [] };
-
-      // Act
-      const result: VirtualFolderInfoSchema[] | undefined =
-        calculateLibraryDiff(
-          currentVirtualFolders,
-          desired.virtualFolders as VirtualFolderConfig[],
-        );
-
-      // Assert
+      const result = calculateLibraryDiff([], []);
       expect(result).toBeUndefined();
     });
 
     it("should return config with new virtual folder to create", () => {
-      // Arrange
       const currentVirtualFolders: VirtualFolderInfoSchema[] = [];
       const desired: LibraryConfig = {
         virtualFolders: [
@@ -73,15 +61,12 @@ describe("apply/library", () => {
         ],
       };
 
-      // Act
-      const result: VirtualFolderInfoSchema[] | undefined =
-        calculateLibraryDiff(
-          currentVirtualFolders,
-          desired.virtualFolders as VirtualFolderConfig[],
-        );
+      const result = calculateLibraryDiff(
+        currentVirtualFolders,
+        desired.virtualFolders as VirtualFolderConfig[],
+      );
 
-      // Assert
-      expect(result).toEqual([
+      expect(result?.toCreate).toEqual([
         {
           Name: "Movies",
           CollectionType: "movies",
@@ -90,12 +75,13 @@ describe("apply/library", () => {
           },
         },
       ]);
+      expect(result?.toUpdate).toBeUndefined();
     });
 
     it("should return undefined for existing virtual folder with matching locations", () => {
-      // Arrange
       const currentVirtualFolders: VirtualFolderInfoSchema[] = [
         {
+          ItemId: "1",
           Name: "Movies",
           CollectionType: "movies",
           LibraryOptions: {
@@ -115,21 +101,18 @@ describe("apply/library", () => {
         ],
       };
 
-      // Act
-      const result: VirtualFolderInfoSchema[] | undefined =
-        calculateLibraryDiff(
-          currentVirtualFolders,
-          desired.virtualFolders as VirtualFolderConfig[],
-        );
+      const result = calculateLibraryDiff(
+        currentVirtualFolders,
+        desired.virtualFolders as VirtualFolderConfig[],
+      );
 
-      // Assert
       expect(result).toBeUndefined();
     });
 
     it("should return undefined for existing virtual folder with matching locations regardless of order", () => {
-      // Arrange
       const currentVirtualFolders: VirtualFolderInfoSchema[] = [
         {
+          ItemId: "1",
           Name: "Movies",
           CollectionType: "movies",
           LibraryOptions: {
@@ -157,21 +140,18 @@ describe("apply/library", () => {
         ],
       };
 
-      // Act
-      const result: VirtualFolderInfoSchema[] | undefined =
-        calculateLibraryDiff(
-          currentVirtualFolders,
-          desired.virtualFolders as VirtualFolderConfig[],
-        );
+      const result = calculateLibraryDiff(
+        currentVirtualFolders,
+        desired.virtualFolders as VirtualFolderConfig[],
+      );
 
-      // Assert
       expect(result).toBeUndefined();
     });
 
-    it("should return empty config for virtual folder needing update", () => {
-      // Arrange
+    it("should return update for virtual folder needing option changes", () => {
       const currentVirtualFolders: VirtualFolderInfoSchema[] = [
         {
+          ItemId: "1",
           Name: "Movies",
           CollectionType: "movies",
           LibraryOptions: {
@@ -191,21 +171,25 @@ describe("apply/library", () => {
         ],
       };
 
-      // Act
-      const result: VirtualFolderInfoSchema[] | undefined =
-        calculateLibraryDiff(
-          currentVirtualFolders,
-          desired.virtualFolders as VirtualFolderConfig[],
-        );
+      const result = calculateLibraryDiff(
+        currentVirtualFolders,
+        desired.virtualFolders as VirtualFolderConfig[],
+      );
 
-      // Assert
-      expect(result).toBeUndefined();
+      expect(result?.toCreate).toBeUndefined();
+      expect(result?.toUpdate).toEqual([
+        {
+          id: "1",
+          name: "Movies",
+          libraryOptions: { PathInfos: [{ Path: "/path/new" }] },
+        },
+      ]);
     });
 
-    it("should return undefined when existing folder has different collectionType", () => {
-      // Arrange
+    it("should return update when typeOptions additions are present", () => {
       const currentVirtualFolders: VirtualFolderInfoSchema[] = [
         {
+          ItemId: "movies-id",
           Name: "Movies",
           CollectionType: "movies",
           LibraryOptions: {
@@ -213,33 +197,54 @@ describe("apply/library", () => {
           } as LibraryOptionsSchema,
         },
       ];
+
       const desired: LibraryConfig = {
         virtualFolders: [
           {
             name: "Movies",
-            collectionType: "tvshows",
+            collectionType: "movies",
             libraryOptions: {
               pathInfos: [{ path: "/data/movies" }],
+              typeOptions: [
+                {
+                  type: "Movie",
+                  metadataFetchers: [],
+                  imageFetchers: [],
+                },
+              ],
             },
           },
         ],
       };
 
-      // Act
-      const result: VirtualFolderInfoSchema[] | undefined =
-        calculateLibraryDiff(
-          currentVirtualFolders,
-          desired.virtualFolders as VirtualFolderConfig[],
-        );
+      const result = calculateLibraryDiff(
+        currentVirtualFolders,
+        desired.virtualFolders as VirtualFolderConfig[],
+      );
 
-      // Assert - withoutUpdates() filters the CollectionType change
-      expect(result).toBeUndefined();
+      expect(result?.toUpdate).toEqual([
+        {
+          id: "movies-id",
+          name: "Movies",
+          libraryOptions: {
+            PathInfos: [{ Path: "/data/movies" }],
+            TypeOptions: [
+              {
+                type: "Movie",
+                metadataFetchers: [],
+                imageFetchers: [],
+              },
+            ],
+          },
+        },
+      ]);
+      expect(result?.toCreate).toBeUndefined();
     });
 
     it("should handle mixed create and existing scenarios", () => {
-      // Arrange
       const currentVirtualFolders: VirtualFolderInfoSchema[] = [
         {
+          ItemId: "existing-id",
           Name: "Existing Movies",
           CollectionType: "movies",
           LibraryOptions: {
@@ -266,15 +271,12 @@ describe("apply/library", () => {
         ],
       };
 
-      // Act
-      const result: VirtualFolderInfoSchema[] | undefined =
-        calculateLibraryDiff(
-          currentVirtualFolders,
-          desired.virtualFolders as VirtualFolderConfig[],
-        );
+      const result = calculateLibraryDiff(
+        currentVirtualFolders,
+        desired.virtualFolders as VirtualFolderConfig[],
+      );
 
-      // Assert
-      expect(result).toEqual([
+      expect(result?.toCreate).toEqual([
         {
           Name: "Test Shows",
           CollectionType: "tvshows",
@@ -283,94 +285,108 @@ describe("apply/library", () => {
           },
         },
       ]);
+      expect(result?.toUpdate).toBeUndefined();
     });
   });
 
   describe("applyLibrary", () => {
     it("should do nothing when config is undefined", async () => {
-      // Act
       await applyLibrary(mockClient, undefined);
 
-      // Assert
       expect(addVirtualFolderSpy).not.toHaveBeenCalled();
+      expect(updateLibraryOptionsSpy).not.toHaveBeenCalled();
     });
 
     it("should do nothing when no virtual folders in config", async () => {
-      // Act
-      await applyLibrary(mockClient, []);
+      await applyLibrary(mockClient, {});
 
-      // Assert
       expect(addVirtualFolderSpy).not.toHaveBeenCalled();
+      expect(updateLibraryOptionsSpy).not.toHaveBeenCalled();
+    });
+
+    it("should skip entries without Name", async () => {
+      const diff = {
+        toCreate: [
+          {
+            CollectionType: "movies",
+            LibraryOptions: {
+              PathInfos: [{ Path: "/data" }],
+            } as LibraryOptionsSchema,
+          },
+        ] as VirtualFolderInfoSchema[],
+      };
+
+      await applyLibrary(mockClient, diff);
+
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
+        "Skipping virtual folder without a Name",
+      );
+      expect(addVirtualFolderSpy).not.toHaveBeenCalled();
+      expect(updateLibraryOptionsSpy).not.toHaveBeenCalled();
     });
 
     it("should create new virtual folder", async () => {
-      // Arrange
-      const virtualFoldersToAdd: VirtualFolderInfoSchema[] = [
-        {
-          Name: "Movies",
-          CollectionType: "movies",
-          LibraryOptions: {
-            PathInfos: [{ Path: "/data/movies" }],
-          } as LibraryOptionsSchema,
-        },
-      ];
+      const diff = {
+        toCreate: [
+          {
+            Name: "Movies",
+            CollectionType: "movies",
+            LibraryOptions: {
+              PathInfos: [{ Path: "/data/movies" }],
+            } as LibraryOptionsSchema,
+          },
+        ] as VirtualFolderInfoSchema[],
+      };
 
       addVirtualFolderSpy.mockResolvedValue(undefined);
 
-      // Act
-      await applyLibrary(mockClient, virtualFoldersToAdd);
+      await applyLibrary(mockClient, diff);
 
-      // Assert
       expect(addVirtualFolderSpy).toHaveBeenCalledTimes(1);
       expect(addVirtualFolderSpy).toHaveBeenCalledWith("Movies", "movies", {
         LibraryOptions: {
           PathInfos: [{ Path: "/data/movies" }],
         },
       });
-      expect(loggerSpy).toHaveBeenCalledWith("Creating virtual folder: Movies");
-      expect(loggerSpy).toHaveBeenCalledWith(
+      expect(loggerInfoSpy).toHaveBeenCalledWith(
+        "Creating virtual folder: Movies",
+      );
+      expect(loggerInfoSpy).toHaveBeenCalledWith(
         "✓ Created virtual folder: Movies (movies)",
       );
+      expect(updateLibraryOptionsSpy).not.toHaveBeenCalled();
     });
 
-    it("should create multiple new virtual folders", async () => {
-      // Arrange
-      const virtualFoldersToAdd: VirtualFolderInfoSchema[] = [
-        {
-          Name: "Movies",
-          CollectionType: "movies",
-          LibraryOptions: {
-            PathInfos: [{ Path: "/data/movies" }],
-          } as LibraryOptionsSchema,
+    it("should update library options for existing folder", async () => {
+      const diff = {
+        toUpdate: [
+          {
+            id: "movies-id",
+            name: "Movies",
+            libraryOptions: {
+              PathInfos: [{ Path: "/data/movies" }],
+              TypeOptions: [
+                { type: "Movie", metadataFetchers: [], imageFetchers: [] },
+              ],
+            } as LibraryOptionsSchema,
+          },
+        ],
+      };
+
+      updateLibraryOptionsSpy.mockResolvedValue(undefined);
+
+      await applyLibrary(mockClient, diff);
+
+      expect(updateLibraryOptionsSpy).toHaveBeenCalledWith("movies-id", {
+        Id: "movies-id",
+        LibraryOptions: {
+          PathInfos: [{ Path: "/data/movies" }],
+          TypeOptions: [
+            { type: "Movie", metadataFetchers: [], imageFetchers: [] },
+          ],
         },
-        {
-          Name: "TV Shows",
-          CollectionType: "tvshows",
-          LibraryOptions: {
-            PathInfos: [{ Path: "/data/shows" }],
-          } as LibraryOptionsSchema,
-        },
-      ];
-
-      addVirtualFolderSpy.mockResolvedValue(undefined);
-
-      // Act
-      await applyLibrary(mockClient, virtualFoldersToAdd);
-
-      // Assert
-      expect(addVirtualFolderSpy).toHaveBeenCalledTimes(2);
-      expect(addVirtualFolderSpy).toHaveBeenNthCalledWith(
-        1,
-        "Movies",
-        "movies",
-        expect.any(Object),
-      );
-      expect(addVirtualFolderSpy).toHaveBeenNthCalledWith(
-        2,
-        "TV Shows",
-        "tvshows",
-        expect.any(Object),
-      );
+      });
+      expect(addVirtualFolderSpy).not.toHaveBeenCalled();
     });
   });
 });

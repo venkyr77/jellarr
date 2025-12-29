@@ -16,6 +16,7 @@ export function mapVirtualFolderConfigToSchema(
           Path: pathInfo.path,
         }),
       ),
+      TypeOptions: config.libraryOptions.typeOptions,
     } as LibraryOptionsSchema,
   };
 }

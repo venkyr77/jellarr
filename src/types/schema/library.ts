@@ -2,6 +2,8 @@ import type { components } from "../../../generated/schema";
 
 export type AddVirtualFolderDtoSchema =
   components["schemas"]["AddVirtualFolderDto"];
+export type UpdateLibraryOptionsDtoSchema =
+  components["schemas"]["UpdateLibraryOptionsDto"];
 
 export type VirtualFolderInfoSchema =
   components["schemas"]["VirtualFolderInfo"];

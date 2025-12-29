@@ -4,6 +4,7 @@ import type {
   VirtualFolderInfoSchema,
   AddVirtualFolderDtoSchema,
   CollectionTypeSchema,
+  UpdateLibraryOptionsDtoSchema,
 } from "../types/schema/library";
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type {
@@ -55,6 +56,10 @@ export interface JellyfinClient {
     name: string,
     collectionType: CollectionTypeSchema | undefined,
     body: AddVirtualFolderDtoSchema,
+  ): Promise<void>;
+  updateLibraryOptions(
+    libraryId: string,
+    body: UpdateLibraryOptionsDtoSchema,
   ): Promise<void>;
   getBrandingConfiguration(): Promise<BrandingOptionsDtoSchema>;
   updateBrandingConfiguration(

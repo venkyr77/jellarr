@@ -4,6 +4,7 @@ import type {
   VirtualFolderInfoSchema,
   AddVirtualFolderDtoSchema,
   CollectionTypeSchema,
+  UpdateLibraryOptionsDtoSchema,
 } from "../types/schema/library";
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type {
@@ -150,6 +151,23 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /Library/VirtualFolders failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async updateLibraryOptions(
+      libraryId: string,
+      body: UpdateLibraryOptionsDtoSchema,
+    ): Promise<void> {
+      const res = await client.POST("/Library/VirtualFolders/LibraryOptions", {
+        params: { query: { libraryId } },
+        body,
+        headers: { "content-type": "application/json" },
+      });
+
+      if (res.error) {
+        throw new Error(
+          `POST /Library/VirtualFolders/LibraryOptions failed: ${res.response.status.toString()}`,
         );
       }
     },

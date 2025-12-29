@@ -5,7 +5,11 @@ import {
   calculateEncodingDiff,
   applyEncoding,
 } from "../apply/encoding-options";
-import { calculateLibraryDiff, applyLibrary } from "../apply/library";
+import {
+  calculateLibraryDiff,
+  applyLibrary,
+  type LibraryDiff,
+} from "../apply/library";
 import {
   calculateBrandingOptionsDiff,
   applyBrandingOptions,
@@ -98,12 +102,14 @@ export async function runPipeline(path: string): Promise<void> {
   if (cfg.library?.virtualFolders) {
     const currentVirtualFolders: VirtualFolderInfoSchema[] =
       await jellyfinClient.getVirtualFolders();
-    const foldersToCreate: VirtualFolderInfoSchema[] | undefined =
-      calculateLibraryDiff(currentVirtualFolders, cfg.library.virtualFolders);
+    const libraryDiff: LibraryDiff | undefined = calculateLibraryDiff(
+      currentVirtualFolders,
+      cfg.library.virtualFolders,
+    );
 
-    if (foldersToCreate) {
+    if (libraryDiff) {
       console.log("→ updating library config");
-      await applyLibrary(jellyfinClient, foldersToCreate);
+      await applyLibrary(jellyfinClient, libraryDiff);
       console.log("✓ updated library config");
     } else {
       console.log("✓ library config already up to date");

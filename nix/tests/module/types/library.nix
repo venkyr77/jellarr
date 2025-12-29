@@ -227,6 +227,84 @@ in [
       ];
     })
 
+  (assertEq "typeOptions are mapped when provided" (mkLibraryConfig {
+      virtualFolders = [
+        {
+          name = "Movies";
+          collectionType = "movies";
+          libraryOptions = {
+            pathInfos = [{path = "/data/movies";}];
+            typeOptions = [
+              {
+                type = "Movie";
+                metadataFetchers = ["TheMovieDB"];
+                imageFetchers = ["TheMovieDB"];
+              }
+            ];
+          };
+        }
+      ];
+    }) {
+      virtualFolders = [
+        {
+          name = "Movies";
+          collectionType = "movies";
+          libraryOptions = {
+            pathInfos = [{path = "/data/movies";}];
+            typeOptions = [
+              {
+                type = "Movie";
+                metadataFetchers = ["TheMovieDB"];
+                metadataFetcherOrder = ["TheMovieDB"];
+                imageFetchers = ["TheMovieDB"];
+                imageFetcherOrder = ["TheMovieDB"];
+              }
+            ];
+          };
+        }
+      ];
+    })
+
+  (assertEq "typeOptions orders fallback when null" (mkLibraryConfig {
+      virtualFolders = [
+        {
+          name = "Movies";
+          collectionType = "movies";
+          libraryOptions = {
+            pathInfos = [{path = "/data/movies";}];
+            typeOptions = [
+              {
+                type = "Movie";
+                metadataFetchers = ["TheMovieDB"];
+                metadataFetcherOrder = null;
+                imageFetchers = ["TheMovieDB"];
+                imageFetcherOrder = null;
+              }
+            ];
+          };
+        }
+      ];
+    }) {
+      virtualFolders = [
+        {
+          name = "Movies";
+          collectionType = "movies";
+          libraryOptions = {
+            pathInfos = [{path = "/data/movies";}];
+            typeOptions = [
+              {
+                type = "Movie";
+                metadataFetchers = ["TheMovieDB"];
+                metadataFetcherOrder = ["TheMovieDB"];
+                imageFetchers = ["TheMovieDB"];
+                imageFetcherOrder = ["TheMovieDB"];
+              }
+            ];
+          };
+        }
+      ];
+    })
+
   (assertEq "empty virtualFolders array" (mkLibraryConfig {virtualFolders = [];}) {virtualFolders = [];})
 
   (assertThrows "reject empty pathInfos" (mkLibraryConfig {

@@ -18,6 +18,17 @@ export const VirtualFolderConfigType: z.ZodObject<{
         path: z.ZodString;
       }>
     >;
+    typeOptions: z.ZodOptional<
+      z.ZodArray<
+        z.ZodObject<{
+          type: z.ZodString;
+          metadataFetchers: z.ZodArray<z.ZodString>;
+          metadataFetcherOrder: z.ZodOptional<z.ZodArray<z.ZodString>>;
+          imageFetchers: z.ZodArray<z.ZodString>;
+          imageFetcherOrder: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        }>
+      >
+    >;
   }>;
 }> = z
   .object({
@@ -37,6 +48,25 @@ export const VirtualFolderConfigType: z.ZodObject<{
         pathInfos: z
           .array(z.object({ path: z.string().min(1) }).strict())
           .min(1),
+        typeOptions: z
+          .array(
+            z
+              .object({
+                type: z.string().min(1),
+                metadataFetchers: z.array(z.string().min(1)),
+                metadataFetcherOrder: z
+                  .array(z.string().min(1))
+                  .nullable()
+                  .optional(),
+                imageFetchers: z.array(z.string().min(1)),
+                imageFetcherOrder: z
+                  .array(z.string().min(1))
+                  .nullable()
+                  .optional(),
+              })
+              .strict(),
+          )
+          .optional(),
       })
       .strict(),
   })
