@@ -19,12 +19,16 @@ export const UserConfigType: z.ZodObject<{
   password: z.ZodOptional<z.ZodString>;
   passwordFile: z.ZodOptional<z.ZodString>;
   policy: z.ZodOptional<typeof UserPolicyConfigType>;
+  displayMissingEpisodes: z.ZodOptional<z.ZodBoolean>;
+  subtitleLanguagePreference: z.ZodOptional<z.ZodString>;
 }> = z
   .object({
     name: z.string().min(1, "User name is required"),
     password: z.string().optional(),
     passwordFile: z.string().optional(),
     policy: UserPolicyConfigType.optional(),
+    displayMissingEpisodes: z.boolean().optional(),
+    subtitleLanguagePreference: z.string().min(1).optional(),
   })
   .strict()
   .refine(

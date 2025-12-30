@@ -4,12 +4,15 @@ import {
   createNewUsers,
   calculateUserPoliciesDiff,
   applyUserPolicies,
+  calculateUserConfigurationsDiff,
+  applyUserConfigurations,
 } from "../../src/apply/users";
 import type { JellyfinClient } from "../../src/api/jellyfin.types";
 import type { UserConfig, UserConfigList } from "../../src/types/config/users";
 import type {
   UserDtoSchema,
   UserPolicySchema,
+  UserConfigurationSchema,
 } from "../../src/types/schema/users";
 vi.mock("../../src/lib/logger", () => ({
   logger: {
@@ -377,6 +380,50 @@ describe("calculateUserPoliciesDiff", () => {
         },
       } as UserDtoSchema,
     ];
+  });
+
+  describe("calculateUserConfigurationsDiff", () => {
+    it("should return undefined when no configuration fields provided", () => {
+      const current: UserDtoSchema[] = [
+        {
+          Id: "1",
+          Name: "user",
+          Configuration: {} as UserConfigurationSchema,
+        },
+      ];
+      const desired: UserConfigList = [
+        { name: "user", password: "pass" } as UserConfig,
+      ];
+
+      expect(calculateUserConfigurationsDiff(current, desired)).toBeUndefined();
+    });
+
+    it("should return configuration update when fields differ", () => {
+      const current: UserDtoSchema[] = [
+        {
+          Id: "1",
+          Name: "user",
+          Configuration: {
+            DisplayMissingEpisodes: false,
+          } as UserConfigurationSchema,
+        },
+      ];
+      const desired: UserConfigList = [
+        {
+          name: "user",
+          password: "pass",
+          displayMissingEpisodes: true,
+          subtitleLanguagePreference: "eng",
+        } as UserConfig,
+      ];
+
+      const result = calculateUserConfigurationsDiff(current, desired);
+
+      expect(result?.get("1")).toEqual({
+        DisplayMissingEpisodes: true,
+        SubtitleLanguagePreference: "eng",
+      });
+    });
   });
 
   it("should return undefined when no users desired", () => {

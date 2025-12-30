@@ -19,6 +19,8 @@ import {
   calculateUserPoliciesDiff,
   applyUserPolicies,
   createNewUsers,
+  calculateUserConfigurationsDiff,
+  applyUserConfigurations,
 } from "../apply/users";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
 import { type ServerConfigurationSchema } from "../types/schema/system";
@@ -149,6 +151,10 @@ export async function runPipeline(path: string): Promise<void> {
 
     const userPoliciesToUpdate: Map<string, UserPolicySchema> | undefined =
       calculateUserPoliciesDiff(currentUsers, cfg.users);
+    const userConfigurationsToUpdate = calculateUserConfigurationsDiff(
+      currentUsers,
+      cfg.users,
+    );
 
     if (userPoliciesToUpdate) {
       console.log("→ updating user policies");
@@ -156,6 +162,14 @@ export async function runPipeline(path: string): Promise<void> {
       console.log("✓ updated user policies");
     } else {
       console.log("✓ user policies already up to date");
+    }
+
+    if (userConfigurationsToUpdate) {
+      console.log("→ updating user configurations");
+      await applyUserConfigurations(jellyfinClient, userConfigurationsToUpdate);
+      console.log("✓ updated user configurations");
+    } else {
+      console.log("✓ user configurations already up to date");
     }
   }
 

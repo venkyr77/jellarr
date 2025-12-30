@@ -6,6 +6,7 @@ import {
   getPassword,
   mapUserConfigToCreateSchema,
   mapUserPolicyConfigToSchema,
+  mapUserConfigToConfiguration,
 } from "../../src/mappers/users";
 import {
   type UserConfig,
@@ -14,6 +15,7 @@ import {
 import {
   type CreateUserByNameSchema,
   type UserPolicySchema,
+  type UserConfigurationSchema,
 } from "../../src/types/schema/users";
 
 describe("mappers/users", () => {
@@ -365,6 +367,37 @@ describe("mappers/users", () => {
       expect(result).toEqual({
         LoginAttemptsBeforeLockout: 0,
       });
+    });
+  });
+
+  describe("mapUserConfigToConfiguration", () => {
+    it("should map configuration fields when provided", () => {
+      const config: UserConfig = {
+        name: "user",
+        password: "pass",
+        displayMissingEpisodes: true,
+        subtitleLanguagePreference: "eng",
+      };
+
+      const result: Partial<UserConfigurationSchema> =
+        mapUserConfigToConfiguration(config);
+
+      expect(result).toEqual({
+        DisplayMissingEpisodes: true,
+        SubtitleLanguagePreference: "eng",
+      });
+    });
+
+    it("should return empty object when configuration fields are undefined", () => {
+      const config: UserConfig = {
+        name: "user",
+        password: "pass",
+      };
+
+      const result: Partial<UserConfigurationSchema> =
+        mapUserConfigToConfiguration(config);
+
+      expect(result).toEqual({});
     });
   });
 });

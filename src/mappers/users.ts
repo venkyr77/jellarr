@@ -3,6 +3,7 @@ import { type UserConfig, type UserPolicyConfig } from "../types/config/users";
 import {
   type CreateUserByNameSchema,
   type UserPolicySchema,
+  type UserConfigurationSchema,
 } from "../types/schema/users";
 
 export function getPlaintextPassword(config: UserConfig): string | undefined {
@@ -46,6 +47,22 @@ export function mapUserPolicyConfigToSchema(
 
   if (typeof desired.enableCollectionManagement !== "undefined") {
     out.EnableCollectionManagement = desired.enableCollectionManagement;
+  }
+
+  return out;
+}
+
+export function mapUserConfigToConfiguration(
+  desired: UserConfig,
+): Partial<UserConfigurationSchema> {
+  const out: Partial<UserConfigurationSchema> = {};
+
+  if (typeof desired.displayMissingEpisodes !== "undefined") {
+    out.DisplayMissingEpisodes = desired.displayMissingEpisodes;
+  }
+
+  if (typeof desired.subtitleLanguagePreference !== "undefined") {
+    out.SubtitleLanguagePreference = desired.subtitleLanguagePreference;
   }
 
   return out;

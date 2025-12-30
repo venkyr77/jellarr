@@ -252,6 +252,23 @@ export function createJellyfinClient(
       }
     },
 
+    async updateUserConfiguration(
+      userId: string,
+      body: UserConfigurationSchema,
+    ): Promise<void> {
+      const res = await client.POST("/Users/{userId}/Configuration", {
+        params: { path: { userId } },
+        body,
+        headers: { "content-type": "application/json" },
+      });
+
+      if (res.error) {
+        throw new Error(
+          `POST /Users/{userId}/Configuration failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
     async completeStartupWizard(): Promise<void> {
       const res: PostStartupCompleteResponse =
         await client.POST("/Startup/Complete");

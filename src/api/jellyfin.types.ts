@@ -11,6 +11,7 @@ import type {
   UserDtoSchema,
   CreateUserByNameSchema,
   UserPolicySchema,
+  UserConfigurationSchema,
 } from "../types/schema/users";
 import {
   type PluginInfoSchema,
@@ -68,6 +69,10 @@ export interface JellyfinClient {
   getUsers(): Promise<UserDtoSchema[]>;
   createUser(body: CreateUserByNameSchema): Promise<void>;
   updateUserPolicy(userId: string, body: UserPolicySchema): Promise<void>;
+  updateUserConfiguration(
+    userId: string,
+    body: UserConfigurationSchema,
+  ): Promise<void>;
   completeStartupWizard(): Promise<void>;
   getPlugins(): Promise<PluginInfoSchema[]>;
   installPackage(name: string): Promise<void>;

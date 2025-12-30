@@ -49,6 +49,16 @@
         default = null;
         description = "User policy configuration.";
       };
+      displayMissingEpisodes = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Show missing episodes for the user.";
+      };
+      subtitleLanguagePreference = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = "Subtitle language preference code.";
+      };
     };
   };
 
@@ -80,7 +90,9 @@
         // {inherit (user) name;}
         // optionalAttrs (user.password != null) {inherit (user) password;}
         // optionalAttrs (user.passwordFile != null) {inherit (user) passwordFile;}
-        // optionalAttrs (user.policy != null) {policy = mkUserPolicyConfig user.policy;})
+        // optionalAttrs (user.policy != null) {policy = mkUserPolicyConfig user.policy;}
+        // optionalAttrs (user ? displayMissingEpisodes && user.displayMissingEpisodes != null) {inherit (user) displayMissingEpisodes;}
+        // optionalAttrs (user ? subtitleLanguagePreference && user.subtitleLanguagePreference != null) {inherit (user) subtitleLanguagePreference;})
     cfg;
 in {
   inherit usersConfigType mkUsersConfig;

@@ -6,10 +6,15 @@ import type {
   UserConfigList,
   UserPolicyConfig,
 } from "../types/config/users";
-import type { UserDtoSchema, UserPolicySchema } from "../types/schema/users";
+import type {
+  UserDtoSchema,
+  UserPolicySchema,
+  UserConfigurationSchema,
+} from "../types/schema/users";
 import {
   mapUserConfigToCreateSchema,
   mapUserPolicyConfigToSchema,
+  mapUserConfigToConfiguration,
 } from "../mappers/users";
 import { applyChangeset, diff, type IChange } from "json-diff-ts";
 
@@ -87,6 +92,46 @@ export function calculateUserPoliciesDiff(
   return userPoliciesToUpdate.size > 0 ? userPoliciesToUpdate : undefined;
 }
 
+export function calculateUserConfigurationsDiff(
+  current: UserDtoSchema[],
+  desired: UserConfigList,
+): Map<string, UserConfigurationSchema> | undefined {
+  if (desired.length === 0) return undefined;
+
+  const userConfigsToUpdate: Map<string, UserConfigurationSchema> = new Map();
+
+  desired.forEach((userConfig: UserConfig) => {
+    if (
+      typeof userConfig.displayMissingEpisodes === "undefined" &&
+      typeof userConfig.subtitleLanguagePreference === "undefined"
+    ) {
+      return;
+    }
+
+    const currentUserDtoSchema: UserDtoSchema | undefined = current.find(
+      (curr: UserDtoSchema) => curr.Name === userConfig.name,
+    );
+
+    if (currentUserDtoSchema?.Id) {
+      const currentConfig: UserConfigurationSchema =
+        (currentUserDtoSchema.Configuration as UserConfigurationSchema) ?? {};
+      const desiredConfig: Partial<UserConfigurationSchema> =
+        mapUserConfigToConfiguration(userConfig);
+
+      const next: UserConfigurationSchema = {
+        ...currentConfig,
+        ...desiredConfig,
+      };
+
+      if (JSON.stringify(next) !== JSON.stringify(currentConfig)) {
+        userConfigsToUpdate.set(currentUserDtoSchema.Id, next);
+      }
+    }
+  });
+
+  return userConfigsToUpdate.size > 0 ? userConfigsToUpdate : undefined;
+}
+
 export async function applyUserPolicies(
   client: JellyfinClient,
   policies: Map<string, UserPolicySchema> | undefined,
@@ -95,5 +140,16 @@ export async function applyUserPolicies(
 
   for (const [userId, policy] of policies) {
     await client.updateUserPolicy(userId, policy);
+  }
+}
+
+export async function applyUserConfigurations(
+  client: JellyfinClient,
+  configurations: Map<string, UserConfigurationSchema> | undefined,
+): Promise<void> {
+  if (!configurations) return;
+
+  for (const [userId, configuration] of configurations) {
+    await client.updateUserConfiguration(userId, configuration);
   }
 }
