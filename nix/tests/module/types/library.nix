@@ -241,6 +241,18 @@ in [
                 imageFetchers = ["TheMovieDB"];
               }
             ];
+            automaticallyAddToCollection = true;
+            enableChapterImageExtraction = true;
+            extractChapterImagesDuringLibraryScan = true;
+            extractTrickplayImagesDuringLibraryScan = true;
+            enableEmbeddedEpisodeInfos = true;
+            enableEmbeddedExtraTitles = true;
+            enableTrickplayImageExtraction = true;
+            saveTrickplayWithMedia = true;
+            metadataSavers = ["Nfo"];
+            saveLocalMetadata = true;
+            automaticRefreshIntervalDays = 14;
+            enableRealtimeMonitor = true;
           };
         }
       ];
@@ -260,6 +272,18 @@ in [
                 imageFetcherOrder = ["TheMovieDB"];
               }
             ];
+            automaticallyAddToCollection = true;
+            enableChapterImageExtraction = true;
+            extractChapterImagesDuringLibraryScan = true;
+            extractTrickplayImagesDuringLibraryScan = true;
+            enableEmbeddedEpisodeInfos = true;
+            enableEmbeddedExtraTitles = true;
+            enableTrickplayImageExtraction = true;
+            saveTrickplayWithMedia = true;
+            metadataSavers = ["Nfo"];
+            saveLocalMetadata = true;
+            automaticRefreshIntervalDays = 14;
+            enableRealtimeMonitor = true;
           };
         }
       ];

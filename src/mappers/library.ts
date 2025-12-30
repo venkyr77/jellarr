@@ -17,6 +17,26 @@ export function mapVirtualFolderConfigToSchema(
         }),
       ),
       TypeOptions: config.libraryOptions.typeOptions,
+      AutomaticallyAddToCollection:
+        config.libraryOptions.automaticallyAddToCollection,
+      EnableChapterImageExtraction:
+        config.libraryOptions.enableChapterImageExtraction,
+      ExtractChapterImagesDuringLibraryScan:
+        config.libraryOptions.extractChapterImagesDuringLibraryScan,
+      ExtractTrickplayImagesDuringLibraryScan:
+        config.libraryOptions.extractTrickplayImagesDuringLibraryScan,
+      EnableEmbeddedEpisodeInfos:
+        config.libraryOptions.enableEmbeddedEpisodeInfos,
+      EnableEmbeddedExtrasTitles:
+        config.libraryOptions.enableEmbeddedExtraTitles,
+      EnableTrickplayImageExtraction:
+        config.libraryOptions.enableTrickplayImageExtraction,
+      SaveTrickplayWithMedia: config.libraryOptions.saveTrickplayWithMedia,
+      MetadataSavers: config.libraryOptions.metadataSavers,
+      SaveLocalMetadata: config.libraryOptions.saveLocalMetadata,
+      AutomaticRefreshIntervalDays:
+        config.libraryOptions.automaticRefreshIntervalDays,
+      EnableRealtimeMonitor: config.libraryOptions.enableRealtimeMonitor,
     } as LibraryOptionsSchema,
   };
 }

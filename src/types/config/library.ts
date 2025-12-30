@@ -29,6 +29,18 @@ export const VirtualFolderConfigType: z.ZodObject<{
         }>
       >
     >;
+    automaticallyAddToCollection: z.ZodOptional<z.ZodBoolean>;
+    enableChapterImageExtraction: z.ZodOptional<z.ZodBoolean>;
+    extractChapterImagesDuringLibraryScan: z.ZodOptional<z.ZodBoolean>;
+    extractTrickplayImagesDuringLibraryScan: z.ZodOptional<z.ZodBoolean>;
+    enableEmbeddedEpisodeInfos: z.ZodOptional<z.ZodBoolean>;
+    enableEmbeddedExtraTitles: z.ZodOptional<z.ZodBoolean>;
+    enableTrickplayImageExtraction: z.ZodOptional<z.ZodBoolean>;
+    saveTrickplayWithMedia: z.ZodOptional<z.ZodBoolean>;
+    metadataSavers: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    saveLocalMetadata: z.ZodOptional<z.ZodBoolean>;
+    automaticRefreshIntervalDays: z.ZodOptional<z.ZodNumber>;
+    enableRealtimeMonitor: z.ZodOptional<z.ZodBoolean>;
   }>;
 }> = z
   .object({
@@ -67,6 +79,18 @@ export const VirtualFolderConfigType: z.ZodObject<{
               .strict(),
           )
           .optional(),
+        automaticallyAddToCollection: z.boolean().optional(),
+        enableChapterImageExtraction: z.boolean().optional(),
+        extractChapterImagesDuringLibraryScan: z.boolean().optional(),
+        extractTrickplayImagesDuringLibraryScan: z.boolean().optional(),
+        enableEmbeddedEpisodeInfos: z.boolean().optional(),
+        enableEmbeddedExtraTitles: z.boolean().optional(),
+        enableTrickplayImageExtraction: z.boolean().optional(),
+        saveTrickplayWithMedia: z.boolean().optional(),
+        metadataSavers: z.array(z.string().min(1)).optional(),
+        saveLocalMetadata: z.boolean().optional(),
+        automaticRefreshIntervalDays: z.number().int().nonnegative().optional(),
+        enableRealtimeMonitor: z.boolean().optional(),
       })
       .strict(),
   })

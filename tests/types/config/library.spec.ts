@@ -43,6 +43,18 @@ describe("types/config/library", () => {
               imageFetchers: ["TheMovieDB"],
             },
           ],
+          automaticallyAddToCollection: true,
+          enableChapterImageExtraction: true,
+          extractChapterImagesDuringLibraryScan: true,
+          extractTrickplayImagesDuringLibraryScan: true,
+          enableEmbeddedEpisodeInfos: true,
+          enableEmbeddedExtraTitles: true,
+          enableTrickplayImageExtraction: true,
+          saveTrickplayWithMedia: true,
+          metadataSavers: ["Nfo"],
+          saveLocalMetadata: true,
+          automaticRefreshIntervalDays: 14,
+          enableRealtimeMonitor: true,
         },
       };
 
@@ -55,6 +67,22 @@ describe("types/config/library", () => {
       expect(parsed.libraryOptions.typeOptions?.[0].imageFetchers).toEqual([
         "TheMovieDB",
       ]);
+      expect(parsed.libraryOptions.automaticallyAddToCollection).toBe(true);
+      expect(parsed.libraryOptions.enableChapterImageExtraction).toBe(true);
+      expect(parsed.libraryOptions.extractChapterImagesDuringLibraryScan).toBe(
+        true,
+      );
+      expect(
+        parsed.libraryOptions.extractTrickplayImagesDuringLibraryScan,
+      ).toBe(true);
+      expect(parsed.libraryOptions.enableEmbeddedEpisodeInfos).toBe(true);
+      expect(parsed.libraryOptions.enableEmbeddedExtraTitles).toBe(true);
+      expect(parsed.libraryOptions.enableTrickplayImageExtraction).toBe(true);
+      expect(parsed.libraryOptions.saveTrickplayWithMedia).toBe(true);
+      expect(parsed.libraryOptions.metadataSavers).toEqual(["Nfo"]);
+      expect(parsed.libraryOptions.saveLocalMetadata).toBe(true);
+      expect(parsed.libraryOptions.automaticRefreshIntervalDays).toBe(14);
+      expect(parsed.libraryOptions.enableRealtimeMonitor).toBe(true);
     });
 
     it("should allow empty fetcher arrays in typeOptions", () => {
@@ -276,6 +304,17 @@ describe("types/config/library", () => {
               imageFetchers: ["TheMovieDB"],
             },
           ],
+          automaticallyAddToCollection: true,
+          enableChapterImageExtraction: true,
+          extractChapterImagesDuringLibraryScan: true,
+          extractTrickplayImagesDuringLibraryScan: true,
+          enableEmbeddedEpisodeInfos: true,
+          enableTrickplayImageExtraction: true,
+          saveTrickplayWithMedia: true,
+          metadataSavers: ["Nfo"],
+          saveLocalMetadata: true,
+          automaticRefreshIntervalDays: 14,
+          enableRealtimeMonitor: true,
         },
       };
 
@@ -292,6 +331,21 @@ describe("types/config/library", () => {
       expect(parsed.libraryOptions.typeOptions?.[0].imageFetchers[0]).toBe(
         "TheMovieDB",
       );
+      expect(parsed.libraryOptions.automaticallyAddToCollection).toBe(true);
+      expect(parsed.libraryOptions.enableChapterImageExtraction).toBe(true);
+      expect(parsed.libraryOptions.extractChapterImagesDuringLibraryScan).toBe(
+        true,
+      );
+      expect(
+        parsed.libraryOptions.extractTrickplayImagesDuringLibraryScan,
+      ).toBe(true);
+      expect(parsed.libraryOptions.enableEmbeddedEpisodeInfos).toBe(true);
+      expect(parsed.libraryOptions.enableTrickplayImageExtraction).toBe(true);
+      expect(parsed.libraryOptions.saveTrickplayWithMedia).toBe(true);
+      expect(parsed.libraryOptions.metadataSavers?.[0]).toBe("Nfo");
+      expect(parsed.libraryOptions.saveLocalMetadata).toBe(true);
+      expect(parsed.libraryOptions.automaticRefreshIntervalDays).toBe(14);
+      expect(parsed.libraryOptions.enableRealtimeMonitor).toBe(true);
     });
   });
 
