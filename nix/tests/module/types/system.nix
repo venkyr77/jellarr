@@ -35,6 +35,7 @@ in [
       trickplayOptions = {
         enableHwAcceleration = true;
         enableHwEncoding = false;
+        processThreads = 2;
       };
     }) {
       enableMetrics = true;
@@ -48,6 +49,7 @@ in [
       trickplayOptions = {
         enableHwAcceleration = true;
         enableHwEncoding = false;
+        processThreads = 2;
       };
     })
 
@@ -151,5 +153,16 @@ in [
       enableHwAcceleration = false;
       enableHwEncoding = true;
     };
+  })
+
+  (assertEq "trickplay processThreads only" (mkSystemConfig (nullConfig
+    // {
+      trickplayOptions = {
+        enableHwAcceleration = null;
+        enableHwEncoding = null;
+        processThreads = 3;
+      };
+    })) {
+    trickplayOptions = {processThreads = 3;};
   })
 ]

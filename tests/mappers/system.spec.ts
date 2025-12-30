@@ -191,6 +191,7 @@ describe("mappers/system", () => {
         trickplayOptions: {
           enableHwAcceleration: true,
           enableHwEncoding: false,
+          processThreads: 2,
         },
       };
 
@@ -203,6 +204,7 @@ describe("mappers/system", () => {
         TrickplayOptions: {
           EnableHwAcceleration: true,
           EnableHwEncoding: false,
+          ProcessThreads: 2,
         },
       });
     });

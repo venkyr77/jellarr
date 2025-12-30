@@ -32,6 +32,11 @@
         default = null;
         description = "Enable hardware encoding for trickplay.";
       };
+      processThreads = mkOption {
+        type = nullOr types.int;
+        default = null;
+        description = "Number of threads to use for trickplay processing.";
+      };
     };
   };
 
@@ -55,10 +60,16 @@
     };
   };
 
-  mkTrickplayOptionsConfig = cfg:
+  mkTrickplayOptionsConfig = cfg: let
+    c =
+      if cfg == null
+      then {}
+      else cfg;
+  in
     {}
-    // optionalAttrs (cfg.enableHwAcceleration != null) {inherit (cfg) enableHwAcceleration;}
-    // optionalAttrs (cfg.enableHwEncoding != null) {inherit (cfg) enableHwEncoding;};
+    // optionalAttrs (c ? enableHwAcceleration && c.enableHwAcceleration != null) {inherit (c) enableHwAcceleration;}
+    // optionalAttrs (c ? enableHwEncoding && c.enableHwEncoding != null) {inherit (c) enableHwEncoding;}
+    // optionalAttrs (c ? processThreads && c.processThreads != null) {inherit (c) processThreads;};
 
   mkSystemConfig = cfg:
     {}

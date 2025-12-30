@@ -203,6 +203,7 @@ describe("TrickplayOptionsConfig", () => {
     const validConfig: z.input<typeof TrickplayOptionsConfigType> = {
       enableHwAcceleration: false,
       enableHwEncoding: true,
+      processThreads: 4,
     };
 
     // Act

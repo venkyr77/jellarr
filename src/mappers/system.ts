@@ -27,6 +27,7 @@ export function toTrickplayOptionsSchema(
   const out: TrickplayOptionsSchema = {};
   out.EnableHwAcceleration = cfg.enableHwAcceleration;
   out.EnableHwEncoding = cfg.enableHwEncoding;
+  out.ProcessThreads = cfg.processThreads;
   return out;
 }
 
