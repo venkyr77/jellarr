@@ -353,6 +353,68 @@ describe("mappers/users", () => {
       });
     });
 
+    it("should map enabledLibraries to ids when map provided", () => {
+      const folderMap: Map<string, string> = new Map([
+        ["Movies", "folder-1"],
+        ["Shows", "folder-2"],
+      ]);
+
+      const config: UserPolicyConfig = {
+        enabledLibraries: ["Movies", "Shows"],
+      };
+
+      const result: Partial<UserPolicySchema> = mapUserPolicyConfigToSchema(
+        config,
+        folderMap,
+      );
+
+      expect(result).toEqual({
+        EnableAllFolders: false,
+        EnabledFolders: ["folder-1", "folder-2"],
+      });
+    });
+
+    it("should throw when enabledLibraries are provided without a map", () => {
+      const config: UserPolicyConfig = {
+        enabledLibraries: ["Movies"],
+      };
+
+      expect(() => mapUserPolicyConfigToSchema(config)).toThrow();
+    });
+
+    it("should throw when library name cannot be resolved", () => {
+      const folderMap: Map<string, string> = new Map([["Shows", "folder-2"]]);
+
+      const config: UserPolicyConfig = {
+        enabledLibraries: ["Movies"],
+      };
+
+      expect(() => mapUserPolicyConfigToSchema(config, folderMap)).toThrowError(
+        /Movies/,
+      );
+    });
+
+    it("should throw when enabledLibraries map resolves to empty ids", () => {
+      const folderMap: Map<string, string> = new Map();
+      const config: UserPolicyConfig = { enabledLibraries: ["Movies"] };
+
+      expect(() => mapUserPolicyConfigToSchema(config, folderMap)).toThrowError(
+        /no matching library ids/,
+      );
+    });
+
+    it("should ignore enabledLibraries when empty", () => {
+      const folderMap: Map<string, string> = new Map([["Movies", "id"]]);
+      const config: UserPolicyConfig = { enabledLibraries: [] };
+
+      const result: Partial<UserPolicySchema> = mapUserPolicyConfigToSchema(
+        config,
+        folderMap,
+      );
+
+      expect(result).toEqual({});
+    });
+
     it("should handle zero value for loginAttemptsBeforeLockout", () => {
       // Arrange
       const config: UserPolicyConfig = {

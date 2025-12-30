@@ -71,6 +71,32 @@ export async function runDump(baseUrl: string): Promise<void> {
     }),
   );
 
+  const folderIdToNameMap: Map<string, string> = new Map(
+    virtualFolders
+      .map((folder: VirtualFolderInfoSchema) => {
+        const name: string | undefined = folder.Name ?? undefined;
+        const id: string | undefined =
+          (folder as { Id?: string }).Id ??
+          (folder as { ItemId?: string | null }).ItemId ??
+          undefined;
+        return name && id ? [id, name] : undefined;
+      })
+      .filter(
+        (
+          entry: [string, string] | undefined | [string, string | undefined],
+        ): entry is [string, string] => Array.isArray(entry),
+      ),
+  );
+
+  const resolveEnabledFolders = (
+    enabledFolderIds: string[] | null | undefined,
+  ): string[] | undefined => {
+    if (!enabledFolderIds) return undefined;
+    return enabledFolderIds.map(
+      (folderId: string) => folderIdToNameMap.get(folderId) ?? folderId,
+    );
+  };
+
   const config: object = {
     version: 1,
     base_url: baseUrl,
@@ -133,6 +159,7 @@ export async function runDump(baseUrl: string): Promise<void> {
       policy: {
         isAdministrator: user.Policy?.IsAdministrator,
         loginAttemptsBeforeLockout: user.Policy?.LoginAttemptsBeforeLockout,
+        enabledLibraries: resolveEnabledFolders(user.Policy?.EnabledFolders),
       },
     })),
 

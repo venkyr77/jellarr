@@ -1,5 +1,4 @@
 import type { JellyfinClient } from "../api/jellyfin.types";
-import { ChangeSetBuilder } from "../lib/changeset";
 import { logger } from "../lib/logger";
 import type {
   UserConfig,
@@ -16,7 +15,28 @@ import {
   mapUserPolicyConfigToSchema,
   mapUserConfigToConfiguration,
 } from "../mappers/users";
-import { applyChangeset, diff, type IChange } from "json-diff-ts";
+import type { VirtualFolderInfoSchema } from "../types/schema/library";
+
+function buildFolderNameToIdMap(
+  virtualFolders: VirtualFolderInfoSchema[] | undefined,
+): Map<string, string> {
+  const folderNameToIdMap: Map<string, string> = new Map();
+
+  for (const folder of virtualFolders ?? []) {
+    const name: string | undefined = folder.Name ?? undefined;
+    const id: string | undefined =
+      (folder as { Id?: string }).Id ??
+      (folder as { ItemId?: string | null }).ItemId ??
+      undefined;
+
+    if (!name || !id) continue;
+    if (!folderNameToIdMap.has(name)) {
+      folderNameToIdMap.set(name, id);
+    }
+  }
+
+  return folderNameToIdMap;
+}
 
 export function calculateNewUsersDiff(
   current: UserDtoSchema[],
@@ -46,28 +66,63 @@ export async function createNewUsers(
 export function calculateUserPolicyDiff(
   current: UserPolicySchema,
   desired: UserPolicyConfig,
+  folderNameToIdMap?: Map<string, string>,
 ): UserPolicySchema | undefined {
-  const patch: IChange[] = new ChangeSetBuilder(
-    diff(current, mapUserPolicyConfigToSchema(desired)),
-  )
-    .atomize()
-    .withoutRemoves()
-    .toArray();
+  const mapped: Partial<UserPolicySchema> = mapUserPolicyConfigToSchema(
+    desired,
+    folderNameToIdMap,
+  );
 
-  if (patch.length > 0) {
-    return applyChangeset(current, patch) as UserPolicySchema;
-  }
+  const next: UserPolicySchema = { ...current, ...mapped };
 
-  return undefined;
+  return JSON.stringify(next) === JSON.stringify(current) ? undefined : next;
 }
 
 export function calculateUserPoliciesDiff(
   current: UserDtoSchema[],
   desired: UserConfigList,
+  virtualFolders?: VirtualFolderInfoSchema[],
 ): Map<string, UserPolicySchema> | undefined {
   if (desired.length === 0) return undefined;
 
   const userPoliciesToUpdate: Map<string, UserPolicySchema> = new Map();
+  const enabledLibraryNames: string[] = desired
+    .map(
+      (userConfig: UserConfig) =>
+        userConfig.policy?.enabledLibraries ?? undefined,
+    )
+    .filter((names): names is string[] => typeof names !== "undefined")
+    .flat();
+
+  const hasEnabledFoldersDefined: boolean = desired.some(
+    (userConfig: UserConfig) =>
+      typeof userConfig.policy?.enabledLibraries !== "undefined",
+  );
+
+  const folderNameToIdMap: Map<string, string> | undefined =
+    hasEnabledFoldersDefined && virtualFolders
+      ? buildFolderNameToIdMap(virtualFolders)
+      : hasEnabledFoldersDefined
+        ? new Map()
+        : undefined;
+
+  if (hasEnabledFoldersDefined && folderNameToIdMap) {
+    const resolved: string = Array.from(folderNameToIdMap.entries())
+      .map(([name, id]: [string, string]) => `${name}->${id}`)
+      .join(", ");
+    logger.info(
+      `Resolved libraries for enabledLibraries: ${resolved || "none found"}`,
+    );
+  }
+
+  if (
+    enabledLibraryNames.length > 0 &&
+    (folderNameToIdMap?.size === 0 || !folderNameToIdMap)
+  ) {
+    throw new Error(
+      "policy.enabledLibraries provided but no libraries were found to resolve names",
+    );
+  }
 
   desired.forEach((userConfig: UserConfig) => {
     const currentUserDtoSchema: UserDtoSchema | undefined = current.find(
@@ -79,11 +134,32 @@ export function calculateUserPoliciesDiff(
       currentUserDtoSchema.Policy &&
       userConfig.policy
     ) {
+      if (
+        userConfig.policy.enabledLibraries &&
+        userConfig.policy.enabledLibraries.length > 0
+      ) {
+        const resolvedIds: (string | undefined)[] =
+          userConfig.policy.enabledLibraries.map((name: string) =>
+            folderNameToIdMap?.get(name),
+          );
+
+        logger.info(
+          `User ${userConfig.name} enabledLibraries: ${userConfig.policy.enabledLibraries.join(", ")} -> ${resolvedIds.join(", ")}`,
+        );
+      }
+
       const userPolicyDiff: UserPolicySchema | undefined =
-        calculateUserPolicyDiff(currentUserDtoSchema.Policy, userConfig.policy);
+        calculateUserPolicyDiff(
+          currentUserDtoSchema.Policy,
+          userConfig.policy,
+          folderNameToIdMap,
+        );
 
       if (userPolicyDiff) {
         logger.info(`Updating user policy: ${userConfig.name}`);
+        logger.info(
+          `User ${userConfig.name} policy payload: ${JSON.stringify(userPolicyDiff)}`,
+        );
         userPoliciesToUpdate.set(currentUserDtoSchema.Id, userPolicyDiff);
       }
     }

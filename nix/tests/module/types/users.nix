@@ -213,6 +213,25 @@ in [
       }
     ])
 
+  (assertEq "policy with enabledLibraries" (mkUsersConfig [
+      {
+        name = "user";
+        password = "pass";
+        passwordFile = null;
+        policy = {
+          enabledLibraries = ["Movies" "Shows"];
+        };
+      }
+    ]) [
+      {
+        name = "user";
+        password = "pass";
+        policy = {
+          enabledLibraries = ["Movies" "Shows"];
+        };
+      }
+    ])
+
   (assertEq "list with users having policies" (mkUsersConfig [
       {
         name = "admin";
@@ -247,6 +266,17 @@ in [
         };
       }
     ])
+
+  (assertThrows "reject empty enabledLibraries entry" (mkUsersConfig [
+    {
+      name = "user";
+      password = "pass";
+      passwordFile = null;
+      policy = {
+        enabledLibraries = [""];
+      };
+    }
+  ]))
 
   (assertThrows "reject list with invalid policy" (mkUsersConfig [
     {

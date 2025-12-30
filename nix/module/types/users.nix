@@ -15,6 +15,11 @@
         default = null;
         description = "Number of login attempts before lockout (minimum 1).";
       };
+      enabledLibraries = mkOption {
+        type = nullOr (types.listOf types.str);
+        default = null;
+        description = "List of library names the user can access.";
+      };
       enableAllFolders = mkOption {
         type = nullOr types.bool;
         default = null;
@@ -81,6 +86,9 @@
       assert c.loginAttemptsBeforeLockout
       >= 1
       || throw "loginAttemptsBeforeLockout must be at least 1"; {inherit (c) loginAttemptsBeforeLockout;}
+    )
+    // optionalAttrs (c ? enabledLibraries && c.enabledLibraries != null) (
+      assert lib.all (library: library != "" || throw "enabledLibraries entries cannot be empty") c.enabledLibraries; {inherit (c) enabledLibraries;}
     )
     // optionalAttrs (c ? enableAllFolders && c.enableAllFolders != null) {inherit (c) enableAllFolders;}
     // optionalAttrs (c ? enableCollectionManagement && c.enableCollectionManagement != null) {inherit (c) enableCollectionManagement;};

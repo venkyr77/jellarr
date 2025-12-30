@@ -69,6 +69,7 @@ export async function runPipeline(path: string): Promise<void> {
 
   const currentServerConfigurationSchema: ServerConfigurationSchema =
     await jellyfinClient.getSystemConfiguration();
+  let currentVirtualFolders: VirtualFolderInfoSchema[] | undefined;
 
   const updatedServerConfigurationSchema:
     | ServerConfigurationSchema
@@ -102,8 +103,7 @@ export async function runPipeline(path: string): Promise<void> {
   }
 
   if (cfg.library?.virtualFolders) {
-    const currentVirtualFolders: VirtualFolderInfoSchema[] =
-      await jellyfinClient.getVirtualFolders();
+    currentVirtualFolders = await jellyfinClient.getVirtualFolders();
     const libraryDiff: LibraryDiff | undefined = calculateLibraryDiff(
       currentVirtualFolders,
       cfg.library.virtualFolders,
@@ -113,6 +113,7 @@ export async function runPipeline(path: string): Promise<void> {
       console.log("→ updating library config");
       await applyLibrary(jellyfinClient, libraryDiff);
       console.log("✓ updated library config");
+      currentVirtualFolders = await jellyfinClient.getVirtualFolders();
     } else {
       console.log("✓ library config already up to date");
     }
@@ -135,6 +136,16 @@ export async function runPipeline(path: string): Promise<void> {
   }
 
   if (cfg.users) {
+    if (
+      !currentVirtualFolders &&
+      cfg.users.some(
+        (userConfig: UserConfig) =>
+          typeof userConfig.policy?.enabledLibraries !== "undefined",
+      )
+    ) {
+      currentVirtualFolders = await jellyfinClient.getVirtualFolders();
+    }
+
     let currentUsers: UserDtoSchema[] = await jellyfinClient.getUsers();
 
     const usersToCreate: UserConfig[] | undefined = calculateNewUsersDiff(
@@ -150,7 +161,7 @@ export async function runPipeline(path: string): Promise<void> {
     }
 
     const userPoliciesToUpdate: Map<string, UserPolicySchema> | undefined =
-      calculateUserPoliciesDiff(currentUsers, cfg.users);
+      calculateUserPoliciesDiff(currentUsers, cfg.users, currentVirtualFolders);
     const userConfigurationsToUpdate = calculateUserConfigurationsDiff(
       currentUsers,
       cfg.users,

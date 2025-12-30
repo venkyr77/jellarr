@@ -14,6 +14,7 @@ import type {
   UserPolicySchema,
   UserConfigurationSchema,
 } from "../../src/types/schema/users";
+import type { VirtualFolderInfoSchema } from "../../src/types/schema/library";
 vi.mock("../../src/lib/logger", () => ({
   logger: {
     info: vi.fn(),
@@ -28,16 +29,27 @@ vi.mock("../../src/mappers/users", () => ({
     Password: config.password ?? "mocked-password-from-file",
   })),
   mapUserPolicyConfigToSchema: vi.fn(
-    (policy: {
-      isAdministrator?: boolean;
-      loginAttemptsBeforeLockout?: number;
-    }) => {
-      const result: Record<string, boolean | number> = {};
+    (
+      policy: {
+        isAdministrator?: boolean;
+        loginAttemptsBeforeLockout?: number;
+        enabledLibraries?: string[];
+      },
+      folderNameToIdMap?: Map<string, string>,
+    ) => {
+      const result: Record<string, boolean | number | string[]> = {};
       if (policy.isAdministrator !== undefined) {
         result.IsAdministrator = policy.isAdministrator;
       }
       if (policy.loginAttemptsBeforeLockout !== undefined) {
         result.LoginAttemptsBeforeLockout = policy.loginAttemptsBeforeLockout;
+      }
+      if (policy.enabledLibraries !== undefined) {
+        result.EnabledFolders = policy.enabledLibraries.map((name: string) => {
+          const id: string | undefined = folderNameToIdMap?.get(name);
+          if (!id) throw new Error(`Missing id for ${name}`);
+          return id;
+        });
       }
       return result;
     },
@@ -575,6 +587,85 @@ describe("calculateUserPoliciesDiff", () => {
       result?.get("user-2-id");
     expect(updatedPolicy?.LoginAttemptsBeforeLockout).toBe(10);
     expect(updatedPolicy?.IsAdministrator).toBe(true);
+  });
+
+  it("should resolve enabledLibraries to library ids", () => {
+    const virtualFolders: VirtualFolderInfoSchema[] = [
+      {
+        Name: "Movies",
+        Id: "library-1",
+      } as VirtualFolderInfoSchema,
+    ];
+
+    const config: UserConfigList = [
+      {
+        name: "existing-user",
+        password: "password",
+        policy: {
+          enabledLibraries: ["Movies"],
+        },
+      },
+    ];
+
+    const result: Map<string, UserPolicySchema> | undefined =
+      calculateUserPoliciesDiff(currentUsers, config, virtualFolders);
+
+    expect(result?.get("user-1-id")?.EnabledFolders).toEqual(["library-1"]);
+    expect(result?.get("user-1-id")?.IsAdministrator).toBe(false);
+  });
+
+  it("should merge resolved enabledLibraries into existing policy", () => {
+    const virtualFolders: VirtualFolderInfoSchema[] = [
+      { Name: "Family", Id: "family-id" } as VirtualFolderInfoSchema,
+    ];
+
+    const config: UserConfigList = [
+      {
+        name: "existing-user",
+        password: "password",
+        policy: {
+          enabledLibraries: ["Family"],
+        },
+      },
+    ];
+
+    const current: UserDtoSchema[] = [
+      {
+        Name: "existing-user",
+        Id: "user-1-id",
+        Policy: {
+          IsAdministrator: false,
+          LoginAttemptsBeforeLockout: 5,
+          EnableAllFolders: true,
+        },
+      } as UserDtoSchema,
+    ];
+
+    const result = calculateUserPoliciesDiff(current, config, virtualFolders);
+    const payload: UserPolicySchema | undefined = result?.get("user-1-id");
+
+    expect(payload).toEqual(
+      expect.objectContaining({
+        IsAdministrator: false,
+        LoginAttemptsBeforeLockout: 5,
+        EnableAllFolders: false,
+        EnabledFolders: ["family-id"],
+      }),
+    );
+  });
+
+  it("should throw when enabledLibraries are provided but libraries are unavailable", () => {
+    const config: UserConfigList = [
+      {
+        name: "existing-user",
+        password: "password",
+        policy: {
+          enabledLibraries: ["Movies"],
+        },
+      },
+    ];
+
+    expect(() => calculateUserPoliciesDiff(currentUsers, config)).toThrow();
   });
 
   it("should not modify policy when loginAttemptsBeforeLockout value is the same", () => {

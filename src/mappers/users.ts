@@ -30,6 +30,7 @@ export function mapUserConfigToCreateSchema(
 
 export function mapUserPolicyConfigToSchema(
   desired: UserPolicyConfig,
+  folderNameToIdMap?: Map<string, string>,
 ): Partial<UserPolicySchema> {
   const out: Partial<UserPolicySchema> = {};
 
@@ -47,6 +48,33 @@ export function mapUserPolicyConfigToSchema(
 
   if (typeof desired.enableCollectionManagement !== "undefined") {
     out.EnableCollectionManagement = desired.enableCollectionManagement;
+  }
+
+  if (
+    typeof desired.enabledLibraries !== "undefined" &&
+    desired.enabledLibraries.length > 0
+  ) {
+    if (typeof desired.enableAllFolders === "undefined") {
+      out.EnableAllFolders = false;
+    }
+
+    if (!folderNameToIdMap) {
+      throw new Error(
+        "policy.enabledLibraries requires available libraries to resolve names",
+      );
+    }
+
+    out.EnabledFolders = desired.enabledLibraries.map(
+      (folderName: string): string => {
+        const id: string | undefined = folderNameToIdMap.get(folderName);
+        if (!id) {
+          throw new Error(
+            `Library '${folderName}' not found while resolving enabledLibraries`,
+          );
+        }
+        return id;
+      },
+    );
   }
 
   return out;

@@ -5,11 +5,15 @@ export const UserPolicyConfigType: z.ZodObject<{
   loginAttemptsBeforeLockout: z.ZodOptional<z.ZodNumber>;
   enableAllFolders: z.ZodOptional<z.ZodBoolean>;
   enableCollectionManagement: z.ZodOptional<z.ZodBoolean>;
+  enabledLibraries: z.ZodOptional<z.ZodArray<z.ZodString>>;
 }> = z.object({
   isAdministrator: z.boolean().optional(),
   loginAttemptsBeforeLockout: z.number().int().min(1).optional(),
   enableAllFolders: z.boolean().optional(),
   enableCollectionManagement: z.boolean().optional(),
+  enabledLibraries: z
+    .array(z.string().min(1, "Library name is required"))
+    .optional(),
 });
 
 export type UserPolicyConfig = z.infer<typeof UserPolicyConfigType>;
