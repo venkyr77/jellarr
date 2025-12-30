@@ -65,5 +65,9 @@ export function mapUserConfigToConfiguration(
     out.SubtitleLanguagePreference = desired.subtitleLanguagePreference;
   }
 
+  if (typeof desired.maxActiveSessions !== "undefined") {
+    out.MaxActiveSessions = desired.maxActiveSessions;
+  }
+
   return out;
 }

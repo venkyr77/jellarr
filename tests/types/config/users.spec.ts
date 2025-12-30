@@ -382,6 +382,7 @@ describe("UserPolicyConfig", () => {
       loginAttemptsBeforeLockout: 5,
       enableAllFolders: true,
       enableCollectionManagement: false,
+      maxActiveSessions: 2,
     };
 
     // Act
@@ -519,6 +520,7 @@ describe("UserConfig with policy", () => {
         enableAllFolders: false,
         enableCollectionManagement: true,
       },
+      maxActiveSessions: 2,
     };
 
     // Act

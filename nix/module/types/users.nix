@@ -59,6 +59,11 @@
         default = null;
         description = "Subtitle language preference code.";
       };
+      maxActiveSessions = mkOption {
+        type = nullOr types.int;
+        default = null;
+        description = "Maximum concurrent active sessions for the user.";
+      };
     };
   };
 
@@ -92,7 +97,8 @@
         // optionalAttrs (user.passwordFile != null) {inherit (user) passwordFile;}
         // optionalAttrs (user.policy != null) {policy = mkUserPolicyConfig user.policy;}
         // optionalAttrs (user ? displayMissingEpisodes && user.displayMissingEpisodes != null) {inherit (user) displayMissingEpisodes;}
-        // optionalAttrs (user ? subtitleLanguagePreference && user.subtitleLanguagePreference != null) {inherit (user) subtitleLanguagePreference;})
+        // optionalAttrs (user ? subtitleLanguagePreference && user.subtitleLanguagePreference != null) {inherit (user) subtitleLanguagePreference;}
+        // optionalAttrs (user ? maxActiveSessions && user.maxActiveSessions != null) {inherit (user) maxActiveSessions;})
     cfg;
 in {
   inherit usersConfigType mkUsersConfig;

@@ -21,6 +21,7 @@ export const UserConfigType: z.ZodObject<{
   policy: z.ZodOptional<typeof UserPolicyConfigType>;
   displayMissingEpisodes: z.ZodOptional<z.ZodBoolean>;
   subtitleLanguagePreference: z.ZodOptional<z.ZodString>;
+  maxActiveSessions: z.ZodOptional<z.ZodNumber>;
 }> = z
   .object({
     name: z.string().min(1, "User name is required"),
@@ -29,6 +30,7 @@ export const UserConfigType: z.ZodObject<{
     policy: UserPolicyConfigType.optional(),
     displayMissingEpisodes: z.boolean().optional(),
     subtitleLanguagePreference: z.string().min(1).optional(),
+    maxActiveSessions: z.number().int().min(1).optional(),
   })
   .strict()
   .refine(
