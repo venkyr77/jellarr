@@ -106,15 +106,6 @@ export function calculateUserPoliciesDiff(
         ? new Map()
         : undefined;
 
-  if (hasEnabledFoldersDefined && folderNameToIdMap) {
-    const resolved: string = Array.from(folderNameToIdMap.entries())
-      .map(([name, id]: [string, string]) => `${name}->${id}`)
-      .join(", ");
-    logger.info(
-      `Resolved libraries for enabledLibraries: ${resolved || "none found"}`,
-    );
-  }
-
   if (
     enabledLibraryNames.length > 0 &&
     (folderNameToIdMap?.size === 0 || !folderNameToIdMap)
@@ -134,20 +125,6 @@ export function calculateUserPoliciesDiff(
       currentUserDtoSchema.Policy &&
       userConfig.policy
     ) {
-      if (
-        userConfig.policy.enabledLibraries &&
-        userConfig.policy.enabledLibraries.length > 0
-      ) {
-        const resolvedIds: (string | undefined)[] =
-          userConfig.policy.enabledLibraries.map((name: string) =>
-            folderNameToIdMap?.get(name),
-          );
-
-        logger.info(
-          `User ${userConfig.name} enabledLibraries: ${userConfig.policy.enabledLibraries.join(", ")} -> ${resolvedIds.join(", ")}`,
-        );
-      }
-
       const userPolicyDiff: UserPolicySchema | undefined =
         calculateUserPolicyDiff(
           currentUserDtoSchema.Policy,
@@ -157,9 +134,6 @@ export function calculateUserPoliciesDiff(
 
       if (userPolicyDiff) {
         logger.info(`Updating user policy: ${userConfig.name}`);
-        logger.info(
-          `User ${userConfig.name} policy payload: ${JSON.stringify(userPolicyDiff)}`,
-        );
         userPoliciesToUpdate.set(currentUserDtoSchema.Id, userPolicyDiff);
       }
     }
