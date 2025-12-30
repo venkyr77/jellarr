@@ -249,6 +249,8 @@ describe("mappers/users", () => {
       const config: UserPolicyConfig = {
         isAdministrator: true,
         loginAttemptsBeforeLockout: 5,
+        enableAllFolders: true,
+        enableCollectionManagement: false,
       };
 
       // Act
@@ -259,6 +261,8 @@ describe("mappers/users", () => {
       expect(result).toEqual({
         IsAdministrator: true,
         LoginAttemptsBeforeLockout: 5,
+        EnableAllFolders: true,
+        EnableCollectionManagement: false,
       });
     });
 

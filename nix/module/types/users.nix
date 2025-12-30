@@ -15,6 +15,16 @@
         default = null;
         description = "Number of login attempts before lockout (minimum 1).";
       };
+      enableAllFolders = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to access all folders.";
+      };
+      enableCollectionManagement = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to manage collections.";
+      };
     };
   };
 
@@ -44,14 +54,21 @@
 
   usersConfigType = nullOr (types.listOf userConfigType);
 
-  mkUserPolicyConfig = cfg:
+  mkUserPolicyConfig = cfg: let
+    c =
+      if cfg == null
+      then {}
+      else cfg;
+  in
     {}
-    // optionalAttrs (cfg.isAdministrator != null) {inherit (cfg) isAdministrator;}
-    // optionalAttrs (cfg.loginAttemptsBeforeLockout != null) (
-      assert cfg.loginAttemptsBeforeLockout
+    // optionalAttrs (c ? isAdministrator && c.isAdministrator != null) {inherit (c) isAdministrator;}
+    // optionalAttrs (c ? loginAttemptsBeforeLockout && c.loginAttemptsBeforeLockout != null) (
+      assert c.loginAttemptsBeforeLockout
       >= 1
-      || throw "loginAttemptsBeforeLockout must be at least 1"; {inherit (cfg) loginAttemptsBeforeLockout;}
-    );
+      || throw "loginAttemptsBeforeLockout must be at least 1"; {inherit (c) loginAttemptsBeforeLockout;}
+    )
+    // optionalAttrs (c ? enableAllFolders && c.enableAllFolders != null) {inherit (c) enableAllFolders;}
+    // optionalAttrs (c ? enableCollectionManagement && c.enableCollectionManagement != null) {inherit (c) enableCollectionManagement;};
 
   mkUsersConfig = cfg:
     map (user:

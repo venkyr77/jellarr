@@ -3,9 +3,13 @@ import { z } from "zod";
 export const UserPolicyConfigType: z.ZodObject<{
   isAdministrator: z.ZodOptional<z.ZodBoolean>;
   loginAttemptsBeforeLockout: z.ZodOptional<z.ZodNumber>;
+  enableAllFolders: z.ZodOptional<z.ZodBoolean>;
+  enableCollectionManagement: z.ZodOptional<z.ZodBoolean>;
 }> = z.object({
   isAdministrator: z.boolean().optional(),
   loginAttemptsBeforeLockout: z.number().int().min(1).optional(),
+  enableAllFolders: z.boolean().optional(),
+  enableCollectionManagement: z.boolean().optional(),
 });
 
 export type UserPolicyConfig = z.infer<typeof UserPolicyConfigType>;

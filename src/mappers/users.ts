@@ -40,5 +40,13 @@ export function mapUserPolicyConfigToSchema(
     out.LoginAttemptsBeforeLockout = desired.loginAttemptsBeforeLockout;
   }
 
+  if (typeof desired.enableAllFolders !== "undefined") {
+    out.EnableAllFolders = desired.enableAllFolders;
+  }
+
+  if (typeof desired.enableCollectionManagement !== "undefined") {
+    out.EnableCollectionManagement = desired.enableCollectionManagement;
+  }
+
   return out;
 }

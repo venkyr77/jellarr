@@ -380,6 +380,8 @@ describe("UserPolicyConfig", () => {
     const validConfig: z.input<typeof UserPolicyConfigType> = {
       isAdministrator: true,
       loginAttemptsBeforeLockout: 5,
+      enableAllFolders: true,
+      enableCollectionManagement: false,
     };
 
     // Act
@@ -514,6 +516,8 @@ describe("UserConfig with policy", () => {
       policy: {
         isAdministrator: true,
         loginAttemptsBeforeLockout: 3,
+        enableAllFolders: false,
+        enableCollectionManagement: true,
       },
     };
 
