@@ -25,6 +25,7 @@ export const TrickplayOptionsConfigType: z.ZodObject<{
 export type TrickplayOptionsConfig = z.infer<typeof TrickplayOptionsConfigType>;
 
 export const SystemConfigType: z.ZodObject<{
+  serverName: z.ZodOptional<z.ZodString>;
   enableMetrics: z.ZodOptional<z.ZodBoolean>;
   pluginRepositories: z.ZodOptional<
     z.ZodArray<typeof PluginRepositoryConfigType>
@@ -32,6 +33,7 @@ export const SystemConfigType: z.ZodObject<{
   trickplayOptions: z.ZodOptional<typeof TrickplayOptionsConfigType>;
 }> = z
   .object({
+    serverName: z.string().min(1).optional(),
     enableMetrics: z.boolean().optional(),
     pluginRepositories: z.array(PluginRepositoryConfigType).optional(),
     trickplayOptions: TrickplayOptionsConfigType.optional(),

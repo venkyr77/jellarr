@@ -232,3 +232,18 @@ describe("TrickplayOptionsConfig", () => {
     expect(result.success).toBe(false);
   });
 });
+
+describe("SystemConfigType", () => {
+  it("should allow serverName", () => {
+    const config: z.input<typeof SystemConfigType> = {
+      serverName: "MyServer",
+    };
+
+    const result = SystemConfigType.safeParse(config);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.serverName).toBe("MyServer");
+    }
+  });
+});

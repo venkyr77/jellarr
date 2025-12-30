@@ -36,6 +36,10 @@ export function mapSystemConfigurationConfigToSchema(
 ): Partial<ServerConfigurationSchema> {
   const out: Partial<ServerConfigurationSchema> = {};
 
+  if (desired.serverName !== undefined) {
+    out.ServerName = desired.serverName;
+  }
+
   if (desired.enableMetrics !== undefined) {
     out.EnableMetrics = desired.enableMetrics;
   }

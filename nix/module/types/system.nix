@@ -42,6 +42,11 @@
 
   systemConfigType = types.submodule {
     options = {
+      serverName = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = "Server name shown in clients.";
+      };
       enableMetrics = mkOption {
         type = nullOr types.bool;
         default = null;
@@ -71,18 +76,24 @@
     // optionalAttrs (c ? enableHwEncoding && c.enableHwEncoding != null) {inherit (c) enableHwEncoding;}
     // optionalAttrs (c ? processThreads && c.processThreads != null) {inherit (c) processThreads;};
 
-  mkSystemConfig = cfg:
+  mkSystemConfig = cfg: let
+    c =
+      if cfg == null
+      then {}
+      else cfg;
+  in
     {}
-    // optionalAttrs (cfg.enableMetrics != null) {inherit (cfg) enableMetrics;}
-    // optionalAttrs (cfg.pluginRepositories != null) {
+    // optionalAttrs (c ? serverName && c.serverName != null) {inherit (c) serverName;}
+    // optionalAttrs (c ? enableMetrics && c.enableMetrics != null) {inherit (c) enableMetrics;}
+    // optionalAttrs (c ? pluginRepositories && c.pluginRepositories != null) {
       pluginRepositories = map (repo:
         assert repo.name != "" || throw "Plugin repository name cannot be empty"; {
           inherit (repo) name url enabled;
         })
-      cfg.pluginRepositories;
+      c.pluginRepositories;
     }
-    // optionalAttrs (cfg.trickplayOptions != null) {
-      trickplayOptions = mkTrickplayOptionsConfig cfg.trickplayOptions;
+    // optionalAttrs (c ? trickplayOptions && c.trickplayOptions != null) {
+      trickplayOptions = mkTrickplayOptionsConfig c.trickplayOptions;
     };
 in {
   inherit systemConfigType mkSystemConfig;
