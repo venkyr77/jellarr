@@ -120,15 +120,24 @@ export function calculateUserPoliciesDiff(
       (curr: UserDtoSchema) => curr.Name === userConfig.name,
     );
 
-    if (
-      currentUserDtoSchema?.Id &&
-      currentUserDtoSchema.Policy &&
-      userConfig.policy
-    ) {
+    const hasPolicyUpdates: boolean =
+      typeof userConfig.policy !== "undefined" ||
+      typeof userConfig.maxActiveSessions !== "undefined";
+
+    if (currentUserDtoSchema?.Id && hasPolicyUpdates) {
+      const currentPolicy: UserPolicySchema =
+        (currentUserDtoSchema.Policy as UserPolicySchema) ?? {};
+      const desiredPolicy: UserPolicyConfig = {
+        ...(userConfig.policy ?? {}),
+        ...(typeof userConfig.maxActiveSessions !== "undefined"
+          ? { maxActiveSessions: userConfig.maxActiveSessions }
+          : {}),
+      };
+
       const userPolicyDiff: UserPolicySchema | undefined =
         calculateUserPolicyDiff(
-          currentUserDtoSchema.Policy,
-          userConfig.policy,
+          currentPolicy,
+          desiredPolicy,
           folderNameToIdMap,
         );
 

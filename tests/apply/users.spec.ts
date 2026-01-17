@@ -33,6 +33,7 @@ vi.mock("../../src/mappers/users", () => ({
       policy: {
         isAdministrator?: boolean;
         loginAttemptsBeforeLockout?: number;
+        maxActiveSessions?: number;
         enabledLibraries?: string[];
       },
       folderNameToIdMap?: Map<string, string>,
@@ -43,6 +44,9 @@ vi.mock("../../src/mappers/users", () => ({
       }
       if (policy.loginAttemptsBeforeLockout !== undefined) {
         result.LoginAttemptsBeforeLockout = policy.loginAttemptsBeforeLockout;
+      }
+      if (policy.maxActiveSessions !== undefined) {
+        result.MaxActiveSessions = policy.maxActiveSessions;
       }
       if (policy.enabledLibraries !== undefined) {
         result.EnabledFolders = policy.enabledLibraries.map((name: string) => {
@@ -468,6 +472,29 @@ describe("calculateUserPoliciesDiff", () => {
 
     // Assert
     expect(result).toBeUndefined();
+  });
+
+  it("should update policy when maxActiveSessions is provided without policy", () => {
+    // Arrange
+    const config: UserConfigList = [
+      {
+        name: "existing-user",
+        password: "password",
+        maxActiveSessions: 2,
+      },
+    ];
+
+    // Act
+    const result: Map<string, UserPolicySchema> | undefined =
+      calculateUserPoliciesDiff(currentUsers, config);
+
+    // Assert
+    expect(result).toBeDefined();
+    expect(result?.size).toBe(1);
+    const updatedPolicy: UserPolicySchema | undefined =
+      result?.get("user-1-id");
+    expect(updatedPolicy?.MaxActiveSessions).toBe(2);
+    expect(updatedPolicy?.IsAdministrator).toBe(false);
   });
 
   it("should return undefined when no user policies change", () => {

@@ -42,6 +42,10 @@ export function mapUserPolicyConfigToSchema(
     out.LoginAttemptsBeforeLockout = desired.loginAttemptsBeforeLockout;
   }
 
+  if (typeof desired.maxActiveSessions !== "undefined") {
+    out.MaxActiveSessions = desired.maxActiveSessions;
+  }
+
   if (typeof desired.enableAllFolders !== "undefined") {
     out.EnableAllFolders = desired.enableAllFolders;
   }
@@ -91,10 +95,6 @@ export function mapUserConfigToConfiguration(
 
   if (typeof desired.subtitleLanguagePreference !== "undefined") {
     out.SubtitleLanguagePreference = desired.subtitleLanguagePreference;
-  }
-
-  if (typeof desired.maxActiveSessions !== "undefined") {
-    out.MaxActiveSessions = desired.maxActiveSessions;
   }
 
   return out;

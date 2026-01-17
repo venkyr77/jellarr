@@ -30,6 +30,11 @@
         default = null;
         description = "Allow user to manage collections.";
       };
+      maxActiveSessions = mkOption {
+        type = nullOr types.int;
+        default = null;
+        description = "Maximum concurrent active sessions for the user.";
+      };
     };
   };
 
@@ -64,11 +69,6 @@
         default = null;
         description = "Subtitle language preference code.";
       };
-      maxActiveSessions = mkOption {
-        type = nullOr types.int;
-        default = null;
-        description = "Maximum concurrent active sessions for the user.";
-      };
     };
   };
 
@@ -91,22 +91,24 @@
       assert lib.all (library: library != "" || throw "enabledLibraries entries cannot be empty") c.enabledLibraries; {inherit (c) enabledLibraries;}
     )
     // optionalAttrs (c ? enableAllFolders && c.enableAllFolders != null) {inherit (c) enableAllFolders;}
-    // optionalAttrs (c ? enableCollectionManagement && c.enableCollectionManagement != null) {inherit (c) enableCollectionManagement;};
+    // optionalAttrs (c ? enableCollectionManagement && c.enableCollectionManagement != null) {inherit (c) enableCollectionManagement;}
+    // optionalAttrs (c ? maxActiveSessions && c.maxActiveSessions != null) {inherit (c) maxActiveSessions;};
 
   mkUsersConfig = cfg:
-    map (user:
-      assert user.name != "" || throw "User name cannot be empty";
-      assert (user.password != null)
-      != (user.passwordFile != null)
-      || throw "User '${user.name}' must specify exactly one of 'password' or 'passwordFile'";
-        {}
-        // {inherit (user) name;}
-        // optionalAttrs (user.password != null) {inherit (user) password;}
-        // optionalAttrs (user.passwordFile != null) {inherit (user) passwordFile;}
-        // optionalAttrs (user.policy != null) {policy = mkUserPolicyConfig user.policy;}
-        // optionalAttrs (user ? displayMissingEpisodes && user.displayMissingEpisodes != null) {inherit (user) displayMissingEpisodes;}
-        // optionalAttrs (user ? subtitleLanguagePreference && user.subtitleLanguagePreference != null) {inherit (user) subtitleLanguagePreference;}
-        // optionalAttrs (user ? maxActiveSessions && user.maxActiveSessions != null) {inherit (user) maxActiveSessions;})
+    map (
+      user:
+        assert user.name != "" || throw "User name cannot be empty";
+        assert (user.password != null)
+        != (user.passwordFile != null)
+        || throw "User '${user.name}' must specify exactly one of 'password' or 'passwordFile'";
+          {}
+          // {inherit (user) name;}
+          // optionalAttrs (user.password != null) {inherit (user) password;}
+          // optionalAttrs (user.passwordFile != null) {inherit (user) passwordFile;}
+          // optionalAttrs (user.policy != null) {policy = mkUserPolicyConfig user.policy;}
+          // optionalAttrs (user ? displayMissingEpisodes && user.displayMissingEpisodes != null) {inherit (user) displayMissingEpisodes;}
+          // optionalAttrs (user ? subtitleLanguagePreference && user.subtitleLanguagePreference != null) {inherit (user) subtitleLanguagePreference;}
+    )
     cfg;
 in {
   inherit usersConfigType mkUsersConfig;

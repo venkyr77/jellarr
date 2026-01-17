@@ -153,6 +153,23 @@ in [
       }
     ])
 
+  (assertEq "policy maxActiveSessions only" (mkUsersConfig [
+      {
+        name = "user";
+        password = "pass";
+        passwordFile = null;
+        policy = {
+          maxActiveSessions = 2;
+        };
+      }
+    ]) [
+      {
+        name = "user";
+        password = "pass";
+        policy = {maxActiveSessions = 2;};
+      }
+    ])
+
   (assertEq "empty policy" (mkUsersConfig [
       {
         name = "user";

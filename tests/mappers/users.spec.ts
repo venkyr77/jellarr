@@ -251,6 +251,7 @@ describe("mappers/users", () => {
       const config: UserPolicyConfig = {
         isAdministrator: true,
         loginAttemptsBeforeLockout: 5,
+        maxActiveSessions: 2,
         enableAllFolders: true,
         enableCollectionManagement: false,
       };
@@ -263,6 +264,7 @@ describe("mappers/users", () => {
       expect(result).toEqual({
         IsAdministrator: true,
         LoginAttemptsBeforeLockout: 5,
+        MaxActiveSessions: 2,
         EnableAllFolders: true,
         EnableCollectionManagement: false,
       });
@@ -285,6 +287,10 @@ describe("mappers/users", () => {
         {
           config: { loginAttemptsBeforeLockout: 10 },
           expected: { LoginAttemptsBeforeLockout: 10 },
+        },
+        {
+          config: { maxActiveSessions: 4 },
+          expected: { MaxActiveSessions: 4 },
         },
       ];
 
@@ -439,7 +445,6 @@ describe("mappers/users", () => {
         password: "pass",
         displayMissingEpisodes: true,
         subtitleLanguagePreference: "eng",
-        maxActiveSessions: 5,
       };
 
       const result: Partial<UserConfigurationSchema> =
@@ -448,7 +453,6 @@ describe("mappers/users", () => {
       expect(result).toEqual({
         DisplayMissingEpisodes: true,
         SubtitleLanguagePreference: "eng",
-        MaxActiveSessions: 5,
       });
     });
 
