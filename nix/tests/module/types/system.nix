@@ -8,12 +8,17 @@
   inherit (types.system) mkSystemConfig;
 
   nullConfig = {
+    serverName = null;
     enableMetrics = null;
     pluginRepositories = null;
     trickplayOptions = null;
   };
 in [
   (assertEq "empty config" (mkSystemConfig nullConfig) {})
+
+  (assertEq "serverName only" (mkSystemConfig (nullConfig // {serverName = "MyServer";})) {
+    serverName = "MyServer";
+  })
 
   (assertEq "enableMetrics true" (mkSystemConfig (nullConfig // {enableMetrics = true;})) {
     enableMetrics = true;

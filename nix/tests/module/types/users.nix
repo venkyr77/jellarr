@@ -170,6 +170,72 @@ in [
       }
     ])
 
+  (assertEq "policy enableAllFolders only" (mkUsersConfig [
+      {
+        name = "user";
+        password = "pass";
+        passwordFile = null;
+        policy = {
+          enableAllFolders = true;
+        };
+      }
+    ]) [
+      {
+        name = "user";
+        password = "pass";
+        policy = {enableAllFolders = true;};
+      }
+    ])
+
+  (assertEq "policy enableCollectionManagement only" (mkUsersConfig [
+      {
+        name = "user";
+        password = "pass";
+        passwordFile = null;
+        policy = {
+          enableCollectionManagement = true;
+        };
+      }
+    ]) [
+      {
+        name = "user";
+        password = "pass";
+        policy = {enableCollectionManagement = true;};
+      }
+    ])
+
+  (assertEq "displayMissingEpisodes only" (mkUsersConfig [
+      {
+        name = "user";
+        password = "pass";
+        passwordFile = null;
+        policy = null;
+        displayMissingEpisodes = true;
+      }
+    ]) [
+      {
+        name = "user";
+        password = "pass";
+        displayMissingEpisodes = true;
+      }
+    ])
+
+  (assertEq "subtitleLanguagePreference only" (mkUsersConfig [
+      {
+        name = "user";
+        password = "pass";
+        passwordFile = null;
+        policy = null;
+        subtitleLanguagePreference = "eng";
+      }
+    ]) [
+      {
+        name = "user";
+        password = "pass";
+        subtitleLanguagePreference = "eng";
+      }
+    ])
+
   (assertEq "empty policy" (mkUsersConfig [
       {
         name = "user";
