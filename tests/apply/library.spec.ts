@@ -109,7 +109,7 @@ describe("apply/library", () => {
       expect(result).toBeUndefined();
     });
 
-    it("should return undefined for existing virtual folder with matching locations regardless of order", () => {
+    it("should return update for existing virtual folder when path order changes", () => {
       const currentVirtualFolders: VirtualFolderInfoSchema[] = [
         {
           ItemId: "1",
@@ -145,7 +145,20 @@ describe("apply/library", () => {
         desired.virtualFolders as VirtualFolderConfig[],
       );
 
-      expect(result).toBeUndefined();
+      expect(result?.toCreate).toBeUndefined();
+      expect(result?.toUpdate).toEqual([
+        {
+          id: "1",
+          name: "Movies",
+          libraryOptions: {
+            PathInfos: [
+              { Path: "/data/path1" },
+              { Path: "/data/path2" },
+              { Path: "/data/path3" },
+            ],
+          },
+        },
+      ]);
     });
 
     it("should return update for virtual folder needing option changes", () => {
