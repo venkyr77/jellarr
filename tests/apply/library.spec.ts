@@ -161,6 +161,37 @@ describe("apply/library", () => {
       ]);
     });
 
+    it("should throw when collectionType changes", () => {
+      const currentVirtualFolders: VirtualFolderInfoSchema[] = [
+        {
+          ItemId: "1",
+          Name: "Movies",
+          CollectionType: "movies",
+          LibraryOptions: {
+            PathInfos: [{ Path: "/data/movies" }],
+          } as LibraryOptionsSchema,
+        },
+      ];
+      const desired: LibraryConfig = {
+        virtualFolders: [
+          {
+            name: "Movies",
+            collectionType: "tvshows",
+            libraryOptions: {
+              pathInfos: [{ path: "/data/movies" }],
+            },
+          },
+        ],
+      };
+
+      expect(() =>
+        calculateLibraryDiff(
+          currentVirtualFolders,
+          desired.virtualFolders as VirtualFolderConfig[],
+        ),
+      ).toThrow(/collectionType change is not supported/i);
+    });
+
     it("should return update for virtual folder needing option changes", () => {
       const currentVirtualFolders: VirtualFolderInfoSchema[] = [
         {

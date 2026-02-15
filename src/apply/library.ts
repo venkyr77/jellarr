@@ -70,6 +70,42 @@ export function calculateLibraryDiff(
     mapVirtualFolderConfigToSchema,
   );
 
+  const currentByName: Map<string, VirtualFolderInfoSchema> = new Map(
+    current
+      .map((folder: VirtualFolderInfoSchema) =>
+        folder.Name ? [folder.Name, folder] : undefined,
+      )
+      .filter(
+        (
+          entry:
+            | [string, VirtualFolderInfoSchema]
+            | undefined
+            | [string, VirtualFolderInfoSchema | undefined],
+        ): entry is [string, VirtualFolderInfoSchema] => Array.isArray(entry),
+      ),
+  );
+
+  for (const folder of next) {
+    const name: string | undefined = folder.Name ?? undefined;
+    if (!name) continue;
+    const currentFolder: VirtualFolderInfoSchema | undefined =
+      currentByName.get(name);
+    const currentType: string | undefined =
+      (currentFolder?.CollectionType as string | undefined) ?? undefined;
+    const desiredType: string | undefined =
+      (folder.CollectionType as string | undefined) ?? undefined;
+    if (
+      currentFolder &&
+      typeof currentType !== "undefined" &&
+      typeof desiredType !== "undefined" &&
+      currentType !== desiredType
+    ) {
+      throw new Error(
+        `Library '${name}' collectionType change is not supported (current: ${currentType}, desired: ${desiredType})`,
+      );
+    }
+  }
+
   const changeSet: IChange[] = new ChangeSetBuilder(
     diff(current, next, {
       embeddedObjKeys: { ".": "Name" },
@@ -96,20 +132,6 @@ export function calculateLibraryDiff(
       ? (applyChangeset([], addChanges) as VirtualFolderInfoSchema[])
       : undefined;
 
-  const currentByName: Map<string, VirtualFolderInfoSchema> = new Map(
-    current
-      .map((folder: VirtualFolderInfoSchema) =>
-        folder.Name ? [folder.Name, folder] : undefined,
-      )
-      .filter(
-        (
-          entry:
-            | [string, VirtualFolderInfoSchema]
-            | undefined
-            | [string, VirtualFolderInfoSchema | undefined],
-        ): entry is [string, VirtualFolderInfoSchema] => Array.isArray(entry),
-      ),
-  );
   const nextByName: Map<string, VirtualFolderInfoSchema> = new Map(
     next
       .map((folder: VirtualFolderInfoSchema) =>
