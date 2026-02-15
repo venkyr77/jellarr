@@ -230,6 +230,53 @@ describe("apply/library", () => {
       ]);
     });
 
+    it("should return update when additional library options change", () => {
+      const currentVirtualFolders: VirtualFolderInfoSchema[] = [
+        {
+          ItemId: "1",
+          Name: "Movies",
+          CollectionType: "movies",
+          LibraryOptions: {
+            PathInfos: [{ Path: "/data/movies" }],
+            AutomaticallyAddToCollection: false,
+            EnableTrickplayImageExtraction: false,
+            MetadataSavers: [],
+          } as LibraryOptionsSchema,
+        },
+      ];
+      const desired: LibraryConfig = {
+        virtualFolders: [
+          {
+            name: "Movies",
+            collectionType: "movies",
+            libraryOptions: {
+              pathInfos: [{ path: "/data/movies" }],
+              automaticallyAddToCollection: true,
+              enableTrickplayImageExtraction: true,
+              metadataSavers: ["Nfo"],
+            },
+          },
+        ],
+      };
+
+      const result = calculateLibraryDiff(
+        currentVirtualFolders,
+        desired.virtualFolders as VirtualFolderConfig[],
+      );
+
+      expect(result?.toCreate).toBeUndefined();
+      expect(result?.toUpdate?.[0]).toMatchObject({
+        id: "1",
+        name: "Movies",
+        libraryOptions: {
+          PathInfos: [{ Path: "/data/movies" }],
+          AutomaticallyAddToCollection: true,
+          EnableTrickplayImageExtraction: true,
+          MetadataSavers: ["Nfo"],
+        },
+      });
+    });
+
     it("should return update when typeOptions additions are present", () => {
       const currentVirtualFolders: VirtualFolderInfoSchema[] = [
         {
