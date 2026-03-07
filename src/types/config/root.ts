@@ -6,18 +6,10 @@ import { BrandingOptionsConfigType } from "./branding-options";
 import { UserConfigListType } from "./users";
 import { StartupConfigType } from "./startup";
 import { PluginConfigListType } from "./plugins";
+import { NetworkingConfigType } from "./networking";
+import { ApiKeyConfigListType } from "./api-keys";
 
-export const RootConfigType: z.ZodObject<{
-  version: z.ZodNumber;
-  base_url: z.ZodURL;
-  system: typeof SystemConfigType;
-  encoding: z.ZodOptional<typeof EncodingOptionsConfigType>;
-  library: z.ZodOptional<typeof LibraryConfigType>;
-  branding: z.ZodOptional<typeof BrandingOptionsConfigType>;
-  users: z.ZodOptional<typeof UserConfigListType>;
-  plugins: z.ZodOptional<typeof PluginConfigListType>;
-  startup: z.ZodOptional<typeof StartupConfigType>;
-}> = z
+export const RootConfigType = z
   .object({
     version: z.number().int().positive("Version must be a positive integer"),
     base_url: z.url({ message: "Base URL must be a valid URL" }),
@@ -28,6 +20,8 @@ export const RootConfigType: z.ZodObject<{
     users: UserConfigListType.optional(),
     plugins: PluginConfigListType.optional(),
     startup: StartupConfigType.optional(),
+    networking: NetworkingConfigType.optional(),
+    api_keys: ApiKeyConfigListType.optional(),
   })
   .strict();
 

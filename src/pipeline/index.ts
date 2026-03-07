@@ -5,7 +5,14 @@ import {
   calculateEncodingDiff,
   applyEncoding,
 } from "../apply/encoding-options";
-import { calculateLibraryDiff, applyLibrary } from "../apply/library";
+import {
+  calculateLibraryDiff,
+  calculateLibraryOptionsDiff,
+  applyLibrary,
+  applyLibraryOptions,
+  purgeLibraries,
+} from "../apply/library";
+import type { LibraryOptionsUpdate } from "../apply/library";
 import {
   calculateBrandingOptionsDiff,
   applyBrandingOptions,
@@ -16,12 +23,23 @@ import {
   applyUserPolicies,
   createNewUsers,
 } from "../apply/users";
+import {
+  calculateNetworkingDiff,
+  applyNetworking,
+} from "../apply/networking";
+import {
+  calculateApiKeysToCreate,
+  createApiKeys,
+} from "../apply/api-keys";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
 import { type ServerConfigurationSchema } from "../types/schema/system";
 import { type EncodingOptionsSchema } from "../types/schema/encoding-options";
 import { type BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type { UserDtoSchema, UserPolicySchema } from "../types/schema/users";
+import type { NetworkConfigurationSchema } from "../types/schema/networking";
+import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import type { UserConfig } from "../types/config/users";
+import type { ApiKeyConfig } from "../types/config/api-keys";
 import { createJellyfinClient } from "../api/jellyfin_client";
 import { type JellyfinClient } from "../api/jellyfin.types";
 import { RootConfigType, type RootConfig } from "../types/config/root";
@@ -96,17 +114,41 @@ export async function runPipeline(path: string): Promise<void> {
   }
 
   if (cfg.library?.virtualFolders) {
-    const currentVirtualFolders: VirtualFolderInfoSchema[] =
+    let currentVirtualFolders: VirtualFolderInfoSchema[] =
       await jellyfinClient.getVirtualFolders();
+
+    if (cfg.library.purgeExistingLibraries && currentVirtualFolders.length > 0) {
+      console.log("→ purging existing libraries");
+      await purgeLibraries(jellyfinClient, currentVirtualFolders);
+      console.log("✓ purged existing libraries");
+      currentVirtualFolders = [];
+    }
+
     const foldersToCreate: VirtualFolderInfoSchema[] | undefined =
       calculateLibraryDiff(currentVirtualFolders, cfg.library.virtualFolders);
 
     if (foldersToCreate) {
-      console.log("→ updating library config");
+      console.log("→ creating new libraries");
       await applyLibrary(jellyfinClient, foldersToCreate);
-      console.log("✓ updated library config");
+      console.log("✓ created new libraries");
     } else {
-      console.log("✓ library config already up to date");
+      console.log("✓ libraries already exist");
+    }
+
+    const updatedFolders: VirtualFolderInfoSchema[] =
+      foldersToCreate
+        ? await jellyfinClient.getVirtualFolders()
+        : currentVirtualFolders;
+
+    const libraryOptionsUpdates: LibraryOptionsUpdate[] | undefined =
+      calculateLibraryOptionsDiff(updatedFolders, cfg.library.virtualFolders);
+
+    if (libraryOptionsUpdates) {
+      console.log("→ updating library options");
+      await applyLibraryOptions(jellyfinClient, libraryOptionsUpdates);
+      console.log("✓ updated library options");
+    } else {
+      console.log("✓ library options already up to date");
     }
   }
 
@@ -123,6 +165,38 @@ export async function runPipeline(path: string): Promise<void> {
       console.log("✓ updated branding config");
     } else {
       console.log("✓ branding config already up to date");
+    }
+  }
+
+  if (cfg.networking) {
+    const currentNetworkingSchema: NetworkConfigurationSchema =
+      await jellyfinClient.getNetworkingConfiguration();
+
+    const updatedNetworkingSchema: NetworkConfigurationSchema | undefined =
+      calculateNetworkingDiff(currentNetworkingSchema, cfg.networking);
+
+    if (updatedNetworkingSchema) {
+      console.log("→ updating networking config");
+      await applyNetworking(jellyfinClient, updatedNetworkingSchema);
+      console.log("✓ updated networking config");
+    } else {
+      console.log("✓ networking config already up to date");
+    }
+
+    if (cfg.networking.corsHosts !== undefined) {
+      const currentSystemConfig: ServerConfigurationSchema =
+        await jellyfinClient.getSystemConfiguration();
+      const currentCorsHosts = currentSystemConfig.CorsHosts ?? [];
+      const desiredCorsHosts = cfg.networking.corsHosts;
+
+      if (JSON.stringify(currentCorsHosts) !== JSON.stringify(desiredCorsHosts)) {
+        console.log("→ updating CORS hosts");
+        await jellyfinClient.updateSystemConfiguration({
+          ...currentSystemConfig,
+          CorsHosts: desiredCorsHosts,
+        });
+        console.log("✓ updated CORS hosts");
+      }
     }
   }
 
@@ -188,6 +262,22 @@ export async function runPipeline(path: string): Promise<void> {
       console.log("✓ updated plugin configurations");
     } else {
       console.log("✓ plugin configurations already up to date");
+    }
+  }
+
+  if (cfg.api_keys) {
+    const currentApiKeys: AuthenticationInfoSchema[] =
+      await jellyfinClient.getApiKeys();
+
+    const keysToCreate: ApiKeyConfig[] | undefined =
+      calculateApiKeysToCreate(currentApiKeys, cfg.api_keys);
+
+    if (keysToCreate) {
+      console.log("→ creating API keys");
+      await createApiKeys(jellyfinClient, keysToCreate);
+      console.log("✓ created API keys");
+    } else {
+      console.log("✓ API keys already up to date");
     }
   }
 

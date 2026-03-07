@@ -25,6 +25,10 @@ describe("mappers/library", () => {
         CollectionType: "movies",
         LibraryOptions: {
           PathInfos: [{ Path: "/data/movies" }],
+          SaveLyricsWithMedia: false,
+          SaveTrickplayWithMedia: false,
+          PreferNonstandardArtistsTag: false,
+          UseCustomTagDelimiters: false,
         },
       });
     });

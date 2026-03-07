@@ -10,3 +10,6 @@ export type CollectionTypeSchema = NonNullable<
 >;
 export type LibraryOptionsSchema = components["schemas"]["LibraryOptions"];
 export type MediaPathInfoSchema = components["schemas"]["MediaPathInfo"];
+export type TypeOptionsSchema = components["schemas"]["TypeOptions"];
+export type UpdateLibraryOptionsDtoSchema =
+  components["schemas"]["UpdateLibraryOptionsDto"];
