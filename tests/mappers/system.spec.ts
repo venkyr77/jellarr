@@ -188,9 +188,11 @@ describe("mappers/system", () => {
     it("should map trickplayOptions to TrickplayOptions", () => {
       // Arrange
       const config: SystemConfig = {
+        serverName: "MyServer",
         trickplayOptions: {
           enableHwAcceleration: true,
           enableHwEncoding: false,
+          processThreads: 2,
         },
       };
 
@@ -200,9 +202,11 @@ describe("mappers/system", () => {
 
       // Assert
       expect(result).toEqual({
+        ServerName: "MyServer",
         TrickplayOptions: {
           EnableHwAcceleration: true,
           EnableHwEncoding: false,
+          ProcessThreads: 2,
         },
       });
     });

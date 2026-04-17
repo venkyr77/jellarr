@@ -71,11 +71,38 @@ export async function runDump(baseUrl: string): Promise<void> {
     }),
   );
 
+  const folderIdToNameMap: Map<string, string> = new Map(
+    virtualFolders
+      .map((folder: VirtualFolderInfoSchema) => {
+        const name: string | undefined = folder.Name ?? undefined;
+        const id: string | undefined =
+          (folder as { Id?: string }).Id ??
+          (folder as { ItemId?: string | null }).ItemId ??
+          undefined;
+        return name && id ? [id, name] : undefined;
+      })
+      .filter(
+        (
+          entry: [string, string] | undefined | [string, string | undefined],
+        ): entry is [string, string] => Array.isArray(entry),
+      ),
+  );
+
+  const resolveEnabledFolders = (
+    enabledFolderIds: string[] | null | undefined,
+  ): string[] | undefined => {
+    if (!enabledFolderIds) return undefined;
+    return enabledFolderIds.map(
+      (folderId: string) => folderIdToNameMap.get(folderId) ?? folderId,
+    );
+  };
+
   const config: object = {
     version: 1,
     base_url: baseUrl,
 
     system: {
+      serverName: systemConfig.ServerName,
       enableMetrics: systemConfig.EnableMetrics,
       pluginRepositories: systemConfig.PluginRepositories?.map(
         (repo: PluginRepositorySchema) => ({
@@ -88,6 +115,7 @@ export async function runDump(baseUrl: string): Promise<void> {
         enableHwAcceleration:
           systemConfig.TrickplayOptions?.EnableHwAcceleration,
         enableHwEncoding: systemConfig.TrickplayOptions?.EnableHwEncoding,
+        processThreads: systemConfig.TrickplayOptions?.ProcessThreads,
       },
     },
 
@@ -118,6 +146,33 @@ export async function runDump(baseUrl: string): Promise<void> {
             folder.LibraryOptions?.PathInfos?.map((p: MediaPathInfoSchema) => ({
               path: p.Path ?? "",
             })) ?? [],
+          typeOptions: folder.LibraryOptions?.TypeOptions?.map((typeOpt) => ({
+            type: typeOpt.Type ?? "",
+            metadataFetchers: typeOpt.MetadataFetchers ?? [],
+            metadataFetcherOrder: typeOpt.MetadataFetcherOrder ?? undefined,
+            imageFetchers: typeOpt.ImageFetchers ?? [],
+            imageFetcherOrder: typeOpt.ImageFetcherOrder ?? undefined,
+          })),
+          automaticallyAddToCollection:
+            folder.LibraryOptions?.AutomaticallyAddToCollection,
+          enableChapterImageExtraction:
+            folder.LibraryOptions?.EnableChapterImageExtraction,
+          extractChapterImagesDuringLibraryScan:
+            folder.LibraryOptions?.ExtractChapterImagesDuringLibraryScan,
+          extractTrickplayImagesDuringLibraryScan:
+            folder.LibraryOptions?.ExtractTrickplayImagesDuringLibraryScan,
+          enableEmbeddedEpisodeInfos:
+            folder.LibraryOptions?.EnableEmbeddedEpisodeInfos,
+          enableEmbeddedExtraTitles:
+            folder.LibraryOptions?.EnableEmbeddedExtrasTitles,
+          enableTrickplayImageExtraction:
+            folder.LibraryOptions?.EnableTrickplayImageExtraction,
+          saveTrickplayWithMedia: folder.LibraryOptions?.SaveTrickplayWithMedia,
+          metadataSavers: folder.LibraryOptions?.MetadataSavers ?? undefined,
+          saveLocalMetadata: folder.LibraryOptions?.SaveLocalMetadata,
+          automaticRefreshIntervalDays:
+            folder.LibraryOptions?.AutomaticRefreshIntervalDays,
+          enableRealtimeMonitor: folder.LibraryOptions?.EnableRealtimeMonitor,
         },
       })),
     },
@@ -133,7 +188,14 @@ export async function runDump(baseUrl: string): Promise<void> {
       policy: {
         isAdministrator: user.Policy?.IsAdministrator,
         loginAttemptsBeforeLockout: user.Policy?.LoginAttemptsBeforeLockout,
+        enableAllFolders: user.Policy?.EnableAllFolders,
+        enableCollectionManagement: user.Policy?.EnableCollectionManagement,
+        maxActiveSessions: user.Policy?.MaxActiveSessions,
+        enabledLibraries: resolveEnabledFolders(user.Policy?.EnabledFolders),
       },
+      displayMissingEpisodes: user.Configuration?.DisplayMissingEpisodes,
+      subtitleLanguagePreference:
+        user.Configuration?.SubtitleLanguagePreference,
     })),
 
     plugins: pluginsWithConfig,

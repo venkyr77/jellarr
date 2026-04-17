@@ -227,6 +227,108 @@ in [
       ];
     })
 
+  (assertEq "typeOptions are mapped when provided" (mkLibraryConfig {
+      virtualFolders = [
+        {
+          name = "Movies";
+          collectionType = "movies";
+          libraryOptions = {
+            pathInfos = [{path = "/data/movies";}];
+            typeOptions = [
+              {
+                type = "Movie";
+                metadataFetchers = ["TheMovieDB"];
+                imageFetchers = ["TheMovieDB"];
+              }
+            ];
+            automaticallyAddToCollection = true;
+            enableChapterImageExtraction = true;
+            extractChapterImagesDuringLibraryScan = true;
+            extractTrickplayImagesDuringLibraryScan = true;
+            enableEmbeddedEpisodeInfos = true;
+            enableEmbeddedExtraTitles = true;
+            enableTrickplayImageExtraction = true;
+            saveTrickplayWithMedia = true;
+            metadataSavers = ["Nfo"];
+            saveLocalMetadata = true;
+            automaticRefreshIntervalDays = 14;
+            enableRealtimeMonitor = true;
+          };
+        }
+      ];
+    }) {
+      virtualFolders = [
+        {
+          name = "Movies";
+          collectionType = "movies";
+          libraryOptions = {
+            pathInfos = [{path = "/data/movies";}];
+            typeOptions = [
+              {
+                type = "Movie";
+                metadataFetchers = ["TheMovieDB"];
+                metadataFetcherOrder = ["TheMovieDB"];
+                imageFetchers = ["TheMovieDB"];
+                imageFetcherOrder = ["TheMovieDB"];
+              }
+            ];
+            automaticallyAddToCollection = true;
+            enableChapterImageExtraction = true;
+            extractChapterImagesDuringLibraryScan = true;
+            extractTrickplayImagesDuringLibraryScan = true;
+            enableEmbeddedEpisodeInfos = true;
+            enableEmbeddedExtraTitles = true;
+            enableTrickplayImageExtraction = true;
+            saveTrickplayWithMedia = true;
+            metadataSavers = ["Nfo"];
+            saveLocalMetadata = true;
+            automaticRefreshIntervalDays = 14;
+            enableRealtimeMonitor = true;
+          };
+        }
+      ];
+    })
+
+  (assertEq "typeOptions orders fallback when null" (mkLibraryConfig {
+      virtualFolders = [
+        {
+          name = "Movies";
+          collectionType = "movies";
+          libraryOptions = {
+            pathInfos = [{path = "/data/movies";}];
+            typeOptions = [
+              {
+                type = "Movie";
+                metadataFetchers = ["TheMovieDB"];
+                metadataFetcherOrder = null;
+                imageFetchers = ["TheMovieDB"];
+                imageFetcherOrder = null;
+              }
+            ];
+          };
+        }
+      ];
+    }) {
+      virtualFolders = [
+        {
+          name = "Movies";
+          collectionType = "movies";
+          libraryOptions = {
+            pathInfos = [{path = "/data/movies";}];
+            typeOptions = [
+              {
+                type = "Movie";
+                metadataFetchers = ["TheMovieDB"];
+                metadataFetcherOrder = ["TheMovieDB"];
+                imageFetchers = ["TheMovieDB"];
+                imageFetcherOrder = ["TheMovieDB"];
+              }
+            ];
+          };
+        }
+      ];
+    })
+
   (assertEq "empty virtualFolders array" (mkLibraryConfig {virtualFolders = [];}) {virtualFolders = [];})
 
   (assertThrows "reject empty pathInfos" (mkLibraryConfig {

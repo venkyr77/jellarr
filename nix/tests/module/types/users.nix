@@ -153,6 +153,89 @@ in [
       }
     ])
 
+  (assertEq "policy maxActiveSessions only" (mkUsersConfig [
+      {
+        name = "user";
+        password = "pass";
+        passwordFile = null;
+        policy = {
+          maxActiveSessions = 2;
+        };
+      }
+    ]) [
+      {
+        name = "user";
+        password = "pass";
+        policy = {maxActiveSessions = 2;};
+      }
+    ])
+
+  (assertEq "policy enableAllFolders only" (mkUsersConfig [
+      {
+        name = "user";
+        password = "pass";
+        passwordFile = null;
+        policy = {
+          enableAllFolders = true;
+        };
+      }
+    ]) [
+      {
+        name = "user";
+        password = "pass";
+        policy = {enableAllFolders = true;};
+      }
+    ])
+
+  (assertEq "policy enableCollectionManagement only" (mkUsersConfig [
+      {
+        name = "user";
+        password = "pass";
+        passwordFile = null;
+        policy = {
+          enableCollectionManagement = true;
+        };
+      }
+    ]) [
+      {
+        name = "user";
+        password = "pass";
+        policy = {enableCollectionManagement = true;};
+      }
+    ])
+
+  (assertEq "displayMissingEpisodes only" (mkUsersConfig [
+      {
+        name = "user";
+        password = "pass";
+        passwordFile = null;
+        policy = null;
+        displayMissingEpisodes = true;
+      }
+    ]) [
+      {
+        name = "user";
+        password = "pass";
+        displayMissingEpisodes = true;
+      }
+    ])
+
+  (assertEq "subtitleLanguagePreference only" (mkUsersConfig [
+      {
+        name = "user";
+        password = "pass";
+        passwordFile = null;
+        policy = null;
+        subtitleLanguagePreference = "eng";
+      }
+    ]) [
+      {
+        name = "user";
+        password = "pass";
+        subtitleLanguagePreference = "eng";
+      }
+    ])
+
   (assertEq "empty policy" (mkUsersConfig [
       {
         name = "user";
@@ -213,6 +296,25 @@ in [
       }
     ])
 
+  (assertEq "policy with enabledLibraries" (mkUsersConfig [
+      {
+        name = "user";
+        password = "pass";
+        passwordFile = null;
+        policy = {
+          enabledLibraries = ["Movies" "Shows"];
+        };
+      }
+    ]) [
+      {
+        name = "user";
+        password = "pass";
+        policy = {
+          enabledLibraries = ["Movies" "Shows"];
+        };
+      }
+    ])
+
   (assertEq "list with users having policies" (mkUsersConfig [
       {
         name = "admin";
@@ -247,6 +349,17 @@ in [
         };
       }
     ])
+
+  (assertThrows "reject empty enabledLibraries entry" (mkUsersConfig [
+    {
+      name = "user";
+      password = "pass";
+      passwordFile = null;
+      policy = {
+        enabledLibraries = [""];
+      };
+    }
+  ]))
 
   (assertThrows "reject list with invalid policy" (mkUsersConfig [
     {

@@ -27,6 +27,7 @@ export function toTrickplayOptionsSchema(
   const out: TrickplayOptionsSchema = {};
   out.EnableHwAcceleration = cfg.enableHwAcceleration;
   out.EnableHwEncoding = cfg.enableHwEncoding;
+  out.ProcessThreads = cfg.processThreads;
   return out;
 }
 
@@ -34,6 +35,10 @@ export function mapSystemConfigurationConfigToSchema(
   desired: SystemConfig,
 ): Partial<ServerConfigurationSchema> {
   const out: Partial<ServerConfigurationSchema> = {};
+
+  if (desired.serverName !== undefined) {
+    out.ServerName = desired.serverName;
+  }
 
   if (desired.enableMetrics !== undefined) {
     out.EnableMetrics = desired.enableMetrics;

@@ -270,7 +270,13 @@ users:
     policy:
       isAdministrator: true
       loginAttemptsBeforeLockout: 3
+      enabledLibraries:
+        - "Movies"
+        - "Shows"
 ```
+
+`policy.enabledLibraries` accepts library names; jellarr resolves them to folder
+IDs when talking to the Jellyfin API.
 
 **Password Security:**
 
@@ -517,6 +523,9 @@ users:
     policy:
       isAdministrator: true
       loginAttemptsBeforeLockout: 3
+      enabledLibraries:
+        - "Movies"
+        - "Shows"
 plugins:
   - name: "Trakt"
     configuration:

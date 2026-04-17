@@ -17,6 +17,14 @@ export function calculateSystemDiff(
     ...new ChangeSetBuilder(
       diff(current, next, { treatTypeChangeAsReplace: false }),
     )
+      .withKey("ServerName")
+      .withoutRemoves()
+      .atomize()
+      .toArray(),
+
+    ...new ChangeSetBuilder(
+      diff(current, next, { treatTypeChangeAsReplace: false }),
+    )
       .withKey("EnableMetrics")
       .withoutRemoves()
       .atomize()
