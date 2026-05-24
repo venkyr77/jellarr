@@ -8,12 +8,17 @@
   inherit (types.system) mkSystemConfig;
 
   nullConfig = {
+    serverName = null;
     enableMetrics = null;
     pluginRepositories = null;
     trickplayOptions = null;
   };
 in [
   (assertEq "empty config" (mkSystemConfig nullConfig) {})
+
+  (assertEq "serverName only" (mkSystemConfig (nullConfig // {serverName = "MyServer";})) {
+    serverName = "MyServer";
+  })
 
   (assertEq "enableMetrics true" (mkSystemConfig (nullConfig // {enableMetrics = true;})) {
     enableMetrics = true;
@@ -35,6 +40,7 @@ in [
       trickplayOptions = {
         enableHwAcceleration = true;
         enableHwEncoding = false;
+        processThreads = 2;
       };
     }) {
       enableMetrics = true;
@@ -48,6 +54,7 @@ in [
       trickplayOptions = {
         enableHwAcceleration = true;
         enableHwEncoding = false;
+        processThreads = 2;
       };
     })
 
@@ -151,5 +158,16 @@ in [
       enableHwAcceleration = false;
       enableHwEncoding = true;
     };
+  })
+
+  (assertEq "trickplay processThreads only" (mkSystemConfig (nullConfig
+    // {
+      trickplayOptions = {
+        enableHwAcceleration = null;
+        enableHwEncoding = null;
+        processThreads = 3;
+      };
+    })) {
+    trickplayOptions = {processThreads = 3;};
   })
 ]

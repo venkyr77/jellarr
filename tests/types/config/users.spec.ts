@@ -380,6 +380,9 @@ describe("UserPolicyConfig", () => {
     const validConfig: z.input<typeof UserPolicyConfigType> = {
       isAdministrator: true,
       loginAttemptsBeforeLockout: 5,
+      enableAllFolders: true,
+      enableCollectionManagement: false,
+      enabledLibraries: ["Movies", "TV Shows"],
     };
 
     // Act
@@ -485,6 +488,31 @@ describe("UserPolicyConfig", () => {
     }
   });
 
+  it("should reject empty enabledLibraries entries", () => {
+    const invalidConfig: z.input<typeof UserPolicyConfigType> = {
+      enabledLibraries: [""],
+    };
+
+    const result: ZodSafeParseResult<UserPolicyConfig> =
+      UserPolicyConfigType.safeParse(invalidConfig);
+
+    expect(result.success).toBe(false);
+  });
+
+  it("should allow empty enabledLibraries array", () => {
+    const validConfig: z.input<typeof UserPolicyConfigType> = {
+      enabledLibraries: [],
+    };
+
+    const result: ZodSafeParseResult<UserPolicyConfig> =
+      UserPolicyConfigType.safeParse(validConfig);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
   it("should reject non-boolean policy fields", () => {
     // Arrange
     const invalidConfigs: Array<z.input<typeof UserPolicyConfigType>> = [
@@ -514,7 +542,11 @@ describe("UserConfig with policy", () => {
       policy: {
         isAdministrator: true,
         loginAttemptsBeforeLockout: 3,
+        enableAllFolders: false,
+        enableCollectionManagement: true,
+        enabledLibraries: ["Movies"],
       },
+      maxActiveSessions: 2,
     };
 
     // Act

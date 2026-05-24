@@ -203,6 +203,7 @@ describe("TrickplayOptionsConfig", () => {
     const validConfig: z.input<typeof TrickplayOptionsConfigType> = {
       enableHwAcceleration: false,
       enableHwEncoding: true,
+      processThreads: 4,
     };
 
     // Act
@@ -229,5 +230,20 @@ describe("TrickplayOptionsConfig", () => {
 
     // Assert
     expect(result.success).toBe(false);
+  });
+});
+
+describe("SystemConfigType", () => {
+  it("should allow serverName", () => {
+    const config: z.input<typeof SystemConfigType> = {
+      serverName: "MyServer",
+    };
+
+    const result = SystemConfigType.safeParse(config);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.serverName).toBe("MyServer");
+    }
   });
 });

@@ -15,6 +15,26 @@
         default = null;
         description = "Number of login attempts before lockout (minimum 1).";
       };
+      enabledLibraries = mkOption {
+        type = nullOr (types.listOf types.str);
+        default = null;
+        description = "List of library names the user can access.";
+      };
+      enableAllFolders = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to access all folders.";
+      };
+      enableCollectionManagement = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to manage collections.";
+      };
+      maxActiveSessions = mkOption {
+        type = nullOr types.int;
+        default = null;
+        description = "Maximum concurrent active sessions for the user.";
+      };
     };
   };
 
@@ -39,31 +59,56 @@
         default = null;
         description = "User policy configuration.";
       };
+      displayMissingEpisodes = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Show missing episodes for the user.";
+      };
+      subtitleLanguagePreference = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = "Subtitle language preference code.";
+      };
     };
   };
 
   usersConfigType = nullOr (types.listOf userConfigType);
 
-  mkUserPolicyConfig = cfg:
+  mkUserPolicyConfig = cfg: let
+    c =
+      if cfg == null
+      then {}
+      else cfg;
+  in
     {}
-    // optionalAttrs (cfg.isAdministrator != null) {inherit (cfg) isAdministrator;}
-    // optionalAttrs (cfg.loginAttemptsBeforeLockout != null) (
-      assert cfg.loginAttemptsBeforeLockout
+    // optionalAttrs (c ? isAdministrator && c.isAdministrator != null) {inherit (c) isAdministrator;}
+    // optionalAttrs (c ? loginAttemptsBeforeLockout && c.loginAttemptsBeforeLockout != null) (
+      assert c.loginAttemptsBeforeLockout
       >= 1
-      || throw "loginAttemptsBeforeLockout must be at least 1"; {inherit (cfg) loginAttemptsBeforeLockout;}
-    );
+      || throw "loginAttemptsBeforeLockout must be at least 1"; {inherit (c) loginAttemptsBeforeLockout;}
+    )
+    // optionalAttrs (c ? enabledLibraries && c.enabledLibraries != null) (
+      assert lib.all (library: library != "" || throw "enabledLibraries entries cannot be empty") c.enabledLibraries; {inherit (c) enabledLibraries;}
+    )
+    // optionalAttrs (c ? enableAllFolders && c.enableAllFolders != null) {inherit (c) enableAllFolders;}
+    // optionalAttrs (c ? enableCollectionManagement && c.enableCollectionManagement != null) {inherit (c) enableCollectionManagement;}
+    // optionalAttrs (c ? maxActiveSessions && c.maxActiveSessions != null) {inherit (c) maxActiveSessions;};
 
   mkUsersConfig = cfg:
-    map (user:
-      assert user.name != "" || throw "User name cannot be empty";
-      assert (user.password != null)
-      != (user.passwordFile != null)
-      || throw "User '${user.name}' must specify exactly one of 'password' or 'passwordFile'";
-        {}
-        // {inherit (user) name;}
-        // optionalAttrs (user.password != null) {inherit (user) password;}
-        // optionalAttrs (user.passwordFile != null) {inherit (user) passwordFile;}
-        // optionalAttrs (user.policy != null) {policy = mkUserPolicyConfig user.policy;})
+    map (
+      user:
+        assert user.name != "" || throw "User name cannot be empty";
+        assert (user.password != null)
+        != (user.passwordFile != null)
+        || throw "User '${user.name}' must specify exactly one of 'password' or 'passwordFile'";
+          {}
+          // {inherit (user) name;}
+          // optionalAttrs (user.password != null) {inherit (user) password;}
+          // optionalAttrs (user.passwordFile != null) {inherit (user) passwordFile;}
+          // optionalAttrs (user.policy != null) {policy = mkUserPolicyConfig user.policy;}
+          // optionalAttrs (user ? displayMissingEpisodes && user.displayMissingEpisodes != null) {inherit (user) displayMissingEpisodes;}
+          // optionalAttrs (user ? subtitleLanguagePreference && user.subtitleLanguagePreference != null) {inherit (user) subtitleLanguagePreference;}
+    )
     cfg;
 in {
   inherit usersConfigType mkUsersConfig;

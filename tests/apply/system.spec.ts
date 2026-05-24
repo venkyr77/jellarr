@@ -51,6 +51,68 @@ describe("apply/system", () => {
   });
 
   describe("calculateSystemDiff", () => {
+    describe("serverName (Scalar String)", () => {
+      it("should preserve ServerName when serverName is undefined", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          ServerName: "CurrentServer",
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: undefined,
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {};
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert
+        expect(result).toBeUndefined();
+      });
+
+      it("should update ServerName when serverName changes", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          ServerName: "OldServer",
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: undefined,
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = { serverName: "NewServer" };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert
+        expect(result?.ServerName).toBe("NewServer");
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.PluginRepositories).toEqual([]);
+        expect(result?.TrickplayOptions).toBeUndefined();
+      });
+
+      it("should not modify ServerName when value is the same", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          ServerName: "SameServer",
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: undefined,
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = { serverName: "SameServer" };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert
+        expect(result).toBeUndefined();
+      });
+    });
+
     describe("enableMetrics (Scalar Boolean)", () => {
       it("should preserve EnableMetrics when enableMetrics is undefined (current: true)", () => {
         // Arrange

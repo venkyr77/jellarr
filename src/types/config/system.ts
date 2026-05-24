@@ -15,14 +15,17 @@ export type PluginRepositoryConfig = z.infer<typeof PluginRepositoryConfigType>;
 export const TrickplayOptionsConfigType: z.ZodObject<{
   enableHwAcceleration: z.ZodOptional<z.ZodBoolean>;
   enableHwEncoding: z.ZodOptional<z.ZodBoolean>;
+  processThreads: z.ZodOptional<z.ZodNumber>;
 }> = z.object({
   enableHwAcceleration: z.boolean().optional(),
   enableHwEncoding: z.boolean().optional(),
+  processThreads: z.number().int().positive().optional(),
 });
 
 export type TrickplayOptionsConfig = z.infer<typeof TrickplayOptionsConfigType>;
 
 export const SystemConfigType: z.ZodObject<{
+  serverName: z.ZodOptional<z.ZodString>;
   enableMetrics: z.ZodOptional<z.ZodBoolean>;
   pluginRepositories: z.ZodOptional<
     z.ZodArray<typeof PluginRepositoryConfigType>
@@ -30,6 +33,7 @@ export const SystemConfigType: z.ZodObject<{
   trickplayOptions: z.ZodOptional<typeof TrickplayOptionsConfigType>;
 }> = z
   .object({
+    serverName: z.string().min(1).optional(),
     enableMetrics: z.boolean().optional(),
     pluginRepositories: z.array(PluginRepositoryConfigType).optional(),
     trickplayOptions: TrickplayOptionsConfigType.optional(),

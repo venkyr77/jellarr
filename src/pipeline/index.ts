@@ -5,7 +5,11 @@ import {
   calculateEncodingDiff,
   applyEncoding,
 } from "../apply/encoding-options";
-import { calculateLibraryDiff, applyLibrary } from "../apply/library";
+import {
+  calculateLibraryDiff,
+  applyLibrary,
+  type LibraryDiff,
+} from "../apply/library";
 import {
   calculateBrandingOptionsDiff,
   applyBrandingOptions,
@@ -15,6 +19,8 @@ import {
   calculateUserPoliciesDiff,
   applyUserPolicies,
   createNewUsers,
+  calculateUserConfigurationsDiff,
+  applyUserConfigurations,
 } from "../apply/users";
 import type { VirtualFolderInfoSchema } from "../types/schema/library";
 import { type ServerConfigurationSchema } from "../types/schema/system";
@@ -63,6 +69,7 @@ export async function runPipeline(path: string): Promise<void> {
 
   const currentServerConfigurationSchema: ServerConfigurationSchema =
     await jellyfinClient.getSystemConfiguration();
+  let currentVirtualFolders: VirtualFolderInfoSchema[] | undefined;
 
   const updatedServerConfigurationSchema:
     | ServerConfigurationSchema
@@ -96,15 +103,17 @@ export async function runPipeline(path: string): Promise<void> {
   }
 
   if (cfg.library?.virtualFolders) {
-    const currentVirtualFolders: VirtualFolderInfoSchema[] =
-      await jellyfinClient.getVirtualFolders();
-    const foldersToCreate: VirtualFolderInfoSchema[] | undefined =
-      calculateLibraryDiff(currentVirtualFolders, cfg.library.virtualFolders);
+    currentVirtualFolders = await jellyfinClient.getVirtualFolders();
+    const libraryDiff: LibraryDiff | undefined = calculateLibraryDiff(
+      currentVirtualFolders,
+      cfg.library.virtualFolders,
+    );
 
-    if (foldersToCreate) {
+    if (libraryDiff) {
       console.log("→ updating library config");
-      await applyLibrary(jellyfinClient, foldersToCreate);
+      await applyLibrary(jellyfinClient, libraryDiff);
       console.log("✓ updated library config");
+      currentVirtualFolders = await jellyfinClient.getVirtualFolders();
     } else {
       console.log("✓ library config already up to date");
     }
@@ -127,6 +136,16 @@ export async function runPipeline(path: string): Promise<void> {
   }
 
   if (cfg.users) {
+    if (
+      !currentVirtualFolders &&
+      cfg.users.some(
+        (userConfig: UserConfig) =>
+          typeof userConfig.policy?.enabledLibraries !== "undefined",
+      )
+    ) {
+      currentVirtualFolders = await jellyfinClient.getVirtualFolders();
+    }
+
     let currentUsers: UserDtoSchema[] = await jellyfinClient.getUsers();
 
     const usersToCreate: UserConfig[] | undefined = calculateNewUsersDiff(
@@ -142,7 +161,11 @@ export async function runPipeline(path: string): Promise<void> {
     }
 
     const userPoliciesToUpdate: Map<string, UserPolicySchema> | undefined =
-      calculateUserPoliciesDiff(currentUsers, cfg.users);
+      calculateUserPoliciesDiff(currentUsers, cfg.users, currentVirtualFolders);
+    const userConfigurationsToUpdate = calculateUserConfigurationsDiff(
+      currentUsers,
+      cfg.users,
+    );
 
     if (userPoliciesToUpdate) {
       console.log("→ updating user policies");
@@ -150,6 +173,14 @@ export async function runPipeline(path: string): Promise<void> {
       console.log("✓ updated user policies");
     } else {
       console.log("✓ user policies already up to date");
+    }
+
+    if (userConfigurationsToUpdate) {
+      console.log("→ updating user configurations");
+      await applyUserConfigurations(jellyfinClient, userConfigurationsToUpdate);
+      console.log("✓ updated user configurations");
+    } else {
+      console.log("✓ user configurations already up to date");
     }
   }
 

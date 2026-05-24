@@ -30,6 +30,106 @@ describe("types/config/library", () => {
       expect(parsed.libraryOptions.pathInfos[0].path).toBe("/data/movies");
     });
 
+    it("should accept valid typeOptions definitions", () => {
+      const config: z.input<typeof VirtualFolderConfigType> = {
+        name: "Movies",
+        collectionType: "movies",
+        libraryOptions: {
+          pathInfos: [{ path: "/data/movies" }],
+          typeOptions: [
+            {
+              type: "Movie",
+              metadataFetchers: ["TheMovieDB"],
+              imageFetchers: ["TheMovieDB"],
+            },
+          ],
+          automaticallyAddToCollection: true,
+          enableChapterImageExtraction: true,
+          extractChapterImagesDuringLibraryScan: true,
+          extractTrickplayImagesDuringLibraryScan: true,
+          enableEmbeddedEpisodeInfos: true,
+          enableEmbeddedExtraTitles: true,
+          enableTrickplayImageExtraction: true,
+          saveTrickplayWithMedia: true,
+          metadataSavers: ["Nfo"],
+          saveLocalMetadata: true,
+          automaticRefreshIntervalDays: 14,
+          enableRealtimeMonitor: true,
+        },
+      };
+
+      const parsed: VirtualFolderConfig = VirtualFolderConfigType.parse(config);
+      expect(parsed.libraryOptions.typeOptions).toHaveLength(1);
+      expect(parsed.libraryOptions.typeOptions?.[0].type).toBe("Movie");
+      expect(parsed.libraryOptions.typeOptions?.[0].metadataFetchers).toEqual([
+        "TheMovieDB",
+      ]);
+      expect(parsed.libraryOptions.typeOptions?.[0].imageFetchers).toEqual([
+        "TheMovieDB",
+      ]);
+      expect(parsed.libraryOptions.automaticallyAddToCollection).toBe(true);
+      expect(parsed.libraryOptions.enableChapterImageExtraction).toBe(true);
+      expect(parsed.libraryOptions.extractChapterImagesDuringLibraryScan).toBe(
+        true,
+      );
+      expect(
+        parsed.libraryOptions.extractTrickplayImagesDuringLibraryScan,
+      ).toBe(true);
+      expect(parsed.libraryOptions.enableEmbeddedEpisodeInfos).toBe(true);
+      expect(parsed.libraryOptions.enableEmbeddedExtraTitles).toBe(true);
+      expect(parsed.libraryOptions.enableTrickplayImageExtraction).toBe(true);
+      expect(parsed.libraryOptions.saveTrickplayWithMedia).toBe(true);
+      expect(parsed.libraryOptions.metadataSavers).toEqual(["Nfo"]);
+      expect(parsed.libraryOptions.saveLocalMetadata).toBe(true);
+      expect(parsed.libraryOptions.automaticRefreshIntervalDays).toBe(14);
+      expect(parsed.libraryOptions.enableRealtimeMonitor).toBe(true);
+    });
+
+    it("should allow empty fetcher arrays in typeOptions", () => {
+      const config: z.input<typeof VirtualFolderConfigType> = {
+        name: "Movies",
+        collectionType: "movies",
+        libraryOptions: {
+          pathInfos: [{ path: "/data/movies" }],
+          typeOptions: [
+            {
+              type: "Movie",
+              metadataFetchers: [],
+              imageFetchers: [],
+            },
+          ],
+        },
+      };
+
+      expect(() => VirtualFolderConfigType.parse(config)).not.toThrow();
+      const parsed: VirtualFolderConfig = VirtualFolderConfigType.parse(config);
+      expect(parsed.libraryOptions.typeOptions?.[0].metadataFetchers).toEqual(
+        [],
+      );
+      expect(parsed.libraryOptions.typeOptions?.[0].imageFetchers).toEqual([]);
+    });
+
+    it("should accept null fetcher order arrays in typeOptions", () => {
+      const config: z.input<typeof VirtualFolderConfigType> = {
+        name: "Movies",
+        collectionType: "movies",
+        libraryOptions: {
+          pathInfos: [{ path: "/data/movies" }],
+          typeOptions: [
+            {
+              type: "Movie",
+              metadataFetchers: ["TheMovieDB"],
+              metadataFetcherOrder: null,
+              imageFetchers: ["TheMovieDB"],
+              imageFetcherOrder: null,
+            },
+          ],
+        },
+      };
+
+      expect(() => VirtualFolderConfigType.parse(config)).not.toThrow();
+    });
+
     it("should accept all valid collection types", () => {
       const types: readonly [
         "movies",
@@ -115,6 +215,37 @@ describe("types/config/library", () => {
       expect(() => VirtualFolderConfigType.parse(config)).toThrow(/too_small/);
     });
 
+    it("should accept empty typeOptions array", () => {
+      const config: z.input<typeof VirtualFolderConfigType> = {
+        name: "Test",
+        collectionType: "movies",
+        libraryOptions: {
+          pathInfos: [{ path: "/test" }],
+          typeOptions: [],
+        },
+      };
+
+      expect(() => VirtualFolderConfigType.parse(config)).not.toThrow();
+    });
+
+    it("should reject invalid typeOptions entries", () => {
+      const config: z.input<typeof VirtualFolderConfigType> = {
+        name: "Test",
+        collectionType: "movies",
+        libraryOptions: {
+          pathInfos: [{ path: "/test" }],
+          typeOptions: [
+            // @ts-expect-error metadataFetchers missing for test
+            { type: "Movie", imageFetchers: ["TheMovieDB"] },
+          ],
+        },
+      };
+
+      expect(() => VirtualFolderConfigType.parse(config)).toThrow(
+        /Invalid input/,
+      );
+    });
+
     it("should reject missing required fields", () => {
       expect(() => VirtualFolderConfigType.parse({})).toThrow(/Invalid input/);
       expect(() => VirtualFolderConfigType.parse({ name: "Test" })).toThrow(
@@ -166,6 +297,24 @@ describe("types/config/library", () => {
         collectionType: "movies",
         libraryOptions: {
           pathInfos: [{ path: "/data/movies" }],
+          typeOptions: [
+            {
+              type: "Movie",
+              metadataFetchers: ["TheMovieDB"],
+              imageFetchers: ["TheMovieDB"],
+            },
+          ],
+          automaticallyAddToCollection: true,
+          enableChapterImageExtraction: true,
+          extractChapterImagesDuringLibraryScan: true,
+          extractTrickplayImagesDuringLibraryScan: true,
+          enableEmbeddedEpisodeInfos: true,
+          enableTrickplayImageExtraction: true,
+          saveTrickplayWithMedia: true,
+          metadataSavers: ["Nfo"],
+          saveLocalMetadata: true,
+          automaticRefreshIntervalDays: 14,
+          enableRealtimeMonitor: true,
         },
       };
 
@@ -175,6 +324,28 @@ describe("types/config/library", () => {
       );
       expect(Array.isArray(parsed.libraryOptions.pathInfos)).toBe(true);
       expect(typeof parsed.libraryOptions.pathInfos[0].path).toBe("string");
+      expect(parsed.libraryOptions.typeOptions?.[0].type).toBe("Movie");
+      expect(parsed.libraryOptions.typeOptions?.[0].metadataFetchers[0]).toBe(
+        "TheMovieDB",
+      );
+      expect(parsed.libraryOptions.typeOptions?.[0].imageFetchers[0]).toBe(
+        "TheMovieDB",
+      );
+      expect(parsed.libraryOptions.automaticallyAddToCollection).toBe(true);
+      expect(parsed.libraryOptions.enableChapterImageExtraction).toBe(true);
+      expect(parsed.libraryOptions.extractChapterImagesDuringLibraryScan).toBe(
+        true,
+      );
+      expect(
+        parsed.libraryOptions.extractTrickplayImagesDuringLibraryScan,
+      ).toBe(true);
+      expect(parsed.libraryOptions.enableEmbeddedEpisodeInfos).toBe(true);
+      expect(parsed.libraryOptions.enableTrickplayImageExtraction).toBe(true);
+      expect(parsed.libraryOptions.saveTrickplayWithMedia).toBe(true);
+      expect(parsed.libraryOptions.metadataSavers?.[0]).toBe("Nfo");
+      expect(parsed.libraryOptions.saveLocalMetadata).toBe(true);
+      expect(parsed.libraryOptions.automaticRefreshIntervalDays).toBe(14);
+      expect(parsed.libraryOptions.enableRealtimeMonitor).toBe(true);
     });
   });
 
@@ -188,6 +359,13 @@ describe("types/config/library", () => {
             collectionType: "movies",
             libraryOptions: {
               pathInfos: [{ path: "/data/movies" }],
+              typeOptions: [
+                {
+                  type: "Movie",
+                  metadataFetchers: ["TheMovieDB"],
+                  imageFetchers: ["TheMovieDB"],
+                },
+              ],
             },
           },
           {

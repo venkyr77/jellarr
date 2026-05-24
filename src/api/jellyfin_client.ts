@@ -4,6 +4,7 @@ import type {
   VirtualFolderInfoSchema,
   AddVirtualFolderDtoSchema,
   CollectionTypeSchema,
+  UpdateLibraryOptionsDtoSchema,
 } from "../types/schema/library";
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type {
@@ -154,6 +155,23 @@ export function createJellyfinClient(
       }
     },
 
+    async updateLibraryOptions(
+      libraryId: string,
+      body: UpdateLibraryOptionsDtoSchema,
+    ): Promise<void> {
+      const res = await client.POST("/Library/VirtualFolders/LibraryOptions", {
+        params: { query: { libraryId } },
+        body,
+        headers: { "content-type": "application/json" },
+      });
+
+      if (res.error) {
+        throw new Error(
+          `POST /Library/VirtualFolders/LibraryOptions failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
     async getBrandingConfiguration(): Promise<BrandingOptionsDtoSchema> {
       const res: GetBrandingConfigurationResponse = await client.GET(
         "/System/Configuration/{key}",
@@ -230,6 +248,23 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /Users/{userId}/Policy failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async updateUserConfiguration(
+      userId: string,
+      body: UserConfigurationSchema,
+    ): Promise<void> {
+      const res = await client.POST("/Users/{userId}/Configuration", {
+        params: { path: { userId } },
+        body,
+        headers: { "content-type": "application/json" },
+      });
+
+      if (res.error) {
+        throw new Error(
+          `POST /Users/{userId}/Configuration failed: ${res.response.status.toString()}`,
         );
       }
     },

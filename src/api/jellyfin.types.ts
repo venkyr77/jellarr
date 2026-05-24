@@ -4,12 +4,14 @@ import type {
   VirtualFolderInfoSchema,
   AddVirtualFolderDtoSchema,
   CollectionTypeSchema,
+  UpdateLibraryOptionsDtoSchema,
 } from "../types/schema/library";
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type {
   UserDtoSchema,
   CreateUserByNameSchema,
   UserPolicySchema,
+  UserConfigurationSchema,
 } from "../types/schema/users";
 import {
   type PluginInfoSchema,
@@ -56,6 +58,10 @@ export interface JellyfinClient {
     collectionType: CollectionTypeSchema | undefined,
     body: AddVirtualFolderDtoSchema,
   ): Promise<void>;
+  updateLibraryOptions(
+    libraryId: string,
+    body: UpdateLibraryOptionsDtoSchema,
+  ): Promise<void>;
   getBrandingConfiguration(): Promise<BrandingOptionsDtoSchema>;
   updateBrandingConfiguration(
     body: Partial<BrandingOptionsDtoSchema>,
@@ -63,6 +69,10 @@ export interface JellyfinClient {
   getUsers(): Promise<UserDtoSchema[]>;
   createUser(body: CreateUserByNameSchema): Promise<void>;
   updateUserPolicy(userId: string, body: UserPolicySchema): Promise<void>;
+  updateUserConfiguration(
+    userId: string,
+    body: UserConfigurationSchema,
+  ): Promise<void>;
   completeStartupWizard(): Promise<void>;
   getPlugins(): Promise<PluginInfoSchema[]>;
   installPackage(name: string): Promise<void>;
