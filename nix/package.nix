@@ -37,14 +37,15 @@ pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     pkgs.makeBinaryWrapper
     pkgs.nodejs_24
-    pkgs.pnpm.configHook
+    pkgs.pnpm
+    pkgs.pnpmConfigHook
   ];
 
   pname = "jellarr";
 
-  pnpmDeps = pkgs.pnpm.fetchDeps {
-    fetcherVersion = 1;
-    hash = "sha256-E401r/pYg2Z+Fsk2rGrmPPZ4A+AJ7aSByTL8xaO3uHs=";
+  pnpmDeps = pkgs.fetchPnpmDeps {
+    fetcherVersion = 3;
+    hash = "sha256-n0Msdv5pdnM6KVG/j3ixzZM81LK3gKHsdKLH7A1EqHQ=";
     inherit (finalAttrs) pname src version;
   };
 

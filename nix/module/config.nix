@@ -11,7 +11,7 @@
   types = import ./types {inherit lib;};
   processedConfig = types.root.mkConfig cfg.config;
 
-  pkg = import ../package.nix {inherit lib pkgs;};
+  pkg = pkgs.callPackage ../package.nix {};
 in {
   config = lib.mkMerge [
     (lib.mkIf cfg.enable {
