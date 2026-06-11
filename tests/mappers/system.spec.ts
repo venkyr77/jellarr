@@ -359,5 +359,206 @@ describe("mappers/system", () => {
         EnableMetrics: false,
       });
     });
+
+    it("should map trickplayOptions enableKeyFrameOnlyExtraction to EnableKeyFrameOnlyExtraction", () => {
+      // Arrange
+      const config: SystemConfig = {
+        trickplayOptions: { enableKeyFrameOnlyExtraction: true },
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result.TrickplayOptions).toEqual({
+        EnableKeyFrameOnlyExtraction: true,
+      });
+    });
+
+    it("should map trickplayOptions scanBehavior to ScanBehavior", () => {
+      // Arrange
+      const config: SystemConfig = {
+        trickplayOptions: { scanBehavior: "NonBlocking" },
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result.TrickplayOptions).toEqual({ ScanBehavior: "NonBlocking" });
+    });
+
+    it("should map trickplayOptions processPriority to ProcessPriority", () => {
+      // Arrange
+      const config: SystemConfig = {
+        trickplayOptions: { processPriority: "BelowNormal" },
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result.TrickplayOptions).toEqual({
+        ProcessPriority: "BelowNormal",
+      });
+    });
+
+    it("should map trickplayOptions interval to Interval", () => {
+      // Arrange
+      const config: SystemConfig = {
+        trickplayOptions: { interval: 10000 },
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result.TrickplayOptions).toEqual({ Interval: 10000 });
+    });
+
+    it("should map trickplayOptions widthResolutions to WidthResolutions", () => {
+      // Arrange
+      const config: SystemConfig = {
+        trickplayOptions: { widthResolutions: [320, 640] },
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result.TrickplayOptions).toEqual({
+        WidthResolutions: [320, 640],
+      });
+    });
+
+    it("should map trickplayOptions tileWidth to TileWidth", () => {
+      // Arrange
+      const config: SystemConfig = {
+        trickplayOptions: { tileWidth: 10 },
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result.TrickplayOptions).toEqual({ TileWidth: 10 });
+    });
+
+    it("should map trickplayOptions tileHeight to TileHeight", () => {
+      // Arrange
+      const config: SystemConfig = {
+        trickplayOptions: { tileHeight: 10 },
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result.TrickplayOptions).toEqual({ TileHeight: 10 });
+    });
+
+    it("should map trickplayOptions qscale to Qscale", () => {
+      // Arrange
+      const config: SystemConfig = {
+        trickplayOptions: { qscale: 4 },
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result.TrickplayOptions).toEqual({ Qscale: 4 });
+    });
+
+    it("should map trickplayOptions jpegQuality to JpegQuality", () => {
+      // Arrange
+      const config: SystemConfig = {
+        trickplayOptions: { jpegQuality: 85 },
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result.TrickplayOptions).toEqual({ JpegQuality: 85 });
+    });
+
+    it("should omit undefined trickplayOptions fields from output", () => {
+      // Arrange — only interval set; all other fields absent
+      const config: SystemConfig = {
+        trickplayOptions: { interval: 5000 },
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result.TrickplayOptions).toHaveProperty("Interval", 5000);
+      expect(result.TrickplayOptions).not.toHaveProperty(
+        "EnableHwAcceleration",
+      );
+      expect(result.TrickplayOptions).not.toHaveProperty("EnableHwEncoding");
+      expect(result.TrickplayOptions).not.toHaveProperty("ProcessThreads");
+      expect(result.TrickplayOptions).not.toHaveProperty(
+        "EnableKeyFrameOnlyExtraction",
+      );
+      expect(result.TrickplayOptions).not.toHaveProperty("ScanBehavior");
+      expect(result.TrickplayOptions).not.toHaveProperty("ProcessPriority");
+      expect(result.TrickplayOptions).not.toHaveProperty("WidthResolutions");
+      expect(result.TrickplayOptions).not.toHaveProperty("TileWidth");
+      expect(result.TrickplayOptions).not.toHaveProperty("TileHeight");
+      expect(result.TrickplayOptions).not.toHaveProperty("Qscale");
+      expect(result.TrickplayOptions).not.toHaveProperty("JpegQuality");
+    });
+
+    it("should map all 12 trickplayOptions fields simultaneously", () => {
+      // Arrange — all 12 fields set
+      const config: SystemConfig = {
+        trickplayOptions: {
+          enableHwAcceleration: true,
+          enableHwEncoding: false,
+          processThreads: 4,
+          enableKeyFrameOnlyExtraction: true,
+          scanBehavior: "Blocking",
+          processPriority: "Normal",
+          interval: 2000,
+          widthResolutions: [160, 320, 640],
+          tileWidth: 8,
+          tileHeight: 8,
+          qscale: 2,
+          jpegQuality: 90,
+        },
+      };
+
+      // Act
+      const result: Partial<ServerConfigurationSchema> =
+        mapSystemConfigurationConfigToSchema(config);
+
+      // Assert
+      expect(result.TrickplayOptions).toEqual({
+        EnableHwAcceleration: true,
+        EnableHwEncoding: false,
+        ProcessThreads: 4,
+        EnableKeyFrameOnlyExtraction: true,
+        ScanBehavior: "Blocking",
+        ProcessPriority: "Normal",
+        Interval: 2000,
+        WidthResolutions: [160, 320, 640],
+        TileWidth: 8,
+        TileHeight: 8,
+        Qscale: 2,
+        JpegQuality: 90,
+      });
+    });
   });
 });
