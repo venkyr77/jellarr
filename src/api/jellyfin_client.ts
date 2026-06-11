@@ -1,5 +1,6 @@
 import type { ServerConfigurationSchema } from "../types/schema/system";
 import type { EncodingOptionsSchema } from "../types/schema/encoding-options";
+import type { NetworkConfigurationSchema } from "../types/schema/networking";
 import type {
   VirtualFolderInfoSchema,
   AddVirtualFolderDtoSchema,
@@ -18,6 +19,8 @@ import type {
   PostSystemConfigurationResponse,
   GetEncodingConfigurationResponse,
   PostEncodingConfigurationResponse,
+  GetNetworkingConfigurationResponse,
+  PostNetworkingConfigurationResponse,
   GetVirtualFoldersResponse,
   PostVirtualFolderResponse,
   GetBrandingConfigurationResponse,
@@ -110,6 +113,42 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /System/Configuration/encoding failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getNetworkingConfiguration(): Promise<NetworkConfigurationSchema> {
+      const res: GetNetworkingConfigurationResponse = await client.GET(
+        "/System/Configuration/{key}",
+        {
+          params: { path: { key: "network" } },
+        },
+      );
+
+      if (res.error) {
+        throw new Error(
+          `GET /System/Configuration/network failed: ${res.response.status.toString()}`,
+        );
+      }
+
+      return res.data as NetworkConfigurationSchema;
+    },
+
+    async updateNetworkingConfiguration(
+      body: Partial<NetworkConfigurationSchema>,
+    ): Promise<void> {
+      const res: PostNetworkingConfigurationResponse = await client.POST(
+        "/System/Configuration/{key}",
+        {
+          params: { path: { key: "network" } },
+          body,
+          headers: { "content-type": "application/json" },
+        },
+      );
+
+      if (res.error) {
+        throw new Error(
+          `POST /System/Configuration/network failed: ${res.response.status.toString()}`,
         );
       }
     },
