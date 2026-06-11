@@ -13,6 +13,21 @@
     pluginRepositories = null;
     trickplayOptions = null;
   };
+
+  nullTrickplayConfig = {
+    enableHwAcceleration = null;
+    enableHwEncoding = null;
+    processThreads = null;
+    enableKeyFrameOnlyExtraction = null;
+    scanBehavior = null;
+    processPriority = null;
+    interval = null;
+    widthResolutions = null;
+    tileWidth = null;
+    tileHeight = null;
+    qscale = null;
+    jpegQuality = null;
+  };
 in [
   (assertEq "empty config" (mkSystemConfig nullConfig) {})
 
@@ -37,11 +52,22 @@ in [
           enabled = true;
         }
       ];
-      trickplayOptions = {
-        enableHwAcceleration = true;
-        enableHwEncoding = false;
-        processThreads = 2;
-      };
+      trickplayOptions =
+        nullTrickplayConfig
+        // {
+          enableHwAcceleration = true;
+          enableHwEncoding = false;
+          processThreads = 2;
+          enableKeyFrameOnlyExtraction = false;
+          scanBehavior = "NonBlocking";
+          processPriority = "Normal";
+          interval = 10000;
+          widthResolutions = [320 480 720];
+          tileWidth = 10;
+          tileHeight = 10;
+          qscale = 4;
+          jpegQuality = 90;
+        };
     }) {
       enableMetrics = true;
       pluginRepositories = [
@@ -55,6 +81,15 @@ in [
         enableHwAcceleration = true;
         enableHwEncoding = false;
         processThreads = 2;
+        enableKeyFrameOnlyExtraction = false;
+        scanBehavior = "NonBlocking";
+        processPriority = "Normal";
+        interval = 10000;
+        widthResolutions = [320 480 720];
+        tileWidth = 10;
+        tileHeight = 10;
+        qscale = 4;
+        jpegQuality = 90;
       };
     })
 
@@ -119,10 +154,7 @@ in [
 
   (assertEq "empty trickplay options" (mkSystemConfig (nullConfig
     // {
-      trickplayOptions = {
-        enableHwAcceleration = null;
-        enableHwEncoding = null;
-      };
+      trickplayOptions = nullTrickplayConfig;
     })) {
     trickplayOptions = {};
   })
@@ -169,5 +201,40 @@ in [
       };
     })) {
     trickplayOptions = {processThreads = 3;};
+  })
+
+  (assertEq "trickplay enableKeyFrameOnlyExtraction only" (mkSystemConfig (nullConfig
+    // {
+      trickplayOptions = nullTrickplayConfig // {enableKeyFrameOnlyExtraction = true;};
+    })) {
+    trickplayOptions = {enableKeyFrameOnlyExtraction = true;};
+  })
+
+  (assertEq "trickplay scanBehavior Blocking" (mkSystemConfig (nullConfig
+    // {
+      trickplayOptions = nullTrickplayConfig // {scanBehavior = "Blocking";};
+    })) {
+    trickplayOptions = {scanBehavior = "Blocking";};
+  })
+
+  (assertEq "trickplay processPriority High" (mkSystemConfig (nullConfig
+    // {
+      trickplayOptions = nullTrickplayConfig // {processPriority = "High";};
+    })) {
+    trickplayOptions = {processPriority = "High";};
+  })
+
+  (assertEq "trickplay tileWidth only" (mkSystemConfig (nullConfig
+    // {
+      trickplayOptions = nullTrickplayConfig // {tileWidth = 320;};
+    })) {
+    trickplayOptions = {tileWidth = 320;};
+  })
+
+  (assertEq "trickplay widthResolutions list" (mkSystemConfig (nullConfig
+    // {
+      trickplayOptions = nullTrickplayConfig // {widthResolutions = [320 480];};
+    })) {
+    trickplayOptions = {widthResolutions = [320 480];};
   })
 ]
