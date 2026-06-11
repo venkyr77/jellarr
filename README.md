@@ -218,6 +218,32 @@ encoding:
   allowAv1Encoding: false
 ```
 
+### Networking Configuration
+
+Jellarr manages the full Jellyfin NetworkConfiguration via the `networking` key.
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+networking:
+  internalHttpPort: 8096
+  publicHttpPort: 8096
+  enableIPv6: true
+  requireHttps: false
+  publishedServerUriBySubnet:
+    - "all=https://jellyfin.example.com"
+  knownProxies:
+    - "10.0.0.1"
+  certificatePassword: "changeme"
+```
+
+`certificatePassword` is a sensitive value; store it securely rather than
+committing it in plain text.
+
+The full field set mirrors Jellyfin's `NetworkConfiguration` object. Note that
+`corsHosts` is a `ServerConfiguration` field, not `NetworkConfiguration`, and is
+not part of the `networking` key.
+
 ### Library Configuration
 
 ```yaml
