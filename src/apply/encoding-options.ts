@@ -12,23 +12,36 @@ export function calculateEncodingDiff(
 ): EncodingOptionsSchema | undefined {
   const next: EncodingOptionsSchema = mapEncodingOptionsConfigToSchema(desired);
 
+  const arrayPassChangeset: ChangeSetBuilder = new ChangeSetBuilder(
+    diff(current, next, {
+      embeddedObjKeys: {
+        HardwareDecodingCodecs: "$value",
+        AllowOnDemandMetadataBasedKeyframeExtractionForExtensions: "$value",
+      },
+      treatTypeChangeAsReplace: false,
+    }),
+  );
+
   const patch: IChange[] = [
     ...new ChangeSetBuilder(
       diff(current, next, {
-        keysToSkip: ["HardwareDecodingCodecs"],
+        keysToSkip: [
+          "HardwareDecodingCodecs",
+          "AllowOnDemandMetadataBasedKeyframeExtractionForExtensions",
+        ],
         treatTypeChangeAsReplace: false,
       }),
     )
       .withoutRemoves()
       .toArray(),
 
-    ...new ChangeSetBuilder(
-      diff(current, next, {
-        embeddedObjKeys: { HardwareDecodingCodecs: "$value" },
-        treatTypeChangeAsReplace: false,
-      }),
-    )
+    ...arrayPassChangeset
       .withKey("HardwareDecodingCodecs")
+      .withoutRemoves()
+      .toArray(),
+
+    ...arrayPassChangeset
+      .withKey("AllowOnDemandMetadataBasedKeyframeExtractionForExtensions")
       .withoutRemoves()
       .toArray(),
   ];
