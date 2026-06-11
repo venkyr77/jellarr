@@ -189,7 +189,19 @@ system:
   trickplayOptions:
     enableHwAcceleration: true
     enableHwEncoding: true
+    enableKeyFrameOnlyExtraction: true
+    scanBehavior: "NonBlocking" # NonBlocking | Blocking
+    processPriority: "BelowNormal" # Normal | Idle | High | RealTime | BelowNormal | AboveNormal
+    interval: 10000
+    widthResolutions: [320]
+    tileWidth: 10
+    tileHeight: 10
+    qscale: 4
+    jpegQuality: 90
+    processThreads: 1
 ```
+
+The full field set mirrors Jellyfin's `TrickplayOptions` object.
 
 ### Encoding Configuration
 
