@@ -231,6 +231,237 @@ describe("TrickplayOptionsConfig", () => {
     // Assert
     expect(result.success).toBe(false);
   });
+
+  it("should validate enableKeyFrameOnlyExtraction", () => {
+    // Arrange
+    const validConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      enableKeyFrameOnlyExtraction: true,
+    };
+
+    // Act
+    const result: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
+  it("should validate scanBehavior Blocking", () => {
+    // Arrange
+    const validConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      scanBehavior: "Blocking",
+    };
+
+    // Act
+    const result: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
+  it("should validate scanBehavior NonBlocking", () => {
+    // Arrange
+    const validConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      scanBehavior: "NonBlocking",
+    };
+
+    // Act
+    const result: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
+  it("should reject invalid scanBehavior value", () => {
+    // Arrange
+    const invalidConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      // @ts-expect-error intentional bad enum value for test
+      scanBehavior: "InvalidValue",
+    };
+
+    // Act
+    const result: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(invalidConfig);
+
+    // Assert
+    expect(result.success).toBe(false);
+  });
+
+  it("should validate processPriority Normal", () => {
+    // Arrange
+    const validConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      processPriority: "Normal",
+    };
+
+    // Act
+    const result: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
+  it("should validate processPriority BelowNormal", () => {
+    // Arrange
+    const validConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      processPriority: "BelowNormal",
+    };
+
+    // Act
+    const result: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
+  it("should reject invalid processPriority value", () => {
+    // Arrange
+    const invalidConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      // @ts-expect-error intentional bad enum value for test
+      processPriority: "Ultra",
+    };
+
+    // Act
+    const result: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(invalidConfig);
+
+    // Assert
+    expect(result.success).toBe(false);
+  });
+
+  it("should validate interval as int", () => {
+    // Arrange
+    const validConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      interval: 30,
+    };
+
+    // Act
+    const result: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
+  it("should reject non-int for interval", () => {
+    // Arrange
+    const invalidConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      interval: 1.5,
+    };
+
+    // Act
+    const result: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(invalidConfig);
+
+    // Assert
+    expect(result.success).toBe(false);
+  });
+
+  it("should reject non-integer widthResolutions element", () => {
+    // Arrange — array elements are constrained by z.number().int()
+    const invalidConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      widthResolutions: [320.5],
+    };
+
+    // Act
+    const result: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(invalidConfig);
+
+    // Assert
+    expect(result.success).toBe(false);
+  });
+
+  it("should validate processPriority High, RealTime, and AboveNormal", () => {
+    // Arrange — three enum values not covered by the single-value tests above
+    const highConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      processPriority: "High",
+    };
+    const realTimeConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      processPriority: "RealTime",
+    };
+    const aboveNormalConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      processPriority: "AboveNormal",
+    };
+
+    // Act
+    const highResult: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(highConfig);
+    const realTimeResult: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(realTimeConfig);
+    const aboveNormalResult: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(aboveNormalConfig);
+
+    // Assert
+    expect(highResult.success).toBe(true);
+    expect(realTimeResult.success).toBe(true);
+    expect(aboveNormalResult.success).toBe(true);
+  });
+
+  it("should validate widthResolutions array", () => {
+    // Arrange
+    const validConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      widthResolutions: [320, 480, 640],
+    };
+
+    // Act
+    const result: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
+
+  it("should validate all 12 fields", () => {
+    // Arrange
+    const validConfig: z.input<typeof TrickplayOptionsConfigType> = {
+      enableHwAcceleration: true,
+      enableHwEncoding: false,
+      processThreads: 4,
+      enableKeyFrameOnlyExtraction: true,
+      scanBehavior: "NonBlocking",
+      processPriority: "Idle",
+      interval: 10,
+      widthResolutions: [160, 320],
+      tileWidth: 10,
+      tileHeight: 10,
+      qscale: 4,
+      jpegQuality: 90,
+    };
+
+    // Act
+    const result: ZodSafeParseResult<TrickplayOptionsConfig> =
+      TrickplayOptionsConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validConfig);
+    }
+  });
 });
 
 describe("SystemConfigType", () => {
@@ -239,7 +470,8 @@ describe("SystemConfigType", () => {
       serverName: "MyServer",
     };
 
-    const result = SystemConfigType.safeParse(config);
+    const result: ZodSafeParseResult<SystemConfig> =
+      SystemConfigType.safeParse(config);
 
     expect(result.success).toBe(true);
     if (result.success) {
