@@ -44,12 +44,14 @@ import {
   getPluginConfigurationSchemaByName,
 } from "../apply/plugins";
 import type { PluginConfig } from "../types/config/plugins";
+import { substituteEnvVars } from "../lib/env-substitution";
 
 export async function runPipeline(path: string): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
+  const expanded: string = substituteEnvVars(raw);
 
   const validationResult: ZodSafeParseResult<RootConfig> =
-    RootConfigType.safeParse(YAML.parse(raw));
+    RootConfigType.safeParse(YAML.parse(expanded));
   if (!validationResult.success) {
     const errorMessages: string = validationResult.error.issues
       .map((err: z.core.$ZodIssue) => `${err.path.join(".")}: ${err.message}`)
