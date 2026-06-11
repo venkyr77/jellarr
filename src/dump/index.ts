@@ -255,6 +255,45 @@ export async function runDump(baseUrl: string): Promise<void> {
           automaticRefreshIntervalDays:
             folder.LibraryOptions?.AutomaticRefreshIntervalDays,
           enableRealtimeMonitor: folder.LibraryOptions?.EnableRealtimeMonitor,
+          enabled: folder.LibraryOptions?.Enabled,
+          enablePhotos: folder.LibraryOptions?.EnablePhotos,
+          enableLUFSScan: folder.LibraryOptions?.EnableLUFSScan,
+          enableAutomaticSeriesGrouping:
+            folder.LibraryOptions?.EnableAutomaticSeriesGrouping,
+          enableEmbeddedTitles: folder.LibraryOptions?.EnableEmbeddedTitles,
+          skipSubtitlesIfEmbeddedSubtitlesPresent:
+            folder.LibraryOptions?.SkipSubtitlesIfEmbeddedSubtitlesPresent,
+          skipSubtitlesIfAudioTrackMatches:
+            folder.LibraryOptions?.SkipSubtitlesIfAudioTrackMatches,
+          requirePerfectSubtitleMatch:
+            folder.LibraryOptions?.RequirePerfectSubtitleMatch,
+          saveSubtitlesWithMedia: folder.LibraryOptions?.SaveSubtitlesWithMedia,
+          saveLyricsWithMedia: folder.LibraryOptions?.SaveLyricsWithMedia,
+          preferNonstandardArtistsTag:
+            folder.LibraryOptions?.PreferNonstandardArtistsTag,
+          useCustomTagDelimiters: folder.LibraryOptions?.UseCustomTagDelimiters,
+          preferredMetadataLanguage:
+            folder.LibraryOptions?.PreferredMetadataLanguage,
+          metadataCountryCode: folder.LibraryOptions?.MetadataCountryCode,
+          seasonZeroDisplayName: folder.LibraryOptions?.SeasonZeroDisplayName,
+          allowEmbeddedSubtitles: folder.LibraryOptions?.AllowEmbeddedSubtitles,
+          disabledLocalMetadataReaders:
+            folder.LibraryOptions?.DisabledLocalMetadataReaders,
+          localMetadataReaderOrder:
+            folder.LibraryOptions?.LocalMetadataReaderOrder ?? undefined,
+          disabledSubtitleFetchers:
+            folder.LibraryOptions?.DisabledSubtitleFetchers,
+          subtitleFetcherOrder: folder.LibraryOptions?.SubtitleFetcherOrder,
+          disabledMediaSegmentProviders:
+            folder.LibraryOptions?.DisabledMediaSegmentProviders,
+          mediaSegmentProviderOrder:
+            folder.LibraryOptions?.MediaSegmentProviderOrder,
+          subtitleDownloadLanguages:
+            folder.LibraryOptions?.SubtitleDownloadLanguages ?? undefined,
+          disabledLyricFetchers: folder.LibraryOptions?.DisabledLyricFetchers,
+          lyricFetcherOrder: folder.LibraryOptions?.LyricFetcherOrder,
+          customTagDelimiters: folder.LibraryOptions?.CustomTagDelimiters,
+          delimiterWhitelist: folder.LibraryOptions?.DelimiterWhitelist,
         },
       })),
     },
