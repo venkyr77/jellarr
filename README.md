@@ -228,7 +228,23 @@ encoding:
   enableDecodingColorDepth10Vp9: true
   allowHevcEncoding: false
   allowAv1Encoding: false
+  # tonemapping
+  enableTonemapping: true
+  tonemappingAlgorithm: "bt2390" # none|clip|linear|gamma|reinhard|hable|mobius|bt2390
+  tonemappingMode: "auto" # auto|max|rgb|lum|itp
+  # encoder quality
+  encoderPreset: "auto" # auto|placebo|veryslow|slower|slow|medium|fast|faster|veryfast|superfast|ultrafast
+  h264Crf: 23
+  h265Crf: 28
+  # deinterlacing
+  deinterlaceMethod: "yadif" # yadif|bwdif
+  # subtitles and keyframes
+  enableSubtitleExtraction: true
+  allowOnDemandMetadataBasedKeyframeExtractionForExtensions:
+    - mkv
 ```
+
+The full field set mirrors Jellyfin's `EncodingOptions` object.
 
 ### Networking Configuration
 
