@@ -5,6 +5,7 @@ import type {
   PluginRepositorySchema,
 } from "../types/schema/system";
 import type { EncodingOptionsSchema } from "../types/schema/encoding-options";
+import type { NetworkConfigurationSchema } from "../types/schema/networking";
 import type {
   VirtualFolderInfoSchema,
   MediaPathInfoSchema,
@@ -35,6 +36,7 @@ export async function runDump(baseUrl: string): Promise<void> {
   const [
     systemConfig,
     encodingConfig,
+    networkingConfig,
     virtualFolders,
     brandingConfig,
     users,
@@ -42,6 +44,7 @@ export async function runDump(baseUrl: string): Promise<void> {
   ]: [
     ServerConfigurationSchema,
     EncodingOptionsSchema,
+    NetworkConfigurationSchema,
     VirtualFolderInfoSchema[],
     BrandingOptionsDtoSchema,
     UserDtoSchema[],
@@ -49,6 +52,7 @@ export async function runDump(baseUrl: string): Promise<void> {
   ] = await Promise.all([
     client.getSystemConfiguration(),
     client.getEncodingConfiguration(),
+    client.getNetworkingConfiguration(),
     client.getVirtualFolders(),
     client.getBrandingConfiguration(),
     client.getUsers(),
@@ -135,6 +139,34 @@ export async function runDump(baseUrl: string): Promise<void> {
         encodingConfig.EnableDecodingColorDepth12HevcRext,
       allowHevcEncoding: encodingConfig.AllowHevcEncoding,
       allowAv1Encoding: encodingConfig.AllowAv1Encoding,
+    },
+
+    networking: {
+      baseUrl: networkingConfig.BaseUrl,
+      enableHttps: networkingConfig.EnableHttps,
+      requireHttps: networkingConfig.RequireHttps,
+      certificatePath: networkingConfig.CertificatePath,
+      certificatePassword: networkingConfig.CertificatePassword,
+      internalHttpPort: networkingConfig.InternalHttpPort,
+      internalHttpsPort: networkingConfig.InternalHttpsPort,
+      publicHttpPort: networkingConfig.PublicHttpPort,
+      publicHttpsPort: networkingConfig.PublicHttpsPort,
+      autoDiscovery: networkingConfig.AutoDiscovery,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      enableUPnP: networkingConfig.EnableUPnP,
+      enableIPv4: networkingConfig.EnableIPv4,
+      enableIPv6: networkingConfig.EnableIPv6,
+      enableRemoteAccess: networkingConfig.EnableRemoteAccess,
+      localNetworkSubnets: networkingConfig.LocalNetworkSubnets,
+      localNetworkAddresses: networkingConfig.LocalNetworkAddresses,
+      knownProxies: networkingConfig.KnownProxies,
+      ignoreVirtualInterfaces: networkingConfig.IgnoreVirtualInterfaces,
+      virtualInterfaceNames: networkingConfig.VirtualInterfaceNames,
+      enablePublishedServerUriByRequest:
+        networkingConfig.EnablePublishedServerUriByRequest,
+      publishedServerUriBySubnet: networkingConfig.PublishedServerUriBySubnet,
+      remoteIPFilter: networkingConfig.RemoteIPFilter,
+      isRemoteIPFilterBlacklist: networkingConfig.IsRemoteIPFilterBlacklist,
     },
 
     library: {
