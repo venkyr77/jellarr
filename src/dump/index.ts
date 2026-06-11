@@ -119,6 +119,16 @@ export async function runDump(baseUrl: string): Promise<void> {
         enableHwAcceleration:
           systemConfig.TrickplayOptions?.EnableHwAcceleration,
         enableHwEncoding: systemConfig.TrickplayOptions?.EnableHwEncoding,
+        enableKeyFrameOnlyExtraction:
+          systemConfig.TrickplayOptions?.EnableKeyFrameOnlyExtraction,
+        scanBehavior: systemConfig.TrickplayOptions?.ScanBehavior,
+        processPriority: systemConfig.TrickplayOptions?.ProcessPriority,
+        interval: systemConfig.TrickplayOptions?.Interval,
+        widthResolutions: systemConfig.TrickplayOptions?.WidthResolutions,
+        tileWidth: systemConfig.TrickplayOptions?.TileWidth,
+        tileHeight: systemConfig.TrickplayOptions?.TileHeight,
+        qscale: systemConfig.TrickplayOptions?.Qscale,
+        jpegQuality: systemConfig.TrickplayOptions?.JpegQuality,
         processThreads: systemConfig.TrickplayOptions?.ProcessThreads,
       },
     },
