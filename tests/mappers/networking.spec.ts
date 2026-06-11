@@ -511,7 +511,9 @@ describe("mappers/networking", () => {
         },
         {
           config: {
-            publishedServerUriBySubnet: ["192.168.1.0/24=https://local.example.com"],
+            publishedServerUriBySubnet: [
+              "192.168.1.0/24=https://local.example.com",
+            ],
           },
           expected: {
             PublishedServerUriBySubnet: [
@@ -648,7 +650,9 @@ describe("mappers/networking", () => {
         ignoreVirtualInterfaces: true,
         virtualInterfaceNames: ["veth0"],
         enablePublishedServerUriByRequest: false,
-        publishedServerUriBySubnet: ["192.168.1.0/24=https://local.example.com"],
+        publishedServerUriBySubnet: [
+          "192.168.1.0/24=https://local.example.com",
+        ],
         remoteIPFilter: ["10.0.0.0/8"],
         isRemoteIPFilterBlacklist: false,
       };
@@ -679,7 +683,9 @@ describe("mappers/networking", () => {
         IgnoreVirtualInterfaces: true,
         VirtualInterfaceNames: ["veth0"],
         EnablePublishedServerUriByRequest: false,
-        PublishedServerUriBySubnet: ["192.168.1.0/24=https://local.example.com"],
+        PublishedServerUriBySubnet: [
+          "192.168.1.0/24=https://local.example.com",
+        ],
         RemoteIPFilter: ["10.0.0.0/8"],
         IsRemoteIPFilterBlacklist: false,
       } as NetworkConfigurationSchema);

@@ -6,8 +6,6 @@ import { type NetworkConfigurationSchema } from "../types/schema/networking";
 import { applyChangeset, diff, type IChange } from "json-diff-ts";
 import { ChangeSetBuilder } from "../lib/changeset";
 
-// Two-pass diff mirrors encoding-options: scalar pass skips array keys, then per-array
-// pass with embeddedObjKeys to avoid phantom index diffs on primitive-string arrays.
 const ARRAY_KEYS: Array<keyof NetworkConfigurationSchema> = [
   "LocalNetworkSubnets",
   "LocalNetworkAddresses",
@@ -26,7 +24,6 @@ export function calculateNetworkingDiff(
 
   const embeddedObjKeys: Record<string, string> = {};
   for (const key of ARRAY_KEYS) {
-    // "$value" keys array elements by content → set semantics (order-insensitive)
     embeddedObjKeys[key] = "$value";
   }
 
