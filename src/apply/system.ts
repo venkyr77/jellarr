@@ -5,7 +5,24 @@ import { mapSystemConfigurationConfigToSchema } from "../mappers/system";
 import { type SystemConfig } from "../types/config/system";
 import { type ServerConfigurationSchema } from "../types/schema/system";
 import { diff, applyChangeset, type IChange } from "json-diff-ts";
+import { deepEqual } from "fast-equals";
 
+/**
+ * Diff the desired system configuration against the server's current state.
+ *
+ * Scalar/enum/boolean fields (ServerName, EnableMetrics, PluginRepositories and
+ * the scalar TrickplayOptions fields) are diffed through json-diff-ts with the
+ * `withoutRemoves` chain that preserves fields the partial config omits.
+ *
+ * `TrickplayOptions.WidthResolutions` (a `number[]`) is excluded from
+ * json-diff-ts (via `keysToSkip`) and handled by direct whole-array
+ * assignment. The changeset pipeline's atomize/unatomize splits index-based
+ * array REMOVE ops into siblings applied sequentially, which corrupts
+ * multi-element removals through index shifting. Replacing the array wholesale
+ * is order-exact for grow/shrink/swap/multi-element/add-to-absent: if the user
+ * specified `widthResolutions` and it differs from the server's value, the
+ * result equals exactly that array; otherwise the server's value is untouched.
+ */
 export function calculateSystemDiff(
   current: ServerConfigurationSchema,
   desired: SystemConfig,
@@ -42,7 +59,10 @@ export function calculateSystemDiff(
       .toArray(),
 
     ...new ChangeSetBuilder(
-      diff(current, next, { treatTypeChangeAsReplace: false }),
+      diff(current, next, {
+        keysToSkip: ["TrickplayOptions.WidthResolutions"],
+        treatTypeChangeAsReplace: false,
+      }),
     )
       .withKey("TrickplayOptions")
       .withoutRemoves()
@@ -53,12 +73,34 @@ export function calculateSystemDiff(
     .unatomize()
     .toArray();
 
-  if (patch.length != 0) {
-    logger.info(JSON.stringify(patch));
-    return applyChangeset(current, patch) as ServerConfigurationSchema;
+  const updated: ServerConfigurationSchema =
+    patch.length !== 0
+      ? (applyChangeset(
+          structuredClone(current),
+          patch,
+        ) as ServerConfigurationSchema)
+      : structuredClone(current);
+
+  let wrChanged: boolean = false;
+  const desiredWR: number[] | undefined =
+    next.TrickplayOptions?.WidthResolutions;
+  if (
+    desiredWR !== undefined &&
+    !deepEqual(current.TrickplayOptions?.WidthResolutions, desiredWR)
+  ) {
+    updated.TrickplayOptions ??= {};
+    updated.TrickplayOptions.WidthResolutions = [...desiredWR];
+    wrChanged = true;
   }
 
-  return undefined;
+  if (patch.length === 0 && !wrChanged) {
+    return undefined;
+  }
+
+  if (patch.length !== 0) {
+    logger.info(JSON.stringify(patch));
+  }
+  return updated;
 }
 
 export async function applySystem(

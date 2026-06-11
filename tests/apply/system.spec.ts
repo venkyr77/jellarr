@@ -21,6 +21,16 @@
  * - ✅ Creating from undefined state
  * - ✅ Mixed updates (one field same, one different)
  * - ✅ Logging behavior for object changes
+ * - ✅ Scalar field update (tileWidth)
+ * - ✅ Enum field update (scanBehavior)
+ *
+ * ## trickplayOptions WidthResolutions (primitive array idempotency)
+ * - ✅ Same array → no phantom diff (undefined)
+ * - ✅ Grow ([320] → [480, 320]) → applies exactly + converges on re-run
+ * - ✅ Shrink ([480, 320] → [320]) → applies exactly + converges on re-run
+ * - ✅ Swap ([480] → [320]) → applies exactly without throwing
+ * - ✅ Combined scalar change + array shrink → both land, converges
+ * - ✅ Partial-config preservation (tileWidth-only keeps other fields)
  *
  * ## Multi-field Scenarios
  * - ✅ All three fields changing simultaneously
@@ -692,6 +702,347 @@ describe("apply/system", () => {
         expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(true);
         expect(result?.EnableMetrics).toBe(false);
         expect(result?.PluginRepositories).toEqual([]);
+      });
+
+      it("should detect tileWidth scalar field update", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: false,
+            TileWidth: 5,
+            WidthResolutions: [320],
+          },
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          trickplayOptions: {
+            tileWidth: 10,
+          },
+        };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert
+        expect(result?.TrickplayOptions?.TileWidth).toBe(10);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
+        expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320]);
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.PluginRepositories).toEqual([]);
+      });
+
+      it("should detect scanBehavior enum field update", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            ScanBehavior: "Blocking",
+            WidthResolutions: [320],
+          },
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          trickplayOptions: {
+            scanBehavior: "NonBlocking",
+          },
+        };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert
+        expect(result?.TrickplayOptions?.ScanBehavior).toBe("NonBlocking");
+        expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320]);
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.PluginRepositories).toEqual([]);
+      });
+    });
+
+    describe("trickplayOptions WidthResolutions (primitive array idempotency)", () => {
+      it("should return undefined when WidthResolutions is identical (no phantom diff)", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: false,
+            WidthResolutions: [320],
+          },
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          trickplayOptions: {
+            widthResolutions: [320],
+          },
+        };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert — no phantom diff
+        expect(result).toBeUndefined();
+      });
+
+      it("should grow WidthResolutions ([320] → [480, 320]) and converge on re-run", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: false,
+            WidthResolutions: [320],
+          },
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          trickplayOptions: {
+            widthResolutions: [480, 320],
+          },
+        };
+
+        // Act — first apply
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert — applied result is exactly the grown array (order preserved)
+        expect(result?.TrickplayOptions?.WidthResolutions).toEqual([480, 320]);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.PluginRepositories).toEqual([]);
+
+        // Act — second apply (idempotency: re-run with result as current)
+        expect(result).toBeDefined();
+        const result2: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(result as ServerConfigurationSchema, desired);
+
+        // Assert — no further diff
+        expect(result2).toBeUndefined();
+      });
+
+      it("should shrink WidthResolutions ([480, 320] → [320]) and converge on re-run", () => {
+        // Arrange — current has the grown array
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: false,
+            WidthResolutions: [480, 320],
+          },
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          trickplayOptions: {
+            widthResolutions: [320],
+          },
+        };
+
+        // Act — first apply
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert — the shrink takes effect; result is exactly the shorter array
+        expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320]);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
+        expect(result?.EnableMetrics).toBe(false);
+        expect(result?.PluginRepositories).toEqual([]);
+
+        // Act — second apply (idempotency)
+        expect(result).toBeDefined();
+        const result2: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(result as ServerConfigurationSchema, desired);
+
+        // Assert — no further diff
+        expect(result2).toBeUndefined();
+      });
+
+      it("should swap WidthResolutions ([480] → [320]) without throwing", () => {
+        // Arrange — a swap forces a $value REMOVE after an index shift, which
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: false,
+            WidthResolutions: [480],
+          },
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          trickplayOptions: {
+            widthResolutions: [320],
+          },
+        };
+
+        // Act — must not throw
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert — exact replacement
+        expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320]);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
+
+        const result2: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(result as ServerConfigurationSchema, desired);
+        expect(result2).toBeUndefined();
+      });
+
+      it("should apply a scalar change AND a WidthResolutions shrink together", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: false,
+            TileWidth: 5,
+            WidthResolutions: [480, 320],
+          },
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          trickplayOptions: {
+            tileWidth: 10,
+            widthResolutions: [320],
+          },
+        };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert — both changes land
+        expect(result?.TrickplayOptions?.TileWidth).toBe(10);
+        expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320]);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
+
+        const result2: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(result as ServerConfigurationSchema, desired);
+        expect(result2).toBeUndefined();
+      });
+
+      it("should not clobber other TrickplayOptions fields when only tileWidth is set", () => {
+        // Arrange — partial-config preservation: an unrelated existing field
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: true,
+            TileWidth: 5,
+            WidthResolutions: [480, 320],
+          },
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          trickplayOptions: {
+            tileWidth: 10,
+          },
+        };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert — tileWidth updated, everything else preserved
+        expect(result?.TrickplayOptions?.TileWidth).toBe(10);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true);
+        expect(result?.TrickplayOptions?.WidthResolutions).toEqual([480, 320]);
+      });
+
+      it("should shrink WidthResolutions across multiple elements ([320, 480, 640, 720, 1080] → [320, 480]) and converge", () => {
+        // Arrange — multi-element removal that index-shift diffing corrupts
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: false,
+            WidthResolutions: [320, 480, 640, 720, 1080],
+          },
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          trickplayOptions: {
+            widthResolutions: [320, 480],
+          },
+        };
+
+        // Act — first apply
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert — exact, order-preserving multi-element shrink
+        expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320, 480]);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
+
+        // Act — second apply (idempotency)
+        expect(result).toBeDefined();
+        const result2: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(result as ServerConfigurationSchema, desired);
+
+        // Assert — no further diff
+        expect(result2).toBeUndefined();
+      });
+
+      it("should handle middle-element removal + reorder ([800, 640, 480, 320] → [320, 640]) and converge", () => {
+        // Arrange — non-contiguous removal with a reorder
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: false,
+            WidthResolutions: [800, 640, 480, 320],
+          },
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          trickplayOptions: {
+            widthResolutions: [320, 640],
+          },
+        };
+
+        // Act — first apply
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert — exact order equals desired, not merely the same set
+        expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320, 640]);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
+
+        // Act — second apply (idempotency)
+        expect(result).toBeDefined();
+        const result2: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(result as ServerConfigurationSchema, desired);
+
+        // Assert — no further diff
+        expect(result2).toBeUndefined();
+      });
+
+      it("should add WidthResolutions when current TrickplayOptions lacks it", () => {
+        // Arrange — TrickplayOptions present but no WidthResolutions key
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: {
+            EnableHwAcceleration: false,
+          },
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          trickplayOptions: {
+            widthResolutions: [320],
+          },
+        };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert — array added exactly
+        expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320]);
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
       });
     });
 
