@@ -2,6 +2,7 @@
   brandingOptions = import ./branding-options.nix {inherit lib;};
   encodingOptions = import ./encoding-options.nix {inherit lib;};
   library = import ./library.nix {inherit lib;};
+  networking = import ./networking.nix {inherit lib;};
   plugins = import ./plugins.nix {inherit lib;};
   root = import ./root.nix {inherit lib;};
   startup = import ./startup.nix {inherit lib;};

@@ -6,6 +6,7 @@
     brandingOptions = import ./branding-options.nix {inherit lib;};
     encodingOptions = import ./encoding-options.nix {inherit lib;};
     library = import ./library.nix {inherit lib;};
+    networking = import ./networking.nix {inherit lib;};
     plugins = import ./plugins.nix {inherit lib;};
     startup = import ./startup.nix {inherit lib;};
     system = import ./system.nix {inherit lib;};
@@ -31,6 +32,11 @@
         type = nullOr subTypes.encodingOptions.encodingOptionsConfigType;
         default = null;
         description = "Encoding options configuration.";
+      };
+      networking = mkOption {
+        type = nullOr subTypes.networking.networkingConfigType;
+        default = null;
+        description = "Networking configuration.";
       };
       library = mkOption {
         type = nullOr subTypes.library.libraryConfigType;
@@ -71,6 +77,9 @@
       }
       // optionalAttrs (cfg.encoding != null) {
         encoding = subTypes.encodingOptions.mkEncodingOptionsConfig cfg.encoding;
+      }
+      // optionalAttrs (cfg.networking != null) {
+        networking = subTypes.networking.mkNetworkingConfig cfg.networking;
       }
       // optionalAttrs (cfg.library != null) {
         library = subTypes.library.mkLibraryConfig cfg.library;
