@@ -16,6 +16,7 @@ import type {
   PluginInfoSchema,
   BasePluginConfigurationSchema,
 } from "../types/schema/plugins";
+import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import * as yaml from "yaml";
 
 interface PluginWithConfig {
@@ -41,6 +42,7 @@ export async function runDump(baseUrl: string): Promise<void> {
     brandingConfig,
     users,
     plugins,
+    apiKeys,
   ]: [
     ServerConfigurationSchema,
     EncodingOptionsSchema,
@@ -49,6 +51,7 @@ export async function runDump(baseUrl: string): Promise<void> {
     BrandingOptionsDtoSchema,
     UserDtoSchema[],
     PluginInfoSchema[],
+    AuthenticationInfoSchema[],
   ] = await Promise.all([
     client.getSystemConfiguration(),
     client.getEncodingConfiguration(),
@@ -57,6 +60,7 @@ export async function runDump(baseUrl: string): Promise<void> {
     client.getBrandingConfiguration(),
     client.getUsers(),
     client.getPlugins(),
+    client.getApiKeys(),
   ]);
 
   const pluginsWithConfig: PluginWithConfig[] = await Promise.all(
@@ -372,6 +376,10 @@ export async function runDump(baseUrl: string): Promise<void> {
     })),
 
     plugins: pluginsWithConfig,
+
+    api_keys: apiKeys.map((key: AuthenticationInfoSchema) => ({
+      name: key.AppName,
+    })),
   };
 
   console.log(yaml.stringify(config));

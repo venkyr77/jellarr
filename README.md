@@ -404,6 +404,25 @@ startup:
 Useful for automated deployments where you want to skip the interactive startup
 wizard.
 
+### API Keys
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+api_keys:
+  - name: "jellarr"
+  - name: "my-integration"
+```
+
+Jellarr creates any API key whose name (`AppName`) doesn't already exist.
+Matching is by app name — the operation is additive and idempotent; it never
+deletes or modifies existing keys.
+
+**Caveat:** creating keys requires an existing API token to call `/Auth/Keys`,
+so this provisions **additional** keys. The very first credential still needs
+the API-key bootstrap (or manual creation via the Jellyfin dashboard) before
+jellarr can authenticate.
+
 ### Plugin Management
 
 ```yaml
