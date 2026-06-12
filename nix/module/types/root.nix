@@ -3,6 +3,7 @@
   inherit (types) nullOr;
 
   subTypes = {
+    apiKeys = import ./api-keys.nix {inherit lib;};
     brandingOptions = import ./branding-options.nix {inherit lib;};
     encodingOptions = import ./encoding-options.nix {inherit lib;};
     library = import ./library.nix {inherit lib;};
@@ -63,6 +64,11 @@
         default = null;
         description = "Startup configuration.";
       };
+      api_keys = mkOption {
+        type = nullOr subTypes.apiKeys.apiKeysConfigType;
+        default = null;
+        description = "API keys to create.";
+      };
     };
   };
 
@@ -95,6 +101,9 @@
       }
       // optionalAttrs (cfg ? startup && cfg.startup != null) {
         startup = subTypes.startup.mkStartupConfig cfg.startup;
+      }
+      // optionalAttrs (cfg ? api_keys && cfg.api_keys != null) {
+        api_keys = subTypes.apiKeys.mkApiKeysConfig cfg.api_keys;
       };
 in {
   inherit rootConfigType mkConfig;
