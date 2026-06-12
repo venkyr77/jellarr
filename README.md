@@ -386,11 +386,11 @@ curl -s -H "X-Emby-Token: $API_KEY" \
 
 Any `${VAR}` reference in the config file is replaced with the value of the
 environment variable `VAR` before the YAML is parsed. Because substitution runs
-on the raw text, it works for any value at any depth — including arbitrary
-plugin configuration. This keeps secrets (such as SSO client secrets) out of the
-config file and, for Nix users, out of the world-readable Nix store.
+on the raw text, it works for any value at any depth, including arbitrary plugin
+configuration. This keeps secrets (such as SSO client secrets) out of the config
+file and, for Nix users, out of the world-readable Nix store.
 
-- An **undefined** variable is a hard error — a missing secret fails loudly
+- An **undefined** variable is a hard error: a missing secret fails loudly
   instead of silently substituting an empty string.
 - Write `$$` for a literal dollar sign; `$${VAR}` therefore yields the literal
   text `${VAR}` (no expansion).
@@ -442,10 +442,10 @@ services.jellarr = {
 
 `environmentFile` places the secret in the service's environment, readable via
 `/proc/<pid>/environ` by privileged processes. For stronger isolation, source
-the variable from a systemd credential — materialized into a per-service ramfs
-at `$CREDENTIALS_DIRECTORY`, never on disk or in the global environment — and
-export it just for jellarr via a small wrapper. The `jellarr` package comes from
-the flake input:
+the variable from a systemd credential (materialized into a per-service ramfs at
+`$CREDENTIALS_DIRECTORY`, never on disk or in the global environment) and export
+it just for jellarr via a small wrapper. The `jellarr` package comes from the
+flake input:
 
 ```nix
 let
@@ -462,9 +462,9 @@ in
 }
 ```
 
-jellarr itself only ever reads environment variables — whether they come from an
-`environmentFile` or a credential wrapper is entirely the operator's choice, so
-this works identically on Docker and bare metal.
+jellarr itself only ever reads environment variables; whether they come from an
+`environmentFile` or a credential wrapper is the operator's choice, so this
+works identically on Docker and bare metal.
 
 ### With sops-nix (nix only)
 
