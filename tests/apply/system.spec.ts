@@ -1,46 +1,3 @@
-/**
- * Comprehensive System Apply Test Coverage
- *
- * ## enableMetrics (Scalar Boolean)
- * - ✅ Preserve when undefined (both true/false current states)
- * - ✅ Change: false → true, true → false (actual changes)
- * - ✅ No-change: true → true, false → false (same value)
- * - ✅ Logging behavior (changes logged vs no-changes not logged)
- *
- * ## pluginRepositories (Array)
- * - ✅ Preserve when undefined (populated/empty current states)
- * - ✅ Replace scenarios: empty ↔ populated, single ↔ multiple
- * - ✅ Content-identical detection (no unnecessary changes)
- * - ✅ Logging behavior for array changes
- *
- * ## trickplayOptions (Object)
- * - ✅ Preserve when undefined (populated/undefined current states)
- * - ✅ Partial updates (individual fields: enableHwAcceleration, enableHwEncoding)
- * - ✅ Full updates (both fields simultaneously)
- * - ✅ Empty object handling (preserves all current fields)
- * - ✅ Creating from undefined state
- * - ✅ Mixed updates (one field same, one different)
- * - ✅ Logging behavior for object changes
- * - ✅ Scalar field update (tileWidth)
- * - ✅ Enum field update (scanBehavior)
- *
- * ## trickplayOptions WidthResolutions (primitive array idempotency)
- * - ✅ Same array → no phantom diff (undefined)
- * - ✅ Grow ([320] → [480, 320]) → applies exactly + converges on re-run
- * - ✅ Shrink ([480, 320] → [320]) → applies exactly + converges on re-run
- * - ✅ Swap ([480] → [320]) → applies exactly without throwing
- * - ✅ Combined scalar change + array shrink → both land, converges
- * - ✅ Partial-config preservation (tileWidth-only keeps other fields)
- *
- * ## Multi-field Scenarios
- * - ✅ All three fields changing simultaneously
- * - ✅ Two-field combinations preserving the third
- * - ✅ Complete preservation when no changes specified
- *
- * ## Edge Cases
- * - ✅ Malformed state handling (null values)
- * - ✅ Robust error recovery
- */
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { calculateSystemDiff, applySystem } from "../../src/apply/system";
 import type { JellyfinClient } from "../../src/api/jellyfin.types";
@@ -200,7 +157,7 @@ describe("apply/system", () => {
         expect(result?.TrickplayOptions).toBeUndefined();
       });
 
-      it("should not modify EnableMetrics when value is the same (true → true)", () => {
+      it("should not modify EnableMetrics when value is the same (true -> true)", () => {
         // Arrange
         const current: ServerConfigurationSchema = {
           EnableMetrics: true,
@@ -218,7 +175,7 @@ describe("apply/system", () => {
         expect(result).toBeUndefined();
       });
 
-      it("should not modify EnableMetrics when value is the same (false → false)", () => {
+      it("should not modify EnableMetrics when value is the same (false -> false)", () => {
         // Arrange
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
@@ -282,7 +239,7 @@ describe("apply/system", () => {
         expect(result).toBeUndefined();
       });
 
-      it("should replace PluginRepositories when pluginRepositories is specified (populated → different populated)", () => {
+      it("should replace PluginRepositories when pluginRepositories is specified (populated -> different populated)", () => {
         // Arrange
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
@@ -312,7 +269,7 @@ describe("apply/system", () => {
         expect(result?.TrickplayOptions).toBeUndefined();
       });
 
-      it("should replace PluginRepositories (empty → populated)", () => {
+      it("should replace PluginRepositories (empty -> populated)", () => {
         // Arrange
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
@@ -338,7 +295,7 @@ describe("apply/system", () => {
         expect(result?.TrickplayOptions).toBeUndefined();
       });
 
-      it("should replace PluginRepositories (populated → empty)", () => {
+      it("should replace PluginRepositories (populated -> empty)", () => {
         // Arrange
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
@@ -362,7 +319,7 @@ describe("apply/system", () => {
         expect(result?.TrickplayOptions).toBeUndefined();
       });
 
-      it("should not modify PluginRepositories when content is the same (empty → empty)", () => {
+      it("should not modify PluginRepositories when content is the same (empty -> empty)", () => {
         // Arrange
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
@@ -382,7 +339,7 @@ describe("apply/system", () => {
         expect(result).toBeUndefined();
       });
 
-      it("should replace PluginRepositories (single → multiple)", () => {
+      it("should replace PluginRepositories (single -> multiple)", () => {
         // Arrange
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
@@ -414,7 +371,7 @@ describe("apply/system", () => {
         expect(result?.TrickplayOptions).toBeUndefined();
       });
 
-      it("should replace PluginRepositories (multiple → single)", () => {
+      it("should replace PluginRepositories (multiple -> single)", () => {
         // Arrange
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
@@ -785,11 +742,11 @@ describe("apply/system", () => {
         const result: ServerConfigurationSchema | undefined =
           calculateSystemDiff(current, desired);
 
-        // Assert — no phantom diff
+        // Assert: no phantom diff
         expect(result).toBeUndefined();
       });
 
-      it("should grow WidthResolutions ([320] → [480, 320]) and converge on re-run", () => {
+      it("should grow WidthResolutions ([320] -> [480, 320]) and converge on re-run", () => {
         // Arrange
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
@@ -806,27 +763,27 @@ describe("apply/system", () => {
           },
         };
 
-        // Act — first apply
+        // Act: first apply
         const result: ServerConfigurationSchema | undefined =
           calculateSystemDiff(current, desired);
 
-        // Assert — applied result is exactly the grown array (order preserved)
+        // Assert: exact grown array, order preserved
         expect(result?.TrickplayOptions?.WidthResolutions).toEqual([480, 320]);
         expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
         expect(result?.EnableMetrics).toBe(false);
         expect(result?.PluginRepositories).toEqual([]);
 
-        // Act — second apply (idempotency: re-run with result as current)
+        // Act: second apply (idempotency: re-run with result as current)
         expect(result).toBeDefined();
         const result2: ServerConfigurationSchema | undefined =
           calculateSystemDiff(result as ServerConfigurationSchema, desired);
 
-        // Assert — no further diff
+        // Assert: no further diff
         expect(result2).toBeUndefined();
       });
 
-      it("should shrink WidthResolutions ([480, 320] → [320]) and converge on re-run", () => {
-        // Arrange — current has the grown array
+      it("should shrink WidthResolutions ([480, 320] -> [320]) and converge on re-run", () => {
+        // Arrange: current has the grown array
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
           PluginRepositories: [],
@@ -842,27 +799,27 @@ describe("apply/system", () => {
           },
         };
 
-        // Act — first apply
+        // Act: first apply
         const result: ServerConfigurationSchema | undefined =
           calculateSystemDiff(current, desired);
 
-        // Assert — the shrink takes effect; result is exactly the shorter array
+        // Assert: shrink applied, exact result
         expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320]);
         expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
         expect(result?.EnableMetrics).toBe(false);
         expect(result?.PluginRepositories).toEqual([]);
 
-        // Act — second apply (idempotency)
+        // Act: second apply (idempotency)
         expect(result).toBeDefined();
         const result2: ServerConfigurationSchema | undefined =
           calculateSystemDiff(result as ServerConfigurationSchema, desired);
 
-        // Assert — no further diff
+        // Assert: no further diff
         expect(result2).toBeUndefined();
       });
 
-      it("should swap WidthResolutions ([480] → [320]) without throwing", () => {
-        // Arrange — a swap forces a $value REMOVE after an index shift, which
+      it("should swap WidthResolutions ([480] -> [320]) without throwing", () => {
+        // Arrange: a swap forces a $value REMOVE after an index shift, which whole-array replacement sidesteps
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
           PluginRepositories: [],
@@ -878,11 +835,11 @@ describe("apply/system", () => {
           },
         };
 
-        // Act — must not throw
+        // Act: must not throw
         const result: ServerConfigurationSchema | undefined =
           calculateSystemDiff(current, desired);
 
-        // Assert — exact replacement
+        // Assert: exact replacement
         expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320]);
         expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
 
@@ -914,7 +871,7 @@ describe("apply/system", () => {
         const result: ServerConfigurationSchema | undefined =
           calculateSystemDiff(current, desired);
 
-        // Assert — both changes land
+        // Assert: both changes land
         expect(result?.TrickplayOptions?.TileWidth).toBe(10);
         expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320]);
         expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
@@ -925,7 +882,7 @@ describe("apply/system", () => {
       });
 
       it("should not clobber other TrickplayOptions fields when only tileWidth is set", () => {
-        // Arrange — partial-config preservation: an unrelated existing field
+        // Arrange: partial-config preservation: an unrelated existing field
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
           PluginRepositories: [],
@@ -946,14 +903,14 @@ describe("apply/system", () => {
         const result: ServerConfigurationSchema | undefined =
           calculateSystemDiff(current, desired);
 
-        // Assert — tileWidth updated, everything else preserved
+        // Assert: tileWidth updated, everything else preserved
         expect(result?.TrickplayOptions?.TileWidth).toBe(10);
         expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true);
         expect(result?.TrickplayOptions?.WidthResolutions).toEqual([480, 320]);
       });
 
-      it("should shrink WidthResolutions across multiple elements ([320, 480, 640, 720, 1080] → [320, 480]) and converge", () => {
-        // Arrange — multi-element removal that index-shift diffing corrupts
+      it("should shrink WidthResolutions across multiple elements ([320, 480, 640, 720, 1080] -> [320, 480]) and converge", () => {
+        // Arrange: multi-element removal that index-shift diffing corrupts
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
           PluginRepositories: [],
@@ -969,25 +926,25 @@ describe("apply/system", () => {
           },
         };
 
-        // Act — first apply
+        // Act: first apply
         const result: ServerConfigurationSchema | undefined =
           calculateSystemDiff(current, desired);
 
-        // Assert — exact, order-preserving multi-element shrink
+        // Assert: exact, order-preserving multi-element shrink
         expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320, 480]);
         expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
 
-        // Act — second apply (idempotency)
+        // Act: second apply (idempotency)
         expect(result).toBeDefined();
         const result2: ServerConfigurationSchema | undefined =
           calculateSystemDiff(result as ServerConfigurationSchema, desired);
 
-        // Assert — no further diff
+        // Assert: no further diff
         expect(result2).toBeUndefined();
       });
 
-      it("should handle middle-element removal + reorder ([800, 640, 480, 320] → [320, 640]) and converge", () => {
-        // Arrange — non-contiguous removal with a reorder
+      it("should handle middle-element removal + reorder ([800, 640, 480, 320] -> [320, 640]) and converge", () => {
+        // Arrange: non-contiguous removal with a reorder
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
           PluginRepositories: [],
@@ -1003,25 +960,25 @@ describe("apply/system", () => {
           },
         };
 
-        // Act — first apply
+        // Act: first apply
         const result: ServerConfigurationSchema | undefined =
           calculateSystemDiff(current, desired);
 
-        // Assert — exact order equals desired, not merely the same set
+        // Assert: exact order, not just same set
         expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320, 640]);
         expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
 
-        // Act — second apply (idempotency)
+        // Act: second apply (idempotency)
         expect(result).toBeDefined();
         const result2: ServerConfigurationSchema | undefined =
           calculateSystemDiff(result as ServerConfigurationSchema, desired);
 
-        // Assert — no further diff
+        // Assert: no further diff
         expect(result2).toBeUndefined();
       });
 
       it("should add WidthResolutions when current TrickplayOptions lacks it", () => {
-        // Arrange — TrickplayOptions present but no WidthResolutions key
+        // Arrange: TrickplayOptions present but no WidthResolutions key
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
           PluginRepositories: [],
@@ -1040,13 +997,13 @@ describe("apply/system", () => {
         const result: ServerConfigurationSchema | undefined =
           calculateSystemDiff(current, desired);
 
-        // Assert — array added exactly
+        // Assert: array added exactly
         expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320]);
         expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
       });
 
       it("should create TrickplayOptions and set WidthResolutions when server has no TrickplayOptions at all", () => {
-        // Arrange — server has no TrickplayOptions; desired sets ONLY widthResolutions.
+        // Arrange: server has no TrickplayOptions; desired sets ONLY widthResolutions.
         const current: ServerConfigurationSchema = {
           EnableMetrics: false,
           PluginRepositories: [],
@@ -1057,19 +1014,19 @@ describe("apply/system", () => {
           trickplayOptions: { widthResolutions: [320] },
         };
 
-        // Act — first apply
+        // Act: first apply
         const result: ServerConfigurationSchema | undefined =
           calculateSystemDiff(current, desired);
 
-        // Assert — TrickplayOptions is lazily created and WidthResolutions is set exactly
+        // Assert: TrickplayOptions is lazily created and WidthResolutions is set exactly
         expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320]);
 
-        // Act — second apply (idempotency: re-run with result as current)
+        // Act: second apply (idempotency: re-run with result as current)
         expect(result).toBeDefined();
         const result2: ServerConfigurationSchema | undefined =
           calculateSystemDiff(result as ServerConfigurationSchema, desired);
 
-        // Assert — no further diff
+        // Assert: no further diff
         expect(result2).toBeUndefined();
       });
     });
@@ -1091,7 +1048,7 @@ describe("apply/system", () => {
           expect(result).toBeUndefined();
         });
 
-        it("should grow CorsHosts ([a] → [a, b, c]) and converge on re-run", () => {
+        it("should grow CorsHosts ([a] -> [a, b, c]) and converge on re-run", () => {
           const current: ServerConfigurationSchema = {
             EnableMetrics: false,
             PluginRepositories: [],
@@ -1111,7 +1068,7 @@ describe("apply/system", () => {
           expect(result2).toBeUndefined();
         });
 
-        it("should shrink CorsHosts across multiple elements ([a, b, c, d] → [a, b]) and converge", () => {
+        it("should shrink CorsHosts across multiple elements ([a, b, c, d] -> [a, b]) and converge", () => {
           const current: ServerConfigurationSchema = {
             EnableMetrics: false,
             PluginRepositories: [],
@@ -1131,7 +1088,7 @@ describe("apply/system", () => {
           expect(result2).toBeUndefined();
         });
 
-        it("should swap CorsHosts ([a] → [b]) and converge", () => {
+        it("should swap CorsHosts ([a] -> [b]) and converge", () => {
           const current: ServerConfigurationSchema = {
             EnableMetrics: false,
             PluginRepositories: [],
@@ -1206,7 +1163,7 @@ describe("apply/system", () => {
       });
 
       describe("sortReplaceCharacters (representative)", () => {
-        it("should multi-element shrink ([a, b, c, d] → [a, b]) and converge", () => {
+        it("should multi-element shrink ([a, b, c, d] -> [a, b]) and converge", () => {
           const current: ServerConfigurationSchema = {
             EnableMetrics: false,
             PluginRepositories: [],

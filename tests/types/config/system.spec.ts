@@ -379,7 +379,7 @@ describe("TrickplayOptionsConfig", () => {
   });
 
   it("should reject non-integer widthResolutions element", () => {
-    // Arrange — array elements are constrained by z.number().int()
+    // Arrange: array elements are constrained by z.number().int()
     const invalidConfig: z.input<typeof TrickplayOptionsConfigType> = {
       widthResolutions: [320.5],
     };
@@ -393,7 +393,7 @@ describe("TrickplayOptionsConfig", () => {
   });
 
   it("should validate processPriority High, RealTime, and AboveNormal", () => {
-    // Arrange — three enum values not covered by the single-value tests above
+    // Arrange: three enum values not covered by the single-value tests above
     const highConfig: z.input<typeof TrickplayOptionsConfigType> = {
       processPriority: "High",
     };
@@ -480,7 +480,7 @@ describe("SystemConfigType", () => {
   });
 });
 
-describe("SystemConfigType — extended ServerConfiguration fields", () => {
+describe("SystemConfigType - extended ServerConfiguration fields", () => {
   it("should accept imageSavingConvention Legacy", () => {
     // Arrange
     const config: z.input<typeof SystemConfigType> = {
@@ -675,7 +675,7 @@ describe("SystemConfigType — extended ServerConfiguration fields", () => {
   });
 
   it("should accept activityLogRetentionDays as null", () => {
-    // Arrange — schema marks this as number | null
+    // Arrange: schema marks this as number | null
     const config: z.input<typeof SystemConfigType> = {
       activityLogRetentionDays: null,
     };
@@ -742,7 +742,7 @@ describe("SystemConfigType — extended ServerConfiguration fields", () => {
   });
 
   it("should validate all new fields together", () => {
-    // Arrange — one representative value per new field (46 total)
+    // Arrange: one representative value per new field (46 total)
     const config: z.input<typeof SystemConfigType> = {
       imageSavingConvention: "Compatible",
       chapterImageResolution: "P1080",

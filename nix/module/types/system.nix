@@ -80,7 +80,7 @@
       jpegQuality = mkOption {
         type = nullOr types.int;
         default = null;
-        description = "JPEG quality (1–100) for trickplay images.";
+        description = "JPEG quality (1-100) for trickplay images.";
       };
     };
   };

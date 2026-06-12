@@ -1,34 +1,3 @@
-/**
- * Comprehensive System Mapper Test Coverage
- *
- * ## fromPluginRepositorySchemas
- * - ✅ Empty array conversion
- * - ✅ Multiple repository field mapping (Name→name, Url→url, Enabled→enabled)
- * - ✅ Single repository handling
- * - ✅ Disabled repository conversion
- *
- * ## toPluginRepositorySchemas
- * - ✅ Empty array conversion
- * - ✅ Multiple repository field mapping (name→Name, url→Url, enabled→Enabled)
- * - ✅ Single repository handling
- * - ✅ Disabled repository conversion
- *
- * ## mapSystemConfigurationConfigToSchema
- * - ✅ enableMetrics mapping (true/false)
- * - ✅ pluginRepositories mapping (populated/empty)
- * - ✅ trickplayOptions mapping (full/partial/empty)
- * - ✅ Multi-field combinations
- * - ✅ Empty config handling
- * - ✅ Undefined field exclusion validation
- * - ✅ imageSavingConvention enum mapping
- * - ✅ chapterImageResolution enum mapping
- * - ✅ corsHosts array mapping
- * - ✅ Numeric scalar fields (logFileRetentionDays, minResumePct, etc.)
- * - ✅ Boolean scalar fields (isStartupWizardCompleted, enableFolderView, etc.)
- * - ✅ String scalar fields (cachePath, metadataPath, uiCulture, etc.)
- * - ✅ Undefined new fields omitted from output
- * - ✅ All 46 new fields mapped simultaneously
- */
 import { describe, it, expect } from "vitest";
 import {
   toPluginRepositorySchemas,
@@ -501,7 +470,7 @@ describe("mappers/system", () => {
     });
 
     it("should omit undefined trickplayOptions fields from output", () => {
-      // Arrange — only interval set; all other fields absent
+      // Arrange: only interval set; all other fields absent
       const config: SystemConfig = {
         trickplayOptions: { interval: 5000 },
       };
@@ -530,7 +499,7 @@ describe("mappers/system", () => {
     });
 
     it("should map all 12 trickplayOptions fields simultaneously", () => {
-      // Arrange — all 12 fields set
+      // Arrange: all 12 fields set
       const config: SystemConfig = {
         trickplayOptions: {
           enableHwAcceleration: true,
@@ -570,7 +539,7 @@ describe("mappers/system", () => {
     });
 
     it("should map imageSavingConvention enum to ImageSavingConvention", () => {
-      // Arrange — enum value "Compatible"
+      // Arrange: enum value "Compatible"
       const config: SystemConfig = {
         imageSavingConvention: "Compatible",
       };
@@ -584,7 +553,7 @@ describe("mappers/system", () => {
     });
 
     it("should map chapterImageResolution enum to ChapterImageResolution", () => {
-      // Arrange — enum value "P1080"
+      // Arrange: enum value "P1080"
       const config: SystemConfig = {
         chapterImageResolution: "P1080",
       };
@@ -598,7 +567,7 @@ describe("mappers/system", () => {
     });
 
     it("should map corsHosts array to CorsHosts", () => {
-      // Arrange — two CORS origin strings
+      // Arrange: two CORS origin strings
       const config: SystemConfig = {
         corsHosts: ["https://app.example.com", "https://admin.example.com"],
       };
@@ -614,7 +583,7 @@ describe("mappers/system", () => {
     });
 
     it("should map numeric scalar fields", () => {
-      // Arrange — a representative set of integer scalars
+      // Arrange: a representative set of integer scalars
       const config: SystemConfig = {
         logFileRetentionDays: 14,
         minResumePct: 5,
@@ -644,7 +613,7 @@ describe("mappers/system", () => {
     });
 
     it("should map string scalar fields", () => {
-      // Arrange — path + locale strings
+      // Arrange: path + locale strings
       const config: SystemConfig = {
         cachePath: "/var/cache/jellyfin",
         metadataPath: "/var/lib/jellyfin/metadata",
@@ -668,7 +637,7 @@ describe("mappers/system", () => {
     });
 
     it("should map boolean scalar fields", () => {
-      // Arrange — a representative set of boolean flags
+      // Arrange: a representative set of boolean flags
       const config: SystemConfig = {
         isStartupWizardCompleted: true,
         enableFolderView: false,
@@ -692,7 +661,7 @@ describe("mappers/system", () => {
     });
 
     it("should omit new fields when they are undefined", () => {
-      // Arrange — only serverName; all 46 new fields absent
+      // Arrange: only serverName; all 46 new fields absent
       const config: SystemConfig = {
         serverName: "MyServer",
       };
@@ -701,7 +670,7 @@ describe("mappers/system", () => {
       const result: Partial<ServerConfigurationSchema> =
         mapSystemConfigurationConfigToSchema(config);
 
-      // Assert — new fields must not appear on the output
+      // Assert: new fields must not appear on the output
       expect(result).toEqual({ ServerName: "MyServer" });
       expect(result).not.toHaveProperty("ImageSavingConvention");
       expect(result).not.toHaveProperty("ChapterImageResolution");
@@ -752,7 +721,7 @@ describe("mappers/system", () => {
     });
 
     it("should map all 46 new ServerConfiguration fields simultaneously", () => {
-      // Arrange — every newly-added field set to a concrete value
+      // Arrange: every newly-added field set to a concrete value
       const config: SystemConfig = {
         imageSavingConvention: "Legacy",
         chapterImageResolution: "P720",
@@ -806,7 +775,7 @@ describe("mappers/system", () => {
       const result: Partial<ServerConfigurationSchema> =
         mapSystemConfigurationConfigToSchema(config);
 
-      // Assert — all 46 fields present with correct PascalCase keys
+      // Assert: all 46 fields present with correct PascalCase keys
       expect(result).toEqual({
         ImageSavingConvention: "Legacy",
         ChapterImageResolution: "P720",

@@ -56,7 +56,7 @@ describe("apply/networking", () => {
       const result: NetworkConfigurationSchema | undefined =
         calculateNetworkingDiff(current, desired);
 
-      // Assert — no change means undefined
+      // Assert: no change means undefined
       expect(result).toBeUndefined();
     });
 
@@ -131,7 +131,7 @@ describe("apply/networking", () => {
         const result: NetworkConfigurationSchema | undefined =
           calculateNetworkingDiff(current, desired);
 
-        // Assert — same arrays must produce no diff
+        // Assert: same arrays must produce no diff
         expect(result).toBeUndefined();
       });
 
@@ -148,22 +148,22 @@ describe("apply/networking", () => {
           knownProxies: ["10.0.0.1"],
         };
 
-        // Act — first pass should produce a change
+        // Act: first pass should produce a change
         const result: NetworkConfigurationSchema | undefined =
           calculateNetworkingDiff(current, desired);
 
-        // Assert — change detected
+        // Assert: change detected
         expect(result).not.toBeUndefined();
         expect(result?.PublishedServerUriBySubnet).toEqual(["all=https://new"]);
         expect(result?.KnownProxies).toEqual(["10.0.0.1"]);
         expect(result?.InternalHttpPort).toBe(8096);
 
-        // Act — second pass with result as new current → idempotent
+        // Act: second pass with result as new current -> idempotent
         if (!result) throw new Error("Expected result to be defined");
         const result2: NetworkConfigurationSchema | undefined =
           calculateNetworkingDiff(result, desired);
 
-        // Assert — no further diff
+        // Assert: no further diff
         expect(result2).toBeUndefined();
       });
 
@@ -178,20 +178,20 @@ describe("apply/networking", () => {
           knownProxies: ["10.0.0.1"],
         };
 
-        // Act — first pass applies the shrink
+        // Act: first pass applies the shrink
         const result: NetworkConfigurationSchema | undefined =
           calculateNetworkingDiff(current, desired);
 
-        // Assert — removed elements take effect
+        // Assert: removed elements take effect
         expect(result).not.toBeUndefined();
         expect(result?.KnownProxies).toEqual(["10.0.0.1"]);
 
-        // Act — second pass with result as new current → idempotent
+        // Act: second pass with result as new current -> idempotent
         if (!result) throw new Error("Expected result to be defined");
         const result2: NetworkConfigurationSchema | undefined =
           calculateNetworkingDiff(result, desired);
 
-        // Assert — converges
+        // Assert: converges
         expect(result2).toBeUndefined();
       });
 
@@ -208,22 +208,22 @@ describe("apply/networking", () => {
           knownProxies: ["10.0.0.3"],
         };
 
-        // Act — first pass applies both changes
+        // Act: first pass applies both changes
         const result: NetworkConfigurationSchema | undefined =
           calculateNetworkingDiff(current, desired);
 
-        // Assert — both changes are reflected
+        // Assert: both changes are reflected
         expect(result).not.toBeUndefined();
         expect(result?.EnableIPv6).toBe(true);
         expect(result?.KnownProxies).toEqual(["10.0.0.3"]);
         expect(result?.InternalHttpPort).toBe(8096);
 
-        // Act — second pass with result as new current → idempotent
+        // Act: second pass with result as new current -> idempotent
         if (!result) throw new Error("Expected result to be defined");
         const result2: NetworkConfigurationSchema | undefined =
           calculateNetworkingDiff(result, desired);
 
-        // Assert — converges
+        // Assert: converges
         expect(result2).toBeUndefined();
       });
 

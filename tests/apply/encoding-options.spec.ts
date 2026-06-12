@@ -1,64 +1,3 @@
-/**
- * Encoding Options Apply Test Coverage
- *
- * ## enableHardwareEncoding (Scalar Boolean)
- * - ✅ Change: false → true, true → false (actual changes)
- * - ✅ Preserve when undefined
- * - ✅ No-change: same value
- * - ✅ Logging behavior (changes logged vs no-changes not logged)
- * - ✅ Field preservation (other schema fields untouched)
- *
- * ## hardwareAccelerationType (Enum Field)
- * - ✅ Change: all 8 enum value transitions (actual changes)
- * - ✅ Preserve when undefined
- * - ✅ No-change: same value
- * - ✅ Logging behavior (changes logged vs no-changes not logged)
- * - ✅ Field preservation (other schema fields untouched)
- * - ✅ Default value handling (undefined → "none")
- *
- * ## vaapiDevice & qsvDevice (String Device Fields)
- * - ✅ Change: various device path transitions
- * - ✅ Preserve when undefined
- * - ✅ No-change: same value
- * - ✅ Logging behavior (changes logged vs no-changes not logged)
- * - ✅ Field preservation (other schema fields untouched)
- * - ✅ Empty string handling
- *
- * ## hardwareDecodingCodecs (Array Field)
- * - ✅ Change: various codec array configurations
- * - ✅ Preserve when undefined
- * - ✅ No-change: same array
- * - ✅ Logging behavior (changes logged vs no-changes not logged)
- * - ✅ Field preservation (other schema fields untouched)
- * - ✅ Empty array handling
- *
- * ## Boolean Decoding Fields (enableDecodingColorDepth10Hevc, enableDecodingColorDepth10Vp9, enableDecodingColorDepth10HevcRext, enableDecodingColorDepth12HevcRext)
- * - ✅ Change: false → true, true → false for each field
- * - ✅ Preserve when undefined
- * - ✅ No-change: same value
- * - ✅ Logging behavior (changes logged vs no-changes not logged)
- * - ✅ Field preservation (other schema fields untouched)
- *
- * ## Boolean Encoding Format Fields (allowHevcEncoding, allowAv1Encoding)
- * - ✅ Change: false → true, true → false for each field
- * - ✅ Preserve when undefined
- * - ✅ No-change: same value
- * - ✅ Logging behavior (changes logged vs no-changes not logged)
- * - ✅ Field preservation (other schema fields untouched)
- *
- * ## allowOnDemandMetadataBasedKeyframeExtractionForExtensions (Array Field)
- * - ✅ No-change: same array → undefined
- * - ✅ Grow array → exact result, then converges to undefined
- * - ✅ Shrink array → exact result proven, then converges to undefined
- * - ✅ Preserve when undefined
- * - ✅ Both HardwareDecodingCodecs and AllowOnDemand... change together
- *
- * ## Multi-field scenarios
- * - ✅ Both original fields together (change + preserve combinations)
- * - ✅ Mixed updates (one field same, one different)
- * - ✅ All 11 fields complete scenario
- * - ✅ Scalar/enum field updates (enableTonemapping, tonemappingAlgorithm)
- */
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import {
   calculateEncodingDiff,
@@ -939,7 +878,7 @@ describe("apply/encoding", () => {
       });
 
       it("should grow AllowOnDemandMetadataBasedKeyframeExtractionForExtensions and then converge", () => {
-        // Arrange — grow ["mkv"] → ["mkv", "mp4"]
+        // Arrange: grow ["mkv"] -> ["mkv", "mp4"]
         const current: EncodingOptionsSchema = {
           AllowOnDemandMetadataBasedKeyframeExtractionForExtensions: ["mkv"],
           EncodingThreadCount: 2,
@@ -971,7 +910,7 @@ describe("apply/encoding", () => {
       });
 
       it("should shrink AllowOnDemandMetadataBasedKeyframeExtractionForExtensions with exact result and then converge", () => {
-        // Arrange — shrink ["mkv", "mp4"] → ["mkv"]
+        // Arrange: shrink ["mkv", "mp4"] -> ["mkv"]
         const current: EncodingOptionsSchema = {
           AllowOnDemandMetadataBasedKeyframeExtractionForExtensions: [
             "mkv",
@@ -990,7 +929,7 @@ describe("apply/encoding", () => {
           desired,
         );
 
-        // Assert exact applied array — prove shrink actually takes effect
+        // Assert exact applied array - prove shrink actually takes effect
         expect(result).not.toBeUndefined();
         expect(
           result?.AllowOnDemandMetadataBasedKeyframeExtractionForExtensions,

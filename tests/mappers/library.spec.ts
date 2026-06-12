@@ -267,7 +267,7 @@ describe("mappers/library", () => {
     });
 
     it("should not include new fields on LibraryOptions when only required fields are provided", () => {
-      // Arrange — minimum valid config, no optional new fields
+      // Arrange: minimum valid config, no optional new fields
       const config: VirtualFolderConfig = {
         name: "Boxsets",
         collectionType: "boxsets",
@@ -280,7 +280,7 @@ describe("mappers/library", () => {
       const result: Partial<VirtualFolderInfoSchema> =
         mapVirtualFolderConfigToSchema(config);
 
-      // Assert — new guarded fields must be absent (not just undefined via key)
+      // Assert: new guarded fields must be absent (not just undefined via key)
       const libraryOptions: object = result.LibraryOptions ?? {};
       expect(libraryOptions).not.toHaveProperty("Enabled");
       expect(libraryOptions).not.toHaveProperty("EnablePhotos");
@@ -320,7 +320,7 @@ describe("mappers/library", () => {
     });
 
     it("should map all 27 new fields when all are provided", () => {
-      // Arrange — every new optional field supplied
+      // Arrange: every new optional field supplied
       const config: VirtualFolderConfig = {
         name: "All Fields",
         collectionType: "mixed",
@@ -363,7 +363,7 @@ describe("mappers/library", () => {
       const lo: VirtualFolderInfoSchema["LibraryOptions"] =
         result.LibraryOptions;
 
-      // Assert — all 27 guarded fields are present and correctly mapped
+      // Assert: all 27 guarded fields are present and correctly mapped
       expect(lo?.Enabled).toBe(true);
       expect(lo?.EnablePhotos).toBe(true);
       expect(lo?.EnableLUFSScan).toBe(true);

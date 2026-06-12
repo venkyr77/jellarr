@@ -35,9 +35,9 @@ function replaceArrayField<T>(
  * the scalar TrickplayOptions fields) are diffed through json-diff-ts with the
  * `withoutRemoves` chain that preserves fields the partial config omits.
  *
- * Primitive arrays — `TrickplayOptions.WidthResolutions` (a `number[]`) and the
+ * Primitive arrays - `TrickplayOptions.WidthResolutions` (a `number[]`) and the
  * top-level string arrays `SortReplaceCharacters`, `SortRemoveCharacters`,
- * `SortRemoveWords`, `CodecsUsed` and `CorsHosts` — are excluded from
+ * `SortRemoveWords`, `CodecsUsed` and `CorsHosts` - are excluded from
  * json-diff-ts (via `keysToSkip`) and handled by direct whole-array
  * assignment. The changeset pipeline's atomize/unatomize splits index-based
  * array REMOVE ops into siblings applied sequentially, which corrupts
