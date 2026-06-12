@@ -46,6 +46,9 @@ import {
   getPluginConfigurationSchemaByName,
 } from "../apply/plugins";
 import type { PluginConfig } from "../types/config/plugins";
+import { calculateApiKeysToCreate, createApiKeys } from "../apply/api-keys";
+import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
+import type { ApiKeyConfig } from "../types/config/api-keys";
 
 export async function runPipeline(path: string): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
@@ -237,6 +240,22 @@ export async function runPipeline(path: string): Promise<void> {
       console.log("✓ updated plugin configurations");
     } else {
       console.log("✓ plugin configurations already up to date");
+    }
+  }
+
+  if (cfg.api_keys) {
+    const currentApiKeys: AuthenticationInfoSchema[] =
+      await jellyfinClient.getApiKeys();
+    const keysToCreate: ApiKeyConfig[] | undefined = calculateApiKeysToCreate(
+      currentApiKeys,
+      cfg.api_keys,
+    );
+    if (keysToCreate) {
+      console.log("→ creating API keys");
+      await createApiKeys(jellyfinClient, keysToCreate);
+      console.log("✓ created API keys");
+    } else {
+      console.log("✓ API keys already up to date");
     }
   }
 
