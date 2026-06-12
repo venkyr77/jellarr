@@ -5,6 +5,7 @@ import type {
   PluginRepositorySchema,
 } from "../types/schema/system";
 import type { EncodingOptionsSchema } from "../types/schema/encoding-options";
+import type { NetworkConfigurationSchema } from "../types/schema/networking";
 import type {
   VirtualFolderInfoSchema,
   MediaPathInfoSchema,
@@ -15,6 +16,7 @@ import type {
   PluginInfoSchema,
   BasePluginConfigurationSchema,
 } from "../types/schema/plugins";
+import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 import * as yaml from "yaml";
 
 interface PluginWithConfig {
@@ -35,24 +37,30 @@ export async function runDump(baseUrl: string): Promise<void> {
   const [
     systemConfig,
     encodingConfig,
+    networkingConfig,
     virtualFolders,
     brandingConfig,
     users,
     plugins,
+    apiKeys,
   ]: [
     ServerConfigurationSchema,
     EncodingOptionsSchema,
+    NetworkConfigurationSchema,
     VirtualFolderInfoSchema[],
     BrandingOptionsDtoSchema,
     UserDtoSchema[],
     PluginInfoSchema[],
+    AuthenticationInfoSchema[],
   ] = await Promise.all([
     client.getSystemConfiguration(),
     client.getEncodingConfiguration(),
+    client.getNetworkingConfiguration(),
     client.getVirtualFolders(),
     client.getBrandingConfiguration(),
     client.getUsers(),
     client.getPlugins(),
+    client.getApiKeys(),
   ]);
 
   const pluginsWithConfig: PluginWithConfig[] = await Promise.all(
@@ -115,8 +123,70 @@ export async function runDump(baseUrl: string): Promise<void> {
         enableHwAcceleration:
           systemConfig.TrickplayOptions?.EnableHwAcceleration,
         enableHwEncoding: systemConfig.TrickplayOptions?.EnableHwEncoding,
+        enableKeyFrameOnlyExtraction:
+          systemConfig.TrickplayOptions?.EnableKeyFrameOnlyExtraction,
+        scanBehavior: systemConfig.TrickplayOptions?.ScanBehavior,
+        processPriority: systemConfig.TrickplayOptions?.ProcessPriority,
+        interval: systemConfig.TrickplayOptions?.Interval,
+        widthResolutions: systemConfig.TrickplayOptions?.WidthResolutions,
+        tileWidth: systemConfig.TrickplayOptions?.TileWidth,
+        tileHeight: systemConfig.TrickplayOptions?.TileHeight,
+        qscale: systemConfig.TrickplayOptions?.Qscale,
+        jpegQuality: systemConfig.TrickplayOptions?.JpegQuality,
         processThreads: systemConfig.TrickplayOptions?.ProcessThreads,
       },
+      imageSavingConvention: systemConfig.ImageSavingConvention,
+      chapterImageResolution: systemConfig.ChapterImageResolution,
+      sortReplaceCharacters: systemConfig.SortReplaceCharacters,
+      sortRemoveCharacters: systemConfig.SortRemoveCharacters,
+      sortRemoveWords: systemConfig.SortRemoveWords,
+      codecsUsed: systemConfig.CodecsUsed,
+      corsHosts: systemConfig.CorsHosts,
+      cachePath: systemConfig.CachePath,
+      metadataPath: systemConfig.MetadataPath,
+      preferredMetadataLanguage: systemConfig.PreferredMetadataLanguage,
+      metadataCountryCode: systemConfig.MetadataCountryCode,
+      uiCulture: systemConfig.UICulture,
+      logFileRetentionDays: systemConfig.LogFileRetentionDays,
+      minResumePct: systemConfig.MinResumePct,
+      maxResumePct: systemConfig.MaxResumePct,
+      minResumeDurationSeconds: systemConfig.MinResumeDurationSeconds,
+      minAudiobookResume: systemConfig.MinAudiobookResume,
+      maxAudiobookResume: systemConfig.MaxAudiobookResume,
+      inactiveSessionThreshold: systemConfig.InactiveSessionThreshold,
+      libraryMonitorDelay: systemConfig.LibraryMonitorDelay,
+      libraryUpdateDuration: systemConfig.LibraryUpdateDuration,
+      cacheSize: systemConfig.CacheSize,
+      remoteClientBitrateLimit: systemConfig.RemoteClientBitrateLimit,
+      imageExtractionTimeoutMs: systemConfig.ImageExtractionTimeoutMs,
+      slowResponseThresholdMs: systemConfig.SlowResponseThresholdMs,
+      activityLogRetentionDays: systemConfig.ActivityLogRetentionDays,
+      libraryScanFanoutConcurrency: systemConfig.LibraryScanFanoutConcurrency,
+      libraryMetadataRefreshConcurrency:
+        systemConfig.LibraryMetadataRefreshConcurrency,
+      dummyChapterDuration: systemConfig.DummyChapterDuration,
+      parallelImageEncodingLimit: systemConfig.ParallelImageEncodingLimit,
+      isStartupWizardCompleted: systemConfig.IsStartupWizardCompleted,
+      enableNormalizedItemByNameIds: systemConfig.EnableNormalizedItemByNameIds,
+      isPortAuthorized: systemConfig.IsPortAuthorized,
+      quickConnectAvailable: systemConfig.QuickConnectAvailable,
+      enableCaseSensitiveItemIds: systemConfig.EnableCaseSensitiveItemIds,
+      disableLiveTvChannelUserDataName:
+        systemConfig.DisableLiveTvChannelUserDataName,
+      skipDeserializationForBasicTypes:
+        systemConfig.SkipDeserializationForBasicTypes,
+      saveMetadataHidden: systemConfig.SaveMetadataHidden,
+      enableFolderView: systemConfig.EnableFolderView,
+      enableGroupingMoviesIntoCollections:
+        systemConfig.EnableGroupingMoviesIntoCollections,
+      enableGroupingShowsIntoCollections:
+        systemConfig.EnableGroupingShowsIntoCollections,
+      displaySpecialsWithinSeasons: systemConfig.DisplaySpecialsWithinSeasons,
+      enableExternalContentInSuggestions:
+        systemConfig.EnableExternalContentInSuggestions,
+      enableSlowResponseWarning: systemConfig.EnableSlowResponseWarning,
+      allowClientLogUpload: systemConfig.AllowClientLogUpload,
+      enableLegacyAuthorization: systemConfig.EnableLegacyAuthorization,
     },
 
     encoding: {
@@ -135,6 +205,74 @@ export async function runDump(baseUrl: string): Promise<void> {
         encodingConfig.EnableDecodingColorDepth12HevcRext,
       allowHevcEncoding: encodingConfig.AllowHevcEncoding,
       allowAv1Encoding: encodingConfig.AllowAv1Encoding,
+      enableFallbackFont: encodingConfig.EnableFallbackFont,
+      enableAudioVbr: encodingConfig.EnableAudioVbr,
+      enableThrottling: encodingConfig.EnableThrottling,
+      enableSegmentDeletion: encodingConfig.EnableSegmentDeletion,
+      enableTonemapping: encodingConfig.EnableTonemapping,
+      enableVppTonemapping: encodingConfig.EnableVppTonemapping,
+      enableVideoToolboxTonemapping:
+        encodingConfig.EnableVideoToolboxTonemapping,
+      deinterlaceDoubleRate: encodingConfig.DeinterlaceDoubleRate,
+      enableEnhancedNvdecDecoder: encodingConfig.EnableEnhancedNvdecDecoder,
+      preferSystemNativeHwDecoder: encodingConfig.PreferSystemNativeHwDecoder,
+      enableIntelLowPowerH264HwEncoder:
+        encodingConfig.EnableIntelLowPowerH264HwEncoder,
+      enableIntelLowPowerHevcHwEncoder:
+        encodingConfig.EnableIntelLowPowerHevcHwEncoder,
+      enableSubtitleExtraction: encodingConfig.EnableSubtitleExtraction,
+      encodingThreadCount: encodingConfig.EncodingThreadCount,
+      maxMuxingQueueSize: encodingConfig.MaxMuxingQueueSize,
+      throttleDelaySeconds: encodingConfig.ThrottleDelaySeconds,
+      segmentKeepSeconds: encodingConfig.SegmentKeepSeconds,
+      h264Crf: encodingConfig.H264Crf,
+      h265Crf: encodingConfig.H265Crf,
+      downMixAudioBoost: encodingConfig.DownMixAudioBoost,
+      tonemappingDesat: encodingConfig.TonemappingDesat,
+      tonemappingPeak: encodingConfig.TonemappingPeak,
+      tonemappingParam: encodingConfig.TonemappingParam,
+      vppTonemappingBrightness: encodingConfig.VppTonemappingBrightness,
+      vppTonemappingContrast: encodingConfig.VppTonemappingContrast,
+      transcodingTempPath: encodingConfig.TranscodingTempPath,
+      fallbackFontPath: encodingConfig.FallbackFontPath,
+      encoderAppPath: encodingConfig.EncoderAppPath,
+      encoderAppPathDisplay: encodingConfig.EncoderAppPathDisplay,
+      downMixStereoAlgorithm: encodingConfig.DownMixStereoAlgorithm,
+      tonemappingAlgorithm: encodingConfig.TonemappingAlgorithm,
+      tonemappingMode: encodingConfig.TonemappingMode,
+      tonemappingRange: encodingConfig.TonemappingRange,
+      encoderPreset: encodingConfig.EncoderPreset,
+      deinterlaceMethod: encodingConfig.DeinterlaceMethod,
+      allowOnDemandMetadataBasedKeyframeExtractionForExtensions:
+        encodingConfig.AllowOnDemandMetadataBasedKeyframeExtractionForExtensions,
+    },
+
+    networking: {
+      baseUrl: networkingConfig.BaseUrl,
+      enableHttps: networkingConfig.EnableHttps,
+      requireHttps: networkingConfig.RequireHttps,
+      certificatePath: networkingConfig.CertificatePath,
+      certificatePassword: networkingConfig.CertificatePassword,
+      internalHttpPort: networkingConfig.InternalHttpPort,
+      internalHttpsPort: networkingConfig.InternalHttpsPort,
+      publicHttpPort: networkingConfig.PublicHttpPort,
+      publicHttpsPort: networkingConfig.PublicHttpsPort,
+      autoDiscovery: networkingConfig.AutoDiscovery,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      enableUPnP: networkingConfig.EnableUPnP,
+      enableIPv4: networkingConfig.EnableIPv4,
+      enableIPv6: networkingConfig.EnableIPv6,
+      enableRemoteAccess: networkingConfig.EnableRemoteAccess,
+      localNetworkSubnets: networkingConfig.LocalNetworkSubnets,
+      localNetworkAddresses: networkingConfig.LocalNetworkAddresses,
+      knownProxies: networkingConfig.KnownProxies,
+      ignoreVirtualInterfaces: networkingConfig.IgnoreVirtualInterfaces,
+      virtualInterfaceNames: networkingConfig.VirtualInterfaceNames,
+      enablePublishedServerUriByRequest:
+        networkingConfig.EnablePublishedServerUriByRequest,
+      publishedServerUriBySubnet: networkingConfig.PublishedServerUriBySubnet,
+      remoteIPFilter: networkingConfig.RemoteIPFilter,
+      isRemoteIPFilterBlacklist: networkingConfig.IsRemoteIPFilterBlacklist,
     },
 
     library: {
@@ -173,6 +311,45 @@ export async function runDump(baseUrl: string): Promise<void> {
           automaticRefreshIntervalDays:
             folder.LibraryOptions?.AutomaticRefreshIntervalDays,
           enableRealtimeMonitor: folder.LibraryOptions?.EnableRealtimeMonitor,
+          enabled: folder.LibraryOptions?.Enabled,
+          enablePhotos: folder.LibraryOptions?.EnablePhotos,
+          enableLUFSScan: folder.LibraryOptions?.EnableLUFSScan,
+          enableAutomaticSeriesGrouping:
+            folder.LibraryOptions?.EnableAutomaticSeriesGrouping,
+          enableEmbeddedTitles: folder.LibraryOptions?.EnableEmbeddedTitles,
+          skipSubtitlesIfEmbeddedSubtitlesPresent:
+            folder.LibraryOptions?.SkipSubtitlesIfEmbeddedSubtitlesPresent,
+          skipSubtitlesIfAudioTrackMatches:
+            folder.LibraryOptions?.SkipSubtitlesIfAudioTrackMatches,
+          requirePerfectSubtitleMatch:
+            folder.LibraryOptions?.RequirePerfectSubtitleMatch,
+          saveSubtitlesWithMedia: folder.LibraryOptions?.SaveSubtitlesWithMedia,
+          saveLyricsWithMedia: folder.LibraryOptions?.SaveLyricsWithMedia,
+          preferNonstandardArtistsTag:
+            folder.LibraryOptions?.PreferNonstandardArtistsTag,
+          useCustomTagDelimiters: folder.LibraryOptions?.UseCustomTagDelimiters,
+          preferredMetadataLanguage:
+            folder.LibraryOptions?.PreferredMetadataLanguage,
+          metadataCountryCode: folder.LibraryOptions?.MetadataCountryCode,
+          seasonZeroDisplayName: folder.LibraryOptions?.SeasonZeroDisplayName,
+          allowEmbeddedSubtitles: folder.LibraryOptions?.AllowEmbeddedSubtitles,
+          disabledLocalMetadataReaders:
+            folder.LibraryOptions?.DisabledLocalMetadataReaders,
+          localMetadataReaderOrder:
+            folder.LibraryOptions?.LocalMetadataReaderOrder ?? undefined,
+          disabledSubtitleFetchers:
+            folder.LibraryOptions?.DisabledSubtitleFetchers,
+          subtitleFetcherOrder: folder.LibraryOptions?.SubtitleFetcherOrder,
+          disabledMediaSegmentProviders:
+            folder.LibraryOptions?.DisabledMediaSegmentProviders,
+          mediaSegmentProviderOrder:
+            folder.LibraryOptions?.MediaSegmentProviderOrder,
+          subtitleDownloadLanguages:
+            folder.LibraryOptions?.SubtitleDownloadLanguages ?? undefined,
+          disabledLyricFetchers: folder.LibraryOptions?.DisabledLyricFetchers,
+          lyricFetcherOrder: folder.LibraryOptions?.LyricFetcherOrder,
+          customTagDelimiters: folder.LibraryOptions?.CustomTagDelimiters,
+          delimiterWhitelist: folder.LibraryOptions?.DelimiterWhitelist,
         },
       })),
     },
@@ -199,6 +376,10 @@ export async function runDump(baseUrl: string): Promise<void> {
     })),
 
     plugins: pluginsWithConfig,
+
+    api_keys: apiKeys.map((key: AuthenticationInfoSchema) => ({
+      name: key.AppName,
+    })),
   };
 
   console.log(yaml.stringify(config));

@@ -10,28 +10,20 @@ export function calculateEncodingDiff(
   current: EncodingOptionsSchema,
   desired: EncodingOptionsConfig,
 ): EncodingOptionsSchema | undefined {
-  const next: EncodingOptionsSchema = mapEncodingOptionsConfigToSchema(desired);
+  const next: Partial<EncodingOptionsSchema> =
+    mapEncodingOptionsConfigToSchema(desired);
 
-  const patch: IChange[] = [
-    ...new ChangeSetBuilder(
-      diff(current, next, {
-        keysToSkip: ["HardwareDecodingCodecs"],
-        treatTypeChangeAsReplace: false,
-      }),
-    )
-      .withoutRemoves()
-      .toArray(),
-
-    ...new ChangeSetBuilder(
-      diff(current, next, {
-        embeddedObjKeys: { HardwareDecodingCodecs: "$value" },
-        treatTypeChangeAsReplace: false,
-      }),
-    )
-      .withKey("HardwareDecodingCodecs")
-      .withoutRemoves()
-      .toArray(),
-  ];
+  const patch: IChange[] = new ChangeSetBuilder(
+    diff(current, next, {
+      embeddedObjKeys: {
+        HardwareDecodingCodecs: "$value",
+        AllowOnDemandMetadataBasedKeyframeExtractionForExtensions: "$value",
+      },
+      treatTypeChangeAsReplace: false,
+    }),
+  )
+    .withoutRemoves()
+    .toArray();
 
   if (patch.length != 0) {
     logger.info(JSON.stringify(patch));

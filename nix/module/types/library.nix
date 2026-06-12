@@ -105,6 +105,146 @@
         default = null;
         description = "Enable realtime monitor.";
       };
+      enabled = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Enable this library.";
+      };
+      enablePhotos = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Enable photos in this library.";
+      };
+      enableLUFSScan = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Enable LUFS scan for audio normalization.";
+      };
+      enableAutomaticSeriesGrouping = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Enable automatic series grouping.";
+      };
+      enableEmbeddedTitles = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Enable embedded titles.";
+      };
+      skipSubtitlesIfEmbeddedSubtitlesPresent = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Skip subtitle fetching if embedded subtitles are present.";
+      };
+      skipSubtitlesIfAudioTrackMatches = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Skip subtitle fetching if an audio track matches the preferred language.";
+      };
+      requirePerfectSubtitleMatch = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Require a perfect subtitle match.";
+      };
+      saveSubtitlesWithMedia = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Save subtitles alongside media files.";
+      };
+      saveLyricsWithMedia = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Save lyrics alongside media files.";
+      };
+      preferNonstandardArtistsTag = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Prefer non-standard artists tag.";
+      };
+      useCustomTagDelimiters = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Use custom tag delimiters.";
+      };
+      preferredMetadataLanguage = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = "Preferred metadata language code.";
+      };
+      metadataCountryCode = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = "Metadata country code.";
+      };
+      seasonZeroDisplayName = mkOption {
+        type = nullOr types.str;
+        default = null;
+        description = "Display name for season zero (specials).";
+      };
+      allowEmbeddedSubtitles = mkOption {
+        type = nullOr (types.enum [
+          "AllowAll"
+          "AllowText"
+          "AllowImage"
+          "AllowNone"
+        ]);
+        default = null;
+        description = "Policy for allowing embedded subtitles.";
+      };
+      disabledLocalMetadataReaders = mkOption {
+        type = nullOr (types.listOf types.str);
+        default = null;
+        description = "List of disabled local metadata readers.";
+      };
+      localMetadataReaderOrder = mkOption {
+        type = nullOr (types.listOf types.str);
+        default = null;
+        description = "Order of local metadata readers.";
+      };
+      disabledSubtitleFetchers = mkOption {
+        type = nullOr (types.listOf types.str);
+        default = null;
+        description = "List of disabled subtitle fetchers.";
+      };
+      subtitleFetcherOrder = mkOption {
+        type = nullOr (types.listOf types.str);
+        default = null;
+        description = "Order of subtitle fetchers.";
+      };
+      disabledMediaSegmentProviders = mkOption {
+        type = nullOr (types.listOf types.str);
+        default = null;
+        description = "List of disabled media segment providers.";
+      };
+      mediaSegmentProviderOrder = mkOption {
+        type = nullOr (types.listOf types.str);
+        default = null;
+        description = "Order of media segment providers.";
+      };
+      subtitleDownloadLanguages = mkOption {
+        type = nullOr (types.listOf types.str);
+        default = null;
+        description = "Languages for which to download subtitles.";
+      };
+      disabledLyricFetchers = mkOption {
+        type = nullOr (types.listOf types.str);
+        default = null;
+        description = "List of disabled lyric fetchers.";
+      };
+      lyricFetcherOrder = mkOption {
+        type = nullOr (types.listOf types.str);
+        default = null;
+        description = "Order of lyric fetchers.";
+      };
+      customTagDelimiters = mkOption {
+        type = nullOr (types.listOf types.str);
+        default = null;
+        description = "Custom tag delimiters to use when splitting tags.";
+      };
+      delimiterWhitelist = mkOption {
+        type = nullOr (types.listOf types.str);
+        default = null;
+        description = "Whitelist of delimiters to preserve when splitting tags.";
+      };
       typeOptions = mkOption {
         type = types.listOf typeOptionsConfigType;
         default = [];
@@ -207,6 +347,87 @@
             }
             // optionalAttrs (lo ? enableRealtimeMonitor && lo.enableRealtimeMonitor != null) {
               inherit (lo) enableRealtimeMonitor;
+            }
+            // optionalAttrs (lo ? enabled && lo.enabled != null) {
+              inherit (lo) enabled;
+            }
+            // optionalAttrs (lo ? enablePhotos && lo.enablePhotos != null) {
+              inherit (lo) enablePhotos;
+            }
+            // optionalAttrs (lo ? enableLUFSScan && lo.enableLUFSScan != null) {
+              inherit (lo) enableLUFSScan;
+            }
+            // optionalAttrs (lo ? enableAutomaticSeriesGrouping && lo.enableAutomaticSeriesGrouping != null) {
+              inherit (lo) enableAutomaticSeriesGrouping;
+            }
+            // optionalAttrs (lo ? enableEmbeddedTitles && lo.enableEmbeddedTitles != null) {
+              inherit (lo) enableEmbeddedTitles;
+            }
+            // optionalAttrs (lo ? skipSubtitlesIfEmbeddedSubtitlesPresent && lo.skipSubtitlesIfEmbeddedSubtitlesPresent != null) {
+              inherit (lo) skipSubtitlesIfEmbeddedSubtitlesPresent;
+            }
+            // optionalAttrs (lo ? skipSubtitlesIfAudioTrackMatches && lo.skipSubtitlesIfAudioTrackMatches != null) {
+              inherit (lo) skipSubtitlesIfAudioTrackMatches;
+            }
+            // optionalAttrs (lo ? requirePerfectSubtitleMatch && lo.requirePerfectSubtitleMatch != null) {
+              inherit (lo) requirePerfectSubtitleMatch;
+            }
+            // optionalAttrs (lo ? saveSubtitlesWithMedia && lo.saveSubtitlesWithMedia != null) {
+              inherit (lo) saveSubtitlesWithMedia;
+            }
+            // optionalAttrs (lo ? saveLyricsWithMedia && lo.saveLyricsWithMedia != null) {
+              inherit (lo) saveLyricsWithMedia;
+            }
+            // optionalAttrs (lo ? preferNonstandardArtistsTag && lo.preferNonstandardArtistsTag != null) {
+              inherit (lo) preferNonstandardArtistsTag;
+            }
+            // optionalAttrs (lo ? useCustomTagDelimiters && lo.useCustomTagDelimiters != null) {
+              inherit (lo) useCustomTagDelimiters;
+            }
+            // optionalAttrs (lo ? preferredMetadataLanguage && lo.preferredMetadataLanguage != null) {
+              inherit (lo) preferredMetadataLanguage;
+            }
+            // optionalAttrs (lo ? metadataCountryCode && lo.metadataCountryCode != null) {
+              inherit (lo) metadataCountryCode;
+            }
+            // optionalAttrs (lo ? seasonZeroDisplayName && lo.seasonZeroDisplayName != null) {
+              inherit (lo) seasonZeroDisplayName;
+            }
+            // optionalAttrs (lo ? allowEmbeddedSubtitles && lo.allowEmbeddedSubtitles != null) {
+              inherit (lo) allowEmbeddedSubtitles;
+            }
+            // optionalAttrs (lo ? disabledLocalMetadataReaders && lo.disabledLocalMetadataReaders != null) {
+              inherit (lo) disabledLocalMetadataReaders;
+            }
+            // optionalAttrs (lo ? localMetadataReaderOrder && lo.localMetadataReaderOrder != null) {
+              inherit (lo) localMetadataReaderOrder;
+            }
+            // optionalAttrs (lo ? disabledSubtitleFetchers && lo.disabledSubtitleFetchers != null) {
+              inherit (lo) disabledSubtitleFetchers;
+            }
+            // optionalAttrs (lo ? subtitleFetcherOrder && lo.subtitleFetcherOrder != null) {
+              inherit (lo) subtitleFetcherOrder;
+            }
+            // optionalAttrs (lo ? disabledMediaSegmentProviders && lo.disabledMediaSegmentProviders != null) {
+              inherit (lo) disabledMediaSegmentProviders;
+            }
+            // optionalAttrs (lo ? mediaSegmentProviderOrder && lo.mediaSegmentProviderOrder != null) {
+              inherit (lo) mediaSegmentProviderOrder;
+            }
+            // optionalAttrs (lo ? subtitleDownloadLanguages && lo.subtitleDownloadLanguages != null) {
+              inherit (lo) subtitleDownloadLanguages;
+            }
+            // optionalAttrs (lo ? disabledLyricFetchers && lo.disabledLyricFetchers != null) {
+              inherit (lo) disabledLyricFetchers;
+            }
+            // optionalAttrs (lo ? lyricFetcherOrder && lo.lyricFetcherOrder != null) {
+              inherit (lo) lyricFetcherOrder;
+            }
+            // optionalAttrs (lo ? customTagDelimiters && lo.customTagDelimiters != null) {
+              inherit (lo) customTagDelimiters;
+            }
+            // optionalAttrs (lo ? delimiterWhitelist && lo.delimiterWhitelist != null) {
+              inherit (lo) delimiterWhitelist;
             }
             // optionalAttrs ((lo.typeOptions or []) != []) {
               typeOptions =

@@ -14,6 +14,7 @@ import {
   calculateBrandingOptionsDiff,
   applyBrandingOptions,
 } from "../apply/branding-options";
+import { calculateNetworkingDiff, applyNetworking } from "../apply/networking";
 import {
   calculateNewUsersDiff,
   calculateUserPoliciesDiff,
@@ -26,6 +27,7 @@ import type { VirtualFolderInfoSchema } from "../types/schema/library";
 import { type ServerConfigurationSchema } from "../types/schema/system";
 import { type EncodingOptionsSchema } from "../types/schema/encoding-options";
 import { type BrandingOptionsDtoSchema } from "../types/schema/branding-options";
+import { type NetworkConfigurationSchema } from "../types/schema/networking";
 import type { UserDtoSchema, UserPolicySchema } from "../types/schema/users";
 import type { UserConfig } from "../types/config/users";
 import { createJellyfinClient } from "../api/jellyfin_client";
@@ -44,6 +46,9 @@ import {
   getPluginConfigurationSchemaByName,
 } from "../apply/plugins";
 import type { PluginConfig } from "../types/config/plugins";
+import { calculateApiKeysToCreate, createApiKeys } from "../apply/api-keys";
+import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
+import type { ApiKeyConfig } from "../types/config/api-keys";
 
 export async function runPipeline(path: string): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
@@ -135,6 +140,22 @@ export async function runPipeline(path: string): Promise<void> {
     }
   }
 
+  if (cfg.networking) {
+    const currentNetworkingSchema: NetworkConfigurationSchema =
+      await jellyfinClient.getNetworkingConfiguration();
+
+    const updatedNetworkingSchema: NetworkConfigurationSchema | undefined =
+      calculateNetworkingDiff(currentNetworkingSchema, cfg.networking);
+
+    if (updatedNetworkingSchema) {
+      console.log("→ updating networking config");
+      await applyNetworking(jellyfinClient, updatedNetworkingSchema);
+      console.log("✓ updated networking config");
+    } else {
+      console.log("✓ networking config already up to date");
+    }
+  }
+
   if (cfg.users) {
     if (
       !currentVirtualFolders &&
@@ -219,6 +240,22 @@ export async function runPipeline(path: string): Promise<void> {
       console.log("✓ updated plugin configurations");
     } else {
       console.log("✓ plugin configurations already up to date");
+    }
+  }
+
+  if (cfg.api_keys) {
+    const currentApiKeys: AuthenticationInfoSchema[] =
+      await jellyfinClient.getApiKeys();
+    const keysToCreate: ApiKeyConfig[] | undefined = calculateApiKeysToCreate(
+      currentApiKeys,
+      cfg.api_keys,
+    );
+    if (keysToCreate) {
+      console.log("→ creating API keys");
+      await createApiKeys(jellyfinClient, keysToCreate);
+      console.log("✓ created API keys");
+    } else {
+      console.log("✓ API keys already up to date");
     }
   }
 

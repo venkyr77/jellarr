@@ -172,8 +172,25 @@ def validate_system_configuration(server):
                 all_of(
                     has_entry("EnableHwAcceleration", True),
                     has_entry("EnableHwEncoding", True),
+                    has_entry("EnableKeyFrameOnlyExtraction", True),
+                    has_entry("ScanBehavior", "NonBlocking"),
+                    has_entry("ProcessPriority", "Normal"),
+                    has_entry("Interval", 10000),
+                    has_entry("TileWidth", 320),
+                    has_entry("TileHeight", 180),
+                    has_entry("Qscale", 4),
+                    has_entry("JpegQuality", 90),
+                    has_entry("WidthResolutions", has_items(320, 640)),
                 ),
             ),
+            has_entry("CorsHosts", has_item("*")),
+            has_entry("ImageSavingConvention", "Legacy"),
+            has_entry("EnableFolderView", False),
+            has_entry("LibraryMonitorDelay", 60),
+            has_entry("SortRemoveWords", has_items("the", "a", "an")),
+            has_entry("UICulture", "en-US"),
+            has_entry("PreferredMetadataLanguage", "en"),
+            has_entry("MetadataCountryCode", "US"),
         ),
     )
 
@@ -199,6 +216,15 @@ def validate_encoding_configuration(server):
                 has_items("h264", "hevc", "mpeg2video", "vc1", "vp8", "vp9", "av1"),
             ),
             has_entry("VaapiDevice", "/dev/dri/renderD128"),
+            has_entry("EnableTonemapping", True),
+            has_entry("TonemappingAlgorithm", "bt2390"),
+            has_entry("TonemappingMode", "auto"),
+            has_entry("H264Crf", 23),
+            has_entry("H265Crf", 28),
+            has_entry("EncoderPreset", "auto"),
+            has_entry("DeinterlaceMethod", "yadif"),
+            has_entry("EnableSubtitleExtraction", True),
+            has_entry("MaxMuxingQueueSize", 2048),
         ),
     )
 
@@ -218,12 +244,17 @@ def validate_library_configuration(server):
                     has_entry("Name", "test-jellarr"),
                     has_entry(
                         "LibraryOptions",
-                        has_entry(
-                            "PathInfos",
-                            all_of(
-                                has_length(1),
-                                has_item(has_entry("Path", "/mnt/movies/English")),
+                        all_of(
+                            has_entry(
+                                "PathInfos",
+                                all_of(
+                                    has_length(1),
+                                    has_item(has_entry("Path", "/mnt/movies/English")),
+                                ),
                             ),
+                            has_entry("EnableAutomaticSeriesGrouping", True),
+                            has_entry("PreferredMetadataLanguage", "en"),
+                            has_entry("MetadataCountryCode", "US"),
                         ),
                     ),
                 )
@@ -320,6 +351,49 @@ def validate_user_authentication(server):
     print("✓ User authentication validated (passwords working)")
 
 
+def validate_networking_configuration(server):
+    network_config = get_jellyfin_config(server, "/network")
+
+    assert_that(
+        network_config,
+        all_of(
+            has_entry("EnableIPv6", True),
+            has_entry("AutoDiscovery", False),
+            has_entry("EnableUPnP", False),
+            has_entry("KnownProxies", has_item("10.0.0.1")),
+            has_entry(
+                "PublishedServerUriBySubnet",
+                has_item("all=https://jellyfin.example.com"),
+            ),
+        ),
+    )
+
+    print("✓ Networking configuration validated")
+
+
+def validate_api_keys(server):
+    auth_keys = get_jellyfin_data(server, "/Auth/Keys")
+
+    assert_that(
+        auth_keys,
+        has_entry(
+            "Items",
+            has_item(has_entry("AppName", "test-integration")),
+        ),
+    )
+
+    print("✓ API keys validated")
+
+
+def probe_readonly_fields(server):
+    cfg = get_jellyfin_config(server)
+
+    for field, want in [("IsPortAuthorized", True), ("QuickConnectAvailable", True)]:
+        got = cfg.get(field)
+        status = "round-trips" if got == want else "read-only/ignored"
+        print(f"[probe] {field}: wanted {want}, got {got} -> {status}")
+
+
 def setup_files_and_folders(server):
     server.succeed("echo 'test' > /tmp/test-pass-file")
     server.succeed("mkdir -p /mnt/movies/English")
@@ -353,6 +427,9 @@ def run_sanity_test(server):
     validate_branding_configuration(server)
     validate_user_management(server)
     validate_user_authentication(server)
+    validate_networking_configuration(server)
+    validate_api_keys(server)
+    probe_readonly_fields(server)
     print(
         "✅ SANITY test passed: Full configuration applied and validated successfully"
     )

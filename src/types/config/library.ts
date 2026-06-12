@@ -41,6 +41,40 @@ export const VirtualFolderConfigType: z.ZodObject<{
     saveLocalMetadata: z.ZodOptional<z.ZodBoolean>;
     automaticRefreshIntervalDays: z.ZodOptional<z.ZodNumber>;
     enableRealtimeMonitor: z.ZodOptional<z.ZodBoolean>;
+    enabled: z.ZodOptional<z.ZodBoolean>;
+    enablePhotos: z.ZodOptional<z.ZodBoolean>;
+    enableLUFSScan: z.ZodOptional<z.ZodBoolean>;
+    enableAutomaticSeriesGrouping: z.ZodOptional<z.ZodBoolean>;
+    enableEmbeddedTitles: z.ZodOptional<z.ZodBoolean>;
+    skipSubtitlesIfEmbeddedSubtitlesPresent: z.ZodOptional<z.ZodBoolean>;
+    skipSubtitlesIfAudioTrackMatches: z.ZodOptional<z.ZodBoolean>;
+    requirePerfectSubtitleMatch: z.ZodOptional<z.ZodBoolean>;
+    saveSubtitlesWithMedia: z.ZodOptional<z.ZodBoolean>;
+    saveLyricsWithMedia: z.ZodOptional<z.ZodBoolean>;
+    preferNonstandardArtistsTag: z.ZodOptional<z.ZodBoolean>;
+    useCustomTagDelimiters: z.ZodOptional<z.ZodBoolean>;
+    preferredMetadataLanguage: z.ZodOptional<z.ZodString>;
+    metadataCountryCode: z.ZodOptional<z.ZodString>;
+    seasonZeroDisplayName: z.ZodOptional<z.ZodString>;
+    allowEmbeddedSubtitles: z.ZodOptional<
+      z.ZodEnum<{
+        AllowAll: "AllowAll";
+        AllowText: "AllowText";
+        AllowImage: "AllowImage";
+        AllowNone: "AllowNone";
+      }>
+    >;
+    disabledLocalMetadataReaders: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    localMetadataReaderOrder: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    disabledSubtitleFetchers: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    subtitleFetcherOrder: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    disabledMediaSegmentProviders: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    mediaSegmentProviderOrder: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    subtitleDownloadLanguages: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    disabledLyricFetchers: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    lyricFetcherOrder: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    customTagDelimiters: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    delimiterWhitelist: z.ZodOptional<z.ZodArray<z.ZodString>>;
   }>;
 }> = z
   .object({
@@ -91,6 +125,35 @@ export const VirtualFolderConfigType: z.ZodObject<{
         saveLocalMetadata: z.boolean().optional(),
         automaticRefreshIntervalDays: z.number().int().nonnegative().optional(),
         enableRealtimeMonitor: z.boolean().optional(),
+        enabled: z.boolean().optional(),
+        enablePhotos: z.boolean().optional(),
+        enableLUFSScan: z.boolean().optional(),
+        enableAutomaticSeriesGrouping: z.boolean().optional(),
+        enableEmbeddedTitles: z.boolean().optional(),
+        skipSubtitlesIfEmbeddedSubtitlesPresent: z.boolean().optional(),
+        skipSubtitlesIfAudioTrackMatches: z.boolean().optional(),
+        requirePerfectSubtitleMatch: z.boolean().optional(),
+        saveSubtitlesWithMedia: z.boolean().optional(),
+        saveLyricsWithMedia: z.boolean().optional(),
+        preferNonstandardArtistsTag: z.boolean().optional(),
+        useCustomTagDelimiters: z.boolean().optional(),
+        preferredMetadataLanguage: z.string().optional(),
+        metadataCountryCode: z.string().optional(),
+        seasonZeroDisplayName: z.string().optional(),
+        allowEmbeddedSubtitles: z
+          .enum(["AllowAll", "AllowText", "AllowImage", "AllowNone"])
+          .optional(),
+        disabledLocalMetadataReaders: z.array(z.string().min(1)).optional(),
+        localMetadataReaderOrder: z.array(z.string().min(1)).optional(),
+        disabledSubtitleFetchers: z.array(z.string().min(1)).optional(),
+        subtitleFetcherOrder: z.array(z.string().min(1)).optional(),
+        disabledMediaSegmentProviders: z.array(z.string().min(1)).optional(),
+        mediaSegmentProviderOrder: z.array(z.string().min(1)).optional(),
+        subtitleDownloadLanguages: z.array(z.string().min(1)).optional(),
+        disabledLyricFetchers: z.array(z.string().min(1)).optional(),
+        lyricFetcherOrder: z.array(z.string().min(1)).optional(),
+        customTagDelimiters: z.array(z.string().min(1)).optional(),
+        delimiterWhitelist: z.array(z.string().min(1)).optional(),
       })
       .strict(),
   })

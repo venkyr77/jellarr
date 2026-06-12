@@ -1,56 +1,3 @@
-/**
- * Encoding Options Apply Test Coverage
- *
- * ## enableHardwareEncoding (Scalar Boolean)
- * - ✅ Change: false → true, true → false (actual changes)
- * - ✅ Preserve when undefined
- * - ✅ No-change: same value
- * - ✅ Logging behavior (changes logged vs no-changes not logged)
- * - ✅ Field preservation (other schema fields untouched)
- *
- * ## hardwareAccelerationType (Enum Field)
- * - ✅ Change: all 8 enum value transitions (actual changes)
- * - ✅ Preserve when undefined
- * - ✅ No-change: same value
- * - ✅ Logging behavior (changes logged vs no-changes not logged)
- * - ✅ Field preservation (other schema fields untouched)
- * - ✅ Default value handling (undefined → "none")
- *
- * ## vaapiDevice & qsvDevice (String Device Fields)
- * - ✅ Change: various device path transitions
- * - ✅ Preserve when undefined
- * - ✅ No-change: same value
- * - ✅ Logging behavior (changes logged vs no-changes not logged)
- * - ✅ Field preservation (other schema fields untouched)
- * - ✅ Empty string handling
- *
- * ## hardwareDecodingCodecs (Array Field)
- * - ✅ Change: various codec array configurations
- * - ✅ Preserve when undefined
- * - ✅ No-change: same array
- * - ✅ Logging behavior (changes logged vs no-changes not logged)
- * - ✅ Field preservation (other schema fields untouched)
- * - ✅ Empty array handling
- *
- * ## Boolean Decoding Fields (enableDecodingColorDepth10Hevc, enableDecodingColorDepth10Vp9, enableDecodingColorDepth10HevcRext, enableDecodingColorDepth12HevcRext)
- * - ✅ Change: false → true, true → false for each field
- * - ✅ Preserve when undefined
- * - ✅ No-change: same value
- * - ✅ Logging behavior (changes logged vs no-changes not logged)
- * - ✅ Field preservation (other schema fields untouched)
- *
- * ## Boolean Encoding Format Fields (allowHevcEncoding, allowAv1Encoding)
- * - ✅ Change: false → true, true → false for each field
- * - ✅ Preserve when undefined
- * - ✅ No-change: same value
- * - ✅ Logging behavior (changes logged vs no-changes not logged)
- * - ✅ Field preservation (other schema fields untouched)
- *
- * ## Multi-field scenarios
- * - ✅ Both original fields together (change + preserve combinations)
- * - ✅ Mixed updates (one field same, one different)
- * - ✅ All 11 fields complete scenario
- */
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import {
   calculateEncodingDiff,
@@ -905,6 +852,248 @@ describe("apply/encoding", () => {
           // Assert
           expect(result).toBeUndefined();
         });
+      });
+    });
+
+    describe("allowOnDemandMetadataBasedKeyframeExtractionForExtensions array field", () => {
+      it("should return undefined when AllowOnDemandMetadataBasedKeyframeExtractionForExtensions is the same", () => {
+        // Arrange
+        const current: EncodingOptionsSchema = {
+          AllowOnDemandMetadataBasedKeyframeExtractionForExtensions: ["mkv"],
+          EncodingThreadCount: 1,
+        } as EncodingOptionsSchema;
+
+        const desired: EncodingOptionsConfig = {
+          allowOnDemandMetadataBasedKeyframeExtractionForExtensions: ["mkv"],
+        };
+
+        // Act
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
+
+        // Assert
+        expect(result).toBeUndefined();
+      });
+
+      it("should grow AllowOnDemandMetadataBasedKeyframeExtractionForExtensions and then converge", () => {
+        // Arrange: grow ["mkv"] -> ["mkv", "mp4"]
+        const current: EncodingOptionsSchema = {
+          AllowOnDemandMetadataBasedKeyframeExtractionForExtensions: ["mkv"],
+          EncodingThreadCount: 2,
+        } as EncodingOptionsSchema;
+
+        const desired: EncodingOptionsConfig = {
+          allowOnDemandMetadataBasedKeyframeExtractionForExtensions: [
+            "mkv",
+            "mp4",
+          ],
+        };
+
+        // Act
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
+
+        // Assert exact result
+        expect(
+          result?.AllowOnDemandMetadataBasedKeyframeExtractionForExtensions,
+        ).toEqual(["mkv", "mp4"]);
+        expect(result?.EncodingThreadCount).toBe(2);
+
+        if (!result) throw new Error("Expected result to be defined");
+        const converged: EncodingOptionsSchema | undefined =
+          calculateEncodingDiff(result, desired);
+        expect(converged).toBeUndefined();
+      });
+
+      it("should shrink AllowOnDemandMetadataBasedKeyframeExtractionForExtensions with exact result and then converge", () => {
+        // Arrange: shrink ["mkv", "mp4"] -> ["mkv"]
+        const current: EncodingOptionsSchema = {
+          AllowOnDemandMetadataBasedKeyframeExtractionForExtensions: [
+            "mkv",
+            "mp4",
+          ],
+          EncodingThreadCount: 3,
+        } as EncodingOptionsSchema;
+
+        const desired: EncodingOptionsConfig = {
+          allowOnDemandMetadataBasedKeyframeExtractionForExtensions: ["mkv"],
+        };
+
+        // Act
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
+
+        // Assert exact applied array - prove shrink actually takes effect
+        expect(result).not.toBeUndefined();
+        expect(
+          result?.AllowOnDemandMetadataBasedKeyframeExtractionForExtensions,
+        ).toEqual(["mkv"]);
+        expect(result?.EncodingThreadCount).toBe(3);
+
+        if (!result) throw new Error("Expected result to be defined");
+        const converged: EncodingOptionsSchema | undefined =
+          calculateEncodingDiff(result, desired);
+        expect(converged).toBeUndefined();
+      });
+
+      it("should not modify AllowOnDemandMetadataBasedKeyframeExtractionForExtensions when undefined", () => {
+        // Arrange
+        const current: EncodingOptionsSchema = {
+          AllowOnDemandMetadataBasedKeyframeExtractionForExtensions: [
+            "mkv",
+            "ts",
+          ],
+          EncodingThreadCount: 1,
+        } as EncodingOptionsSchema;
+
+        const desired: EncodingOptionsConfig = {};
+
+        // Act
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
+
+        // Assert
+        expect(result).toBeUndefined();
+      });
+
+      it("should handle HardwareDecodingCodecs and AllowOnDemandMetadataBasedKeyframeExtractionForExtensions changing together", () => {
+        // Arrange
+        const current: EncodingOptionsSchema = {
+          HardwareDecodingCodecs: ["h264"],
+          AllowOnDemandMetadataBasedKeyframeExtractionForExtensions: ["mkv"],
+          EncodingThreadCount: 4,
+        } as EncodingOptionsSchema;
+
+        const desired: EncodingOptionsConfig = {
+          hardwareDecodingCodecs: ["h264", "hevc"],
+          allowOnDemandMetadataBasedKeyframeExtractionForExtensions: [
+            "mkv",
+            "mp4",
+            "ts",
+          ],
+        };
+
+        // Act
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
+
+        // Assert
+        expect(result?.HardwareDecodingCodecs).toEqual(["h264", "hevc"]);
+        expect(
+          result?.AllowOnDemandMetadataBasedKeyframeExtractionForExtensions,
+        ).toEqual(["mkv", "mp4", "ts"]);
+        expect(result?.EncodingThreadCount).toBe(4);
+
+        if (!result) throw new Error("Expected result to be defined");
+        const converged: EncodingOptionsSchema | undefined =
+          calculateEncodingDiff(result, desired);
+        expect(converged).toBeUndefined();
+      });
+
+      it("should keep HardwareDecodingCodecs idempotent when same array provided", () => {
+        // Arrange
+        const current: EncodingOptionsSchema = {
+          HardwareDecodingCodecs: ["h264", "hevc", "vp9"],
+          EncodingThreadCount: 4,
+        } as EncodingOptionsSchema;
+
+        const desired: EncodingOptionsConfig = {
+          hardwareDecodingCodecs: ["h264", "hevc", "vp9"],
+        };
+
+        // Act
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
+
+        // Assert
+        expect(result).toBeUndefined();
+      });
+    });
+
+    describe("scalar/enum field updates", () => {
+      it("should detect enableTonemapping change and preserve other fields", () => {
+        // Arrange
+        const current: EncodingOptionsSchema = {
+          EnableTonemapping: false,
+          HardwareAccelerationType: "vaapi",
+          EncodingThreadCount: 2,
+        } as EncodingOptionsSchema;
+
+        const desired: EncodingOptionsConfig = {
+          enableTonemapping: true,
+          hardwareAccelerationType: "vaapi",
+        };
+
+        // Act
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
+
+        // Assert
+        expect(result?.EnableTonemapping).toBe(true);
+        expect(result?.HardwareAccelerationType).toBe("vaapi");
+        expect(result?.EncodingThreadCount).toBe(2);
+      });
+
+      it("should detect tonemappingAlgorithm change and preserve other fields", () => {
+        // Arrange
+        const current: EncodingOptionsSchema = {
+          TonemappingAlgorithm: "none",
+          EnableHardwareEncoding: true,
+          EncodingThreadCount: 3,
+        } as EncodingOptionsSchema;
+
+        const desired: EncodingOptionsConfig = {
+          tonemappingAlgorithm: "hable",
+          enableHardwareEncoding: true,
+        };
+
+        // Act
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
+
+        // Assert
+        expect(result?.TonemappingAlgorithm).toBe("hable");
+        expect(result?.EnableHardwareEncoding).toBe(true);
+        expect(result?.EncodingThreadCount).toBe(3);
+      });
+
+      it("should return undefined when enableTonemapping and tonemappingAlgorithm are unchanged", () => {
+        // Arrange
+        const current: EncodingOptionsSchema = {
+          EnableTonemapping: true,
+          TonemappingAlgorithm: "reinhard",
+          EncodingThreadCount: 1,
+        } as EncodingOptionsSchema;
+
+        const desired: EncodingOptionsConfig = {
+          enableTonemapping: true,
+          tonemappingAlgorithm: "reinhard",
+        };
+
+        // Act
+        const result: EncodingOptionsSchema | undefined = calculateEncodingDiff(
+          current,
+          desired,
+        );
+
+        // Assert
+        expect(result).toBeUndefined();
       });
     });
 

@@ -182,6 +182,15 @@ version: 1
 base_url: "http://localhost:8096"
 system:
   enableMetrics: true # Enable Prometheus metrics endpoint
+  serverName: "Jellyfin"
+  preferredMetadataLanguage: "en"
+  metadataCountryCode: "US"
+  uiCulture: "en-US"
+  corsHosts: ["*"] # CORS allowed origins; configure here, not under networking
+  imageSavingConvention: "Legacy" # Legacy | Compatible
+  enableFolderView: false
+  quickConnectAvailable: true
+  libraryMonitorDelay: 60
   pluginRepositories:
     - name: "Jellyfin Official"
       url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
@@ -189,7 +198,21 @@ system:
   trickplayOptions:
     enableHwAcceleration: true
     enableHwEncoding: true
+    enableKeyFrameOnlyExtraction: true
+    scanBehavior: "NonBlocking" # NonBlocking | Blocking
+    processPriority: "BelowNormal" # Normal | Idle | High | RealTime | BelowNormal | AboveNormal
+    interval: 10000
+    widthResolutions: [320]
+    tileWidth: 10
+    tileHeight: 10
+    qscale: 4
+    jpegQuality: 90
+    processThreads: 1
 ```
+
+The full field set mirrors Jellyfin's `ServerConfiguration` object (46 scalar
+fields including `corsHosts`). CORS allowed origins are configured under
+`system`, not under a separate networking key.
 
 ### Encoding Configuration
 
@@ -216,7 +239,49 @@ encoding:
   enableDecodingColorDepth10Vp9: true
   allowHevcEncoding: false
   allowAv1Encoding: false
+  # tonemapping
+  enableTonemapping: true
+  tonemappingAlgorithm: "bt2390" # none|clip|linear|gamma|reinhard|hable|mobius|bt2390
+  tonemappingMode: "auto" # auto|max|rgb|lum|itp
+  # encoder quality
+  encoderPreset: "auto" # auto|placebo|veryslow|slower|slow|medium|fast|faster|veryfast|superfast|ultrafast
+  h264Crf: 23
+  h265Crf: 28
+  # deinterlacing
+  deinterlaceMethod: "yadif" # yadif|bwdif
+  # subtitles and keyframes
+  enableSubtitleExtraction: true
+  allowOnDemandMetadataBasedKeyframeExtractionForExtensions:
+    - mkv
 ```
+
+The full field set mirrors Jellyfin's `EncodingOptions` object.
+
+### Networking Configuration
+
+Jellarr manages the full Jellyfin NetworkConfiguration via the `networking` key.
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+networking:
+  internalHttpPort: 8096
+  publicHttpPort: 8096
+  enableIPv6: true
+  requireHttps: false
+  publishedServerUriBySubnet:
+    - "all=https://jellyfin.example.com"
+  knownProxies:
+    - "10.0.0.1"
+  certificatePassword: "changeme"
+```
+
+`certificatePassword` is a sensitive value; store it securely rather than
+committing it in plain text.
+
+The full field set mirrors Jellyfin's `NetworkConfiguration` object. Note that
+`corsHosts` is a `ServerConfiguration` field, not `NetworkConfiguration`, and is
+not part of the `networking` key.
 
 ### Library Configuration
 
@@ -230,12 +295,22 @@ library:
       libraryOptions:
         pathInfos:
           - path: "/data/movies"
-    - name: "TV Shows"
+    - name: "Shows"
       collectionType: "tvshows"
       libraryOptions:
         pathInfos:
           - path: "/data/tv"
+        enableAutomaticSeriesGrouping: true
+        preferredMetadataLanguage: "en"
+        metadataCountryCode: "US"
+        allowEmbeddedSubtitles: "AllowAll" # AllowAll|AllowText|AllowImage|AllowNone
+        subtitleDownloadLanguages:
+          - "eng"
+        subtitleFetcherOrder:
+          - "Open Subtitles"
 ```
+
+The full field set mirrors Jellyfin's `LibraryOptions` object.
 
 ### Branding Configuration
 
@@ -328,6 +403,23 @@ startup:
 
 Useful for automated deployments where you want to skip the interactive startup
 wizard.
+
+### API Keys
+
+```yaml
+version: 1
+base_url: "http://localhost:8096"
+api_keys:
+  - name: "jellarr"
+  - name: "my-integration"
+```
+
+Jellarr creates any API key whose name (`AppName`) doesn't already exist. It's
+additive and idempotent: existing keys are never modified or deleted.
+
+**Caveat:** calling `/Auth/Keys` needs an existing token, so this only adds
+keys. Provision the first credential via the API-key bootstrap or the Jellyfin
+dashboard.
 
 ### Plugin Management
 

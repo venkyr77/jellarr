@@ -8,6 +8,7 @@ import {
   type TrickplayOptionsSchema,
   type PluginRepositorySchema,
 } from "../types/schema/system";
+import { withoutUndefined } from "../lib/objects";
 
 export function toPluginRepositorySchemas(
   inRepos: PluginRepositoryConfig[],
@@ -24,35 +25,85 @@ export function toPluginRepositorySchemas(
 export function toTrickplayOptionsSchema(
   cfg: TrickplayOptionsConfig,
 ): TrickplayOptionsSchema {
-  const out: TrickplayOptionsSchema = {};
-  out.EnableHwAcceleration = cfg.enableHwAcceleration;
-  out.EnableHwEncoding = cfg.enableHwEncoding;
-  out.ProcessThreads = cfg.processThreads;
-  return out;
+  return withoutUndefined({
+    EnableHwAcceleration: cfg.enableHwAcceleration,
+    EnableHwEncoding: cfg.enableHwEncoding,
+    ProcessThreads: cfg.processThreads,
+    EnableKeyFrameOnlyExtraction: cfg.enableKeyFrameOnlyExtraction,
+    ScanBehavior: cfg.scanBehavior,
+    ProcessPriority: cfg.processPriority,
+    Interval: cfg.interval,
+    WidthResolutions: cfg.widthResolutions,
+    TileWidth: cfg.tileWidth,
+    TileHeight: cfg.tileHeight,
+    Qscale: cfg.qscale,
+    JpegQuality: cfg.jpegQuality,
+  }) as TrickplayOptionsSchema;
 }
 
 export function mapSystemConfigurationConfigToSchema(
   desired: SystemConfig,
 ): Partial<ServerConfigurationSchema> {
-  const out: Partial<ServerConfigurationSchema> = {};
-
-  if (desired.serverName !== undefined) {
-    out.ServerName = desired.serverName;
-  }
-
-  if (desired.enableMetrics !== undefined) {
-    out.EnableMetrics = desired.enableMetrics;
-  }
-
-  if (desired.pluginRepositories !== undefined) {
-    out.PluginRepositories = toPluginRepositorySchemas(
-      desired.pluginRepositories,
-    );
-  }
-
-  if (desired.trickplayOptions !== undefined) {
-    out.TrickplayOptions = toTrickplayOptionsSchema(desired.trickplayOptions);
-  }
-
-  return out;
+  return withoutUndefined({
+    ServerName: desired.serverName,
+    EnableMetrics: desired.enableMetrics,
+    PluginRepositories:
+      desired.pluginRepositories !== undefined
+        ? toPluginRepositorySchemas(desired.pluginRepositories)
+        : undefined,
+    TrickplayOptions:
+      desired.trickplayOptions !== undefined
+        ? toTrickplayOptionsSchema(desired.trickplayOptions)
+        : undefined,
+    ImageSavingConvention: desired.imageSavingConvention,
+    ChapterImageResolution: desired.chapterImageResolution,
+    SortReplaceCharacters: desired.sortReplaceCharacters,
+    SortRemoveCharacters: desired.sortRemoveCharacters,
+    SortRemoveWords: desired.sortRemoveWords,
+    CodecsUsed: desired.codecsUsed,
+    CorsHosts: desired.corsHosts,
+    CachePath: desired.cachePath,
+    MetadataPath: desired.metadataPath,
+    PreferredMetadataLanguage: desired.preferredMetadataLanguage,
+    MetadataCountryCode: desired.metadataCountryCode,
+    UICulture: desired.uiCulture,
+    LogFileRetentionDays: desired.logFileRetentionDays,
+    MinResumePct: desired.minResumePct,
+    MaxResumePct: desired.maxResumePct,
+    MinResumeDurationSeconds: desired.minResumeDurationSeconds,
+    MinAudiobookResume: desired.minAudiobookResume,
+    MaxAudiobookResume: desired.maxAudiobookResume,
+    InactiveSessionThreshold: desired.inactiveSessionThreshold,
+    LibraryMonitorDelay: desired.libraryMonitorDelay,
+    LibraryUpdateDuration: desired.libraryUpdateDuration,
+    CacheSize: desired.cacheSize,
+    RemoteClientBitrateLimit: desired.remoteClientBitrateLimit,
+    ImageExtractionTimeoutMs: desired.imageExtractionTimeoutMs,
+    SlowResponseThresholdMs: desired.slowResponseThresholdMs,
+    ActivityLogRetentionDays: desired.activityLogRetentionDays,
+    LibraryScanFanoutConcurrency: desired.libraryScanFanoutConcurrency,
+    LibraryMetadataRefreshConcurrency:
+      desired.libraryMetadataRefreshConcurrency,
+    DummyChapterDuration: desired.dummyChapterDuration,
+    ParallelImageEncodingLimit: desired.parallelImageEncodingLimit,
+    IsStartupWizardCompleted: desired.isStartupWizardCompleted,
+    EnableNormalizedItemByNameIds: desired.enableNormalizedItemByNameIds,
+    IsPortAuthorized: desired.isPortAuthorized,
+    QuickConnectAvailable: desired.quickConnectAvailable,
+    EnableCaseSensitiveItemIds: desired.enableCaseSensitiveItemIds,
+    DisableLiveTvChannelUserDataName: desired.disableLiveTvChannelUserDataName,
+    SkipDeserializationForBasicTypes: desired.skipDeserializationForBasicTypes,
+    SaveMetadataHidden: desired.saveMetadataHidden,
+    EnableFolderView: desired.enableFolderView,
+    EnableGroupingMoviesIntoCollections:
+      desired.enableGroupingMoviesIntoCollections,
+    EnableGroupingShowsIntoCollections:
+      desired.enableGroupingShowsIntoCollections,
+    DisplaySpecialsWithinSeasons: desired.displaySpecialsWithinSeasons,
+    EnableExternalContentInSuggestions:
+      desired.enableExternalContentInSuggestions,
+    EnableSlowResponseWarning: desired.enableSlowResponseWarning,
+    AllowClientLogUpload: desired.allowClientLogUpload,
+    EnableLegacyAuthorization: desired.enableLegacyAuthorization,
+  }) as Partial<ServerConfigurationSchema>;
 }

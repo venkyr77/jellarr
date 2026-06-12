@@ -291,6 +291,213 @@ describe("types/config/library", () => {
       );
     });
 
+    it("should accept new bool fields in libraryOptions", () => {
+      const config: z.input<typeof VirtualFolderConfigType> = {
+        name: "Music",
+        collectionType: "music",
+        libraryOptions: {
+          pathInfos: [{ path: "/data/music" }],
+          enabled: true,
+          enablePhotos: false,
+          enableLUFSScan: true,
+          enableAutomaticSeriesGrouping: false,
+          enableEmbeddedTitles: true,
+          skipSubtitlesIfEmbeddedSubtitlesPresent: false,
+          skipSubtitlesIfAudioTrackMatches: true,
+          requirePerfectSubtitleMatch: false,
+          saveSubtitlesWithMedia: true,
+          saveLyricsWithMedia: false,
+          preferNonstandardArtistsTag: true,
+          useCustomTagDelimiters: false,
+        },
+      };
+
+      const parsed: VirtualFolderConfig = VirtualFolderConfigType.parse(config);
+      expect(parsed.libraryOptions.enabled).toBe(true);
+      expect(parsed.libraryOptions.enablePhotos).toBe(false);
+      expect(parsed.libraryOptions.enableLUFSScan).toBe(true);
+      expect(parsed.libraryOptions.enableAutomaticSeriesGrouping).toBe(false);
+      expect(parsed.libraryOptions.enableEmbeddedTitles).toBe(true);
+      expect(
+        parsed.libraryOptions.skipSubtitlesIfEmbeddedSubtitlesPresent,
+      ).toBe(false);
+      expect(parsed.libraryOptions.skipSubtitlesIfAudioTrackMatches).toBe(true);
+      expect(parsed.libraryOptions.requirePerfectSubtitleMatch).toBe(false);
+      expect(parsed.libraryOptions.saveSubtitlesWithMedia).toBe(true);
+      expect(parsed.libraryOptions.saveLyricsWithMedia).toBe(false);
+      expect(parsed.libraryOptions.preferNonstandardArtistsTag).toBe(true);
+      expect(parsed.libraryOptions.useCustomTagDelimiters).toBe(false);
+    });
+
+    it("should accept new string fields in libraryOptions", () => {
+      const config: z.input<typeof VirtualFolderConfigType> = {
+        name: "Movies",
+        collectionType: "movies",
+        libraryOptions: {
+          pathInfos: [{ path: "/data/movies" }],
+          preferredMetadataLanguage: "en",
+          metadataCountryCode: "US",
+          seasonZeroDisplayName: "Specials",
+        },
+      };
+
+      const parsed: VirtualFolderConfig = VirtualFolderConfigType.parse(config);
+      expect(parsed.libraryOptions.preferredMetadataLanguage).toBe("en");
+      expect(parsed.libraryOptions.metadataCountryCode).toBe("US");
+      expect(parsed.libraryOptions.seasonZeroDisplayName).toBe("Specials");
+    });
+
+    it("should accept each valid allowEmbeddedSubtitles value", () => {
+      const values: readonly [
+        "AllowAll",
+        "AllowText",
+        "AllowImage",
+        "AllowNone",
+      ] = ["AllowAll", "AllowText", "AllowImage", "AllowNone"] as const;
+
+      for (const value of values) {
+        const config: z.input<typeof VirtualFolderConfigType> = {
+          name: "TV Shows",
+          collectionType: "tvshows",
+          libraryOptions: {
+            pathInfos: [{ path: "/data/shows" }],
+            allowEmbeddedSubtitles: value,
+          },
+        };
+
+        const parsed: VirtualFolderConfig =
+          VirtualFolderConfigType.parse(config);
+        expect(parsed.libraryOptions.allowEmbeddedSubtitles).toBe(value);
+      }
+    });
+
+    it("should reject an invalid allowEmbeddedSubtitles value", () => {
+      const result: z.ZodSafeParseResult<VirtualFolderConfig> =
+        VirtualFolderConfigType.safeParse({
+          name: "TV Shows",
+          collectionType: "tvshows",
+          libraryOptions: {
+            pathInfos: [{ path: "/data/shows" }],
+            allowEmbeddedSubtitles: "AllowSome",
+          },
+        });
+
+      expect(result.success).toBe(false);
+    });
+
+    it("should accept new string array fields in libraryOptions", () => {
+      const config: z.input<typeof VirtualFolderConfigType> = {
+        name: "TV Shows",
+        collectionType: "tvshows",
+        libraryOptions: {
+          pathInfos: [{ path: "/data/shows" }],
+          disabledLocalMetadataReaders: ["Nfo"],
+          localMetadataReaderOrder: ["Nfo", "TheMovieDB"],
+          disabledSubtitleFetchers: ["OpenSubtitles"],
+          subtitleFetcherOrder: ["OpenSubtitles", "SubDL"],
+          disabledMediaSegmentProviders: ["Emby"],
+          mediaSegmentProviderOrder: ["Emby", "Jellyfin"],
+          subtitleDownloadLanguages: ["en", "fr"],
+          disabledLyricFetchers: ["LrcLib"],
+          lyricFetcherOrder: ["LrcLib", "Musixmatch"],
+          customTagDelimiters: ["/", ";"],
+          delimiterWhitelist: ["/"],
+        },
+      };
+
+      const parsed: VirtualFolderConfig = VirtualFolderConfigType.parse(config);
+      expect(parsed.libraryOptions.disabledLocalMetadataReaders).toEqual([
+        "Nfo",
+      ]);
+      expect(parsed.libraryOptions.localMetadataReaderOrder).toEqual([
+        "Nfo",
+        "TheMovieDB",
+      ]);
+      expect(parsed.libraryOptions.disabledSubtitleFetchers).toEqual([
+        "OpenSubtitles",
+      ]);
+      expect(parsed.libraryOptions.subtitleFetcherOrder).toEqual([
+        "OpenSubtitles",
+        "SubDL",
+      ]);
+      expect(parsed.libraryOptions.disabledMediaSegmentProviders).toEqual([
+        "Emby",
+      ]);
+      expect(parsed.libraryOptions.mediaSegmentProviderOrder).toEqual([
+        "Emby",
+        "Jellyfin",
+      ]);
+      expect(parsed.libraryOptions.subtitleDownloadLanguages).toEqual([
+        "en",
+        "fr",
+      ]);
+      expect(parsed.libraryOptions.disabledLyricFetchers).toEqual(["LrcLib"]);
+      expect(parsed.libraryOptions.lyricFetcherOrder).toEqual([
+        "LrcLib",
+        "Musixmatch",
+      ]);
+      expect(parsed.libraryOptions.customTagDelimiters).toEqual(["/", ";"]);
+      expect(parsed.libraryOptions.delimiterWhitelist).toEqual(["/"]);
+    });
+
+    it("should accept all 27 new fields together in libraryOptions", () => {
+      const config: z.input<typeof VirtualFolderConfigType> = {
+        name: "Music",
+        collectionType: "music",
+        libraryOptions: {
+          pathInfos: [{ path: "/data/music" }],
+          enabled: true,
+          enablePhotos: true,
+          enableLUFSScan: true,
+          enableAutomaticSeriesGrouping: false,
+          enableEmbeddedTitles: true,
+          skipSubtitlesIfEmbeddedSubtitlesPresent: false,
+          skipSubtitlesIfAudioTrackMatches: false,
+          requirePerfectSubtitleMatch: true,
+          saveSubtitlesWithMedia: true,
+          saveLyricsWithMedia: true,
+          preferNonstandardArtistsTag: false,
+          useCustomTagDelimiters: true,
+          preferredMetadataLanguage: "en",
+          metadataCountryCode: "US",
+          seasonZeroDisplayName: "Extras",
+          allowEmbeddedSubtitles: "AllowText",
+          disabledLocalMetadataReaders: ["Nfo"],
+          localMetadataReaderOrder: ["Nfo"],
+          disabledSubtitleFetchers: ["OpenSubtitles"],
+          subtitleFetcherOrder: ["OpenSubtitles"],
+          disabledMediaSegmentProviders: ["Emby"],
+          mediaSegmentProviderOrder: ["Emby"],
+          subtitleDownloadLanguages: ["en"],
+          disabledLyricFetchers: ["LrcLib"],
+          lyricFetcherOrder: ["LrcLib"],
+          customTagDelimiters: [";"],
+          delimiterWhitelist: [";"],
+        },
+      };
+
+      expect(() => VirtualFolderConfigType.parse(config)).not.toThrow();
+      const parsed: VirtualFolderConfig = VirtualFolderConfigType.parse(config);
+      expect(parsed.libraryOptions.enabled).toBe(true);
+      expect(parsed.libraryOptions.allowEmbeddedSubtitles).toBe("AllowText");
+      expect(parsed.libraryOptions.preferredMetadataLanguage).toBe("en");
+      expect(parsed.libraryOptions.customTagDelimiters).toEqual([";"]);
+    });
+
+    it("should still reject unknown keys in libraryOptions (.strict())", () => {
+      const result: z.ZodSafeParseResult<VirtualFolderConfig> =
+        VirtualFolderConfigType.safeParse({
+          name: "Movies",
+          collectionType: "movies",
+          libraryOptions: {
+            pathInfos: [{ path: "/test" }],
+            unknownNewField: "not allowed",
+          },
+        });
+
+      expect(result.success).toBe(false);
+    });
+
     it("should infer correct TypeScript types", () => {
       const parsed: VirtualFolderConfig = {
         name: "Movies",

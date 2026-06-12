@@ -5,8 +5,10 @@
   testArgs = {inherit lib assertEq assertThrows assertSucceeds;};
 
   allTests =
-    (import ./branding-options.nix testArgs)
+    (import ./api-keys.nix testArgs)
+    ++ (import ./branding-options.nix testArgs)
     ++ (import ./encoding-options.nix testArgs)
+    ++ (import ./networking.nix testArgs)
     ++ (import ./library.nix testArgs)
     ++ (import ./plugins.nix testArgs)
     ++ (import ./root.nix testArgs)
