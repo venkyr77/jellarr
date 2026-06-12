@@ -25,9 +25,9 @@
 
   mkBrandingOptionsConfig = cfg:
     {}
-    // optionalAttrs (cfg.loginDisclaimer != null) {inherit (cfg) loginDisclaimer;}
-    // optionalAttrs (cfg.customCss != null) {inherit (cfg) customCss;}
-    // optionalAttrs (cfg.splashscreenEnabled != null) {inherit (cfg) splashscreenEnabled;};
+    // optionalAttrs (cfg ? loginDisclaimer && cfg.loginDisclaimer != null) {inherit (cfg) loginDisclaimer;}
+    // optionalAttrs (cfg ? customCss && cfg.customCss != null) {inherit (cfg) customCss;}
+    // optionalAttrs (cfg ? splashscreenEnabled && cfg.splashscreenEnabled != null) {inherit (cfg) splashscreenEnabled;};
 in {
   inherit brandingOptionsConfigType mkBrandingOptionsConfig;
 }

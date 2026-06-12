@@ -125,29 +125,29 @@
 
   mkNetworkingConfig = cfg:
     {}
-    // optionalAttrs (cfg.baseUrl != null) {inherit (cfg) baseUrl;}
-    // optionalAttrs (cfg.enableHttps != null) {inherit (cfg) enableHttps;}
-    // optionalAttrs (cfg.requireHttps != null) {inherit (cfg) requireHttps;}
-    // optionalAttrs (cfg.autoDiscovery != null) {inherit (cfg) autoDiscovery;}
-    // optionalAttrs (cfg.enableUPnP != null) {inherit (cfg) enableUPnP;}
-    // optionalAttrs (cfg.enableIPv4 != null) {inherit (cfg) enableIPv4;}
-    // optionalAttrs (cfg.enableIPv6 != null) {inherit (cfg) enableIPv6;}
-    // optionalAttrs (cfg.enableRemoteAccess != null) {inherit (cfg) enableRemoteAccess;}
-    // optionalAttrs (cfg.ignoreVirtualInterfaces != null) {inherit (cfg) ignoreVirtualInterfaces;}
-    // optionalAttrs (cfg.enablePublishedServerUriByRequest != null) {inherit (cfg) enablePublishedServerUriByRequest;}
-    // optionalAttrs (cfg.isRemoteIPFilterBlacklist != null) {inherit (cfg) isRemoteIPFilterBlacklist;}
-    // optionalAttrs (cfg.certificatePath != null) {inherit (cfg) certificatePath;}
-    // optionalAttrs (cfg.certificatePassword != null) {inherit (cfg) certificatePassword;}
-    // optionalAttrs (cfg.internalHttpPort != null) {inherit (cfg) internalHttpPort;}
-    // optionalAttrs (cfg.internalHttpsPort != null) {inherit (cfg) internalHttpsPort;}
-    // optionalAttrs (cfg.publicHttpPort != null) {inherit (cfg) publicHttpPort;}
-    // optionalAttrs (cfg.publicHttpsPort != null) {inherit (cfg) publicHttpsPort;}
-    // optionalAttrs (cfg.localNetworkSubnets != null) {inherit (cfg) localNetworkSubnets;}
-    // optionalAttrs (cfg.localNetworkAddresses != null) {inherit (cfg) localNetworkAddresses;}
-    // optionalAttrs (cfg.knownProxies != null) {inherit (cfg) knownProxies;}
-    // optionalAttrs (cfg.virtualInterfaceNames != null) {inherit (cfg) virtualInterfaceNames;}
-    // optionalAttrs (cfg.publishedServerUriBySubnet != null) {inherit (cfg) publishedServerUriBySubnet;}
-    // optionalAttrs (cfg.remoteIPFilter != null) {inherit (cfg) remoteIPFilter;};
+    // optionalAttrs (cfg ? baseUrl && cfg.baseUrl != null) {inherit (cfg) baseUrl;}
+    // optionalAttrs (cfg ? enableHttps && cfg.enableHttps != null) {inherit (cfg) enableHttps;}
+    // optionalAttrs (cfg ? requireHttps && cfg.requireHttps != null) {inherit (cfg) requireHttps;}
+    // optionalAttrs (cfg ? autoDiscovery && cfg.autoDiscovery != null) {inherit (cfg) autoDiscovery;}
+    // optionalAttrs (cfg ? enableUPnP && cfg.enableUPnP != null) {inherit (cfg) enableUPnP;}
+    // optionalAttrs (cfg ? enableIPv4 && cfg.enableIPv4 != null) {inherit (cfg) enableIPv4;}
+    // optionalAttrs (cfg ? enableIPv6 && cfg.enableIPv6 != null) {inherit (cfg) enableIPv6;}
+    // optionalAttrs (cfg ? enableRemoteAccess && cfg.enableRemoteAccess != null) {inherit (cfg) enableRemoteAccess;}
+    // optionalAttrs (cfg ? ignoreVirtualInterfaces && cfg.ignoreVirtualInterfaces != null) {inherit (cfg) ignoreVirtualInterfaces;}
+    // optionalAttrs (cfg ? enablePublishedServerUriByRequest && cfg.enablePublishedServerUriByRequest != null) {inherit (cfg) enablePublishedServerUriByRequest;}
+    // optionalAttrs (cfg ? isRemoteIPFilterBlacklist && cfg.isRemoteIPFilterBlacklist != null) {inherit (cfg) isRemoteIPFilterBlacklist;}
+    // optionalAttrs (cfg ? certificatePath && cfg.certificatePath != null) {inherit (cfg) certificatePath;}
+    // optionalAttrs (cfg ? certificatePassword && cfg.certificatePassword != null) {inherit (cfg) certificatePassword;}
+    // optionalAttrs (cfg ? internalHttpPort && cfg.internalHttpPort != null) {inherit (cfg) internalHttpPort;}
+    // optionalAttrs (cfg ? internalHttpsPort && cfg.internalHttpsPort != null) {inherit (cfg) internalHttpsPort;}
+    // optionalAttrs (cfg ? publicHttpPort && cfg.publicHttpPort != null) {inherit (cfg) publicHttpPort;}
+    // optionalAttrs (cfg ? publicHttpsPort && cfg.publicHttpsPort != null) {inherit (cfg) publicHttpsPort;}
+    // optionalAttrs (cfg ? localNetworkSubnets && cfg.localNetworkSubnets != null) {inherit (cfg) localNetworkSubnets;}
+    // optionalAttrs (cfg ? localNetworkAddresses && cfg.localNetworkAddresses != null) {inherit (cfg) localNetworkAddresses;}
+    // optionalAttrs (cfg ? knownProxies && cfg.knownProxies != null) {inherit (cfg) knownProxies;}
+    // optionalAttrs (cfg ? virtualInterfaceNames && cfg.virtualInterfaceNames != null) {inherit (cfg) virtualInterfaceNames;}
+    // optionalAttrs (cfg ? publishedServerUriBySubnet && cfg.publishedServerUriBySubnet != null) {inherit (cfg) publishedServerUriBySubnet;}
+    // optionalAttrs (cfg ? remoteIPFilter && cfg.remoteIPFilter != null) {inherit (cfg) remoteIPFilter;};
 in {
   inherit networkingConfigType mkNetworkingConfig;
 }

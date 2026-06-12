@@ -72,28 +72,28 @@
       {
         inherit (cfg) version base_url;
       }
-      // optionalAttrs (cfg.system != null) {
+      // optionalAttrs (cfg ? system && cfg.system != null) {
         system = subTypes.system.mkSystemConfig cfg.system;
       }
-      // optionalAttrs (cfg.encoding != null) {
+      // optionalAttrs (cfg ? encoding && cfg.encoding != null) {
         encoding = subTypes.encodingOptions.mkEncodingOptionsConfig cfg.encoding;
       }
-      // optionalAttrs (cfg.networking != null) {
+      // optionalAttrs (cfg ? networking && cfg.networking != null) {
         networking = subTypes.networking.mkNetworkingConfig cfg.networking;
       }
-      // optionalAttrs (cfg.library != null) {
+      // optionalAttrs (cfg ? library && cfg.library != null) {
         library = subTypes.library.mkLibraryConfig cfg.library;
       }
-      // optionalAttrs (cfg.branding != null) {
+      // optionalAttrs (cfg ? branding && cfg.branding != null) {
         branding = subTypes.brandingOptions.mkBrandingOptionsConfig cfg.branding;
       }
-      // optionalAttrs (cfg.users != null) {
+      // optionalAttrs (cfg ? users && cfg.users != null) {
         users = subTypes.users.mkUsersConfig cfg.users;
       }
-      // optionalAttrs (cfg.plugins != null) {
+      // optionalAttrs (cfg ? plugins && cfg.plugins != null) {
         plugins = subTypes.plugins.mkPluginsConfig cfg.plugins;
       }
-      // optionalAttrs (cfg.startup != null) {
+      // optionalAttrs (cfg ? startup && cfg.startup != null) {
         startup = subTypes.startup.mkStartupConfig cfg.startup;
       };
 in {
