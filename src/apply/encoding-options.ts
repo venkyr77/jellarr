@@ -10,9 +10,10 @@ export function calculateEncodingDiff(
   current: EncodingOptionsSchema,
   desired: EncodingOptionsConfig,
 ): EncodingOptionsSchema | undefined {
-  const next: EncodingOptionsSchema = mapEncodingOptionsConfigToSchema(desired);
+  const next: Partial<EncodingOptionsSchema> =
+    mapEncodingOptionsConfigToSchema(desired);
 
-  const arrayPassChangeset: ChangeSetBuilder = new ChangeSetBuilder(
+  const patch: IChange[] = new ChangeSetBuilder(
     diff(current, next, {
       embeddedObjKeys: {
         HardwareDecodingCodecs: "$value",
@@ -20,31 +21,9 @@ export function calculateEncodingDiff(
       },
       treatTypeChangeAsReplace: false,
     }),
-  );
-
-  const patch: IChange[] = [
-    ...new ChangeSetBuilder(
-      diff(current, next, {
-        keysToSkip: [
-          "HardwareDecodingCodecs",
-          "AllowOnDemandMetadataBasedKeyframeExtractionForExtensions",
-        ],
-        treatTypeChangeAsReplace: false,
-      }),
-    )
-      .withoutRemoves()
-      .toArray(),
-
-    ...arrayPassChangeset
-      .withKey("HardwareDecodingCodecs")
-      .withoutRemoves()
-      .toArray(),
-
-    ...arrayPassChangeset
-      .withKey("AllowOnDemandMetadataBasedKeyframeExtractionForExtensions")
-      .withoutRemoves()
-      .toArray(),
-  ];
+  )
+    .withoutRemoves()
+    .toArray();
 
   if (patch.length != 0) {
     logger.info(JSON.stringify(patch));

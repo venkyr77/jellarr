@@ -27,26 +27,11 @@ export function calculateNetworkingDiff(
     embeddedObjKeys[key] = "$value";
   }
 
-  const arrayChangeset: ChangeSetBuilder = new ChangeSetBuilder(
+  const patch: IChange[] = new ChangeSetBuilder(
     diff(current, next, { embeddedObjKeys, treatTypeChangeAsReplace: false }),
-  ).withoutRemoves();
-  const arrayPatch: IChange[] = ARRAY_KEYS.flatMap(
-    (key: keyof NetworkConfigurationSchema) =>
-      arrayChangeset.withKey(key as string).toArray(),
-  );
-
-  const patch: IChange[] = [
-    ...new ChangeSetBuilder(
-      diff(current, next, {
-        keysToSkip: ARRAY_KEYS as string[],
-        treatTypeChangeAsReplace: false,
-      }),
-    )
-      .withoutRemoves()
-      .toArray(),
-
-    ...arrayPatch,
-  ];
+  )
+    .withoutRemoves()
+    .toArray();
 
   if (patch.length !== 0) {
     logger.info(JSON.stringify(patch));
