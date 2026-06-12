@@ -46,11 +46,15 @@ function resolveFolderId(
  * leaf key is the changed field (e.g. "Path"), while the owning folder Name
  * lives in the JSONPath as a `[?(@.Name=='<name>')]` filter segment, so the
  * path is consulted first before falling back to key/embeddedKey/value.Name.
+ *
+ * The capture uses a non-greedy `.+?` anchored on the closing `'")]` or `")]`
+ * delimiter so that folder names containing apostrophes (e.g. `Kids' Movies`)
+ * are captured in full rather than truncated at the inner quote.
  */
 function resolveChangeName(change: ChangeWithValue): string | undefined {
   const path: string | undefined = change.path;
   if (typeof path === "string") {
-    const match: RegExpExecArray | null = /@\.Name==['"]([^'"]+)['"]/.exec(
+    const match: RegExpExecArray | null = /@\.Name==['"](.+?)['"]\)\]/.exec(
       path,
     );
     if (match) return match[1];

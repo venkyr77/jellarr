@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { calculateLibraryDiff, applyLibrary } from "../../src/apply/library";
+import {
+  calculateLibraryDiff,
+  applyLibrary,
+  type LibraryDiff,
+} from "../../src/apply/library";
 import type { JellyfinClient } from "../../src/api/jellyfin.types";
 import type {
   LibraryConfig,
@@ -330,6 +334,89 @@ describe("apply/library", () => {
         },
       ]);
       expect(result?.toCreate).toBeUndefined();
+    });
+
+    it("should update existing folder whose name contains an apostrophe", () => {
+      const currentVirtualFolders: VirtualFolderInfoSchema[] = [
+        {
+          ItemId: "kids-movies-id",
+          Name: "Kids' Movies",
+          CollectionType: "movies",
+          LibraryOptions: {
+            PathInfos: [{ Path: "/data/kids" }],
+          } as LibraryOptionsSchema,
+        },
+      ];
+      const desired: VirtualFolderConfig[] = [
+        {
+          name: "Kids' Movies",
+          collectionType: "movies",
+          libraryOptions: {
+            pathInfos: [{ path: "/data/kids-new" }],
+          },
+        },
+      ];
+
+      const result: LibraryDiff | undefined = calculateLibraryDiff(
+        currentVirtualFolders,
+        desired,
+      );
+
+      expect(result?.toCreate).toBeUndefined();
+      expect(result?.toUpdate).toEqual([
+        {
+          id: "kids-movies-id",
+          name: "Kids' Movies",
+          libraryOptions: {
+            PathInfos: [{ Path: "/data/kids-new" }],
+          },
+        },
+      ]);
+    });
+
+    it("should not misroute a new apostrophe-named folder into an update of a prefix-matching folder", () => {
+      const currentVirtualFolders: VirtualFolderInfoSchema[] = [
+        {
+          ItemId: "kids-id",
+          Name: "Kids",
+          CollectionType: "movies",
+          LibraryOptions: {
+            PathInfos: [{ Path: "/data/kids" }],
+          } as LibraryOptionsSchema,
+        },
+      ];
+      const desired: VirtualFolderConfig[] = [
+        {
+          name: "Kids",
+          collectionType: "movies",
+          libraryOptions: {
+            pathInfos: [{ path: "/data/kids" }],
+          },
+        },
+        {
+          name: "Kids' Movies",
+          collectionType: "movies",
+          libraryOptions: {
+            pathInfos: [{ path: "/data/kids-movies" }],
+          },
+        },
+      ];
+
+      const result: LibraryDiff | undefined = calculateLibraryDiff(
+        currentVirtualFolders,
+        desired,
+      );
+
+      expect(result?.toCreate).toEqual([
+        {
+          Name: "Kids' Movies",
+          CollectionType: "movies",
+          LibraryOptions: {
+            PathInfos: [{ Path: "/data/kids-movies" }],
+          },
+        },
+      ]);
+      expect(result?.toUpdate).toBeUndefined();
     });
 
     it("should handle mixed create and existing scenarios", () => {
