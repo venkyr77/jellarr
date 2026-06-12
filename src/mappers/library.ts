@@ -13,23 +13,53 @@ export function mapVirtualFolderConfigToSchema(
     PathInfos: opts.pathInfos.map((pathInfo: { path: string }) => ({
       Path: pathInfo.path,
     })),
-    TypeOptions: opts.typeOptions,
-    AutomaticallyAddToCollection: opts.automaticallyAddToCollection,
-    EnableChapterImageExtraction: opts.enableChapterImageExtraction,
-    ExtractChapterImagesDuringLibraryScan:
-      opts.extractChapterImagesDuringLibraryScan,
-    ExtractTrickplayImagesDuringLibraryScan:
-      opts.extractTrickplayImagesDuringLibraryScan,
-    EnableEmbeddedEpisodeInfos: opts.enableEmbeddedEpisodeInfos,
-    EnableEmbeddedExtrasTitles: opts.enableEmbeddedExtraTitles,
-    EnableTrickplayImageExtraction: opts.enableTrickplayImageExtraction,
-    SaveTrickplayWithMedia: opts.saveTrickplayWithMedia,
-    MetadataSavers: opts.metadataSavers,
-    SaveLocalMetadata: opts.saveLocalMetadata,
-    AutomaticRefreshIntervalDays: opts.automaticRefreshIntervalDays,
-    EnableRealtimeMonitor: opts.enableRealtimeMonitor,
   };
 
+  if (opts.typeOptions !== undefined) {
+    LibraryOptions.TypeOptions = opts.typeOptions;
+  }
+  if (opts.automaticallyAddToCollection !== undefined) {
+    LibraryOptions.AutomaticallyAddToCollection =
+      opts.automaticallyAddToCollection;
+  }
+  if (opts.enableChapterImageExtraction !== undefined) {
+    LibraryOptions.EnableChapterImageExtraction =
+      opts.enableChapterImageExtraction;
+  }
+  if (opts.extractChapterImagesDuringLibraryScan !== undefined) {
+    LibraryOptions.ExtractChapterImagesDuringLibraryScan =
+      opts.extractChapterImagesDuringLibraryScan;
+  }
+  if (opts.extractTrickplayImagesDuringLibraryScan !== undefined) {
+    LibraryOptions.ExtractTrickplayImagesDuringLibraryScan =
+      opts.extractTrickplayImagesDuringLibraryScan;
+  }
+  if (opts.enableEmbeddedEpisodeInfos !== undefined) {
+    LibraryOptions.EnableEmbeddedEpisodeInfos = opts.enableEmbeddedEpisodeInfos;
+  }
+  if (opts.enableEmbeddedExtraTitles !== undefined) {
+    LibraryOptions.EnableEmbeddedExtrasTitles = opts.enableEmbeddedExtraTitles;
+  }
+  if (opts.enableTrickplayImageExtraction !== undefined) {
+    LibraryOptions.EnableTrickplayImageExtraction =
+      opts.enableTrickplayImageExtraction;
+  }
+  if (opts.saveTrickplayWithMedia !== undefined) {
+    LibraryOptions.SaveTrickplayWithMedia = opts.saveTrickplayWithMedia;
+  }
+  if (opts.metadataSavers !== undefined) {
+    LibraryOptions.MetadataSavers = opts.metadataSavers;
+  }
+  if (opts.saveLocalMetadata !== undefined) {
+    LibraryOptions.SaveLocalMetadata = opts.saveLocalMetadata;
+  }
+  if (opts.automaticRefreshIntervalDays !== undefined) {
+    LibraryOptions.AutomaticRefreshIntervalDays =
+      opts.automaticRefreshIntervalDays;
+  }
+  if (opts.enableRealtimeMonitor !== undefined) {
+    LibraryOptions.EnableRealtimeMonitor = opts.enableRealtimeMonitor;
+  }
   if (opts.enabled !== undefined) {
     LibraryOptions.Enabled = opts.enabled;
   }
