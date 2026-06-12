@@ -1470,6 +1470,179 @@ describe("apply/system", () => {
       });
     });
 
+    describe("extended scalar fields (generic diff pass)", () => {
+      it("should apply imageSavingConvention enum (Legacy -> Compatible) and be idempotent", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          ImageSavingConvention: "Legacy",
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          imageSavingConvention: "Compatible",
+        };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert: change detected and applied exactly
+        expect(result?.ImageSavingConvention).toBe("Compatible");
+        expect(result?.EnableMetrics).toBe(false);
+
+        // Act: re-run with result as current (idempotency)
+        expect(result).toBeDefined();
+        const result2: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(result as ServerConfigurationSchema, desired);
+
+        // Assert: no further diff
+        expect(result2).toBeUndefined();
+      });
+
+      it("should apply libraryMonitorDelay int and be idempotent", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          LibraryMonitorDelay: 60,
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = { libraryMonitorDelay: 90 };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert
+        expect(result?.LibraryMonitorDelay).toBe(90);
+
+        const result2: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(result as ServerConfigurationSchema, desired);
+        expect(result2).toBeUndefined();
+      });
+
+      it("should apply enableFolderView bool and be idempotent", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          EnableFolderView: false,
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = { enableFolderView: true };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert
+        expect(result?.EnableFolderView).toBe(true);
+
+        const result2: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(result as ServerConfigurationSchema, desired);
+        expect(result2).toBeUndefined();
+      });
+
+      it("should apply cachePath string and be idempotent", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          CachePath: "/old/cache",
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = { cachePath: "/new/cache" };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert
+        expect(result?.CachePath).toBe("/new/cache");
+
+        const result2: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(result as ServerConfigurationSchema, desired);
+        expect(result2).toBeUndefined();
+      });
+
+      it("should apply an enum + int + bool change together", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          ImageSavingConvention: "Legacy",
+          LibraryMonitorDelay: 60,
+          EnableFolderView: false,
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          imageSavingConvention: "Compatible",
+          libraryMonitorDelay: 120,
+          enableFolderView: true,
+        };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert: all three land
+        expect(result?.ImageSavingConvention).toBe("Compatible");
+        expect(result?.LibraryMonitorDelay).toBe(120);
+        expect(result?.EnableFolderView).toBe(true);
+
+        const result2: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(result as ServerConfigurationSchema, desired);
+        expect(result2).toBeUndefined();
+      });
+
+      it("should not clobber unrelated server fields when only cachePath is set (partial-config)", () => {
+        // Arrange: server carries unrelated scalar + TrickplayOptions field
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: true,
+          PluginRepositories: [],
+          ImageSavingConvention: "Legacy",
+          TrickplayOptions: {
+            EnableHwAcceleration: true,
+            EnableHwEncoding: false,
+          },
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = { cachePath: "/new/cache" };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert: cachePath set, everything else preserved
+        expect(result?.CachePath).toBe("/new/cache");
+        expect(result?.EnableMetrics).toBe(true);
+        expect(result?.ImageSavingConvention).toBe("Legacy");
+        expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(true);
+        expect(result?.TrickplayOptions?.EnableHwEncoding).toBe(false);
+      });
+
+      it("should return undefined when a new scalar equals its current value", () => {
+        // Arrange
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          ImageSavingConvention: "Compatible",
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          imageSavingConvention: "Compatible",
+        };
+
+        // Act
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert
+        expect(result).toBeUndefined();
+      });
+    });
+
     describe("edge cases", () => {
       it("should handle malformed current state (null TrickplayOptions)", () => {
         // Arrange

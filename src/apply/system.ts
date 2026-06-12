@@ -4,7 +4,13 @@ import type { JellyfinClient } from "../api/jellyfin.types";
 import { mapSystemConfigurationConfigToSchema } from "../mappers/system";
 import { type SystemConfig } from "../types/config/system";
 import { type ServerConfigurationSchema } from "../types/schema/system";
-import { diff, applyChangeset, type IChange } from "json-diff-ts";
+import {
+  diff,
+  applyChangeset,
+  Operation,
+  type IChange,
+  type IAtomicChange,
+} from "json-diff-ts";
 import { deepEqual } from "fast-equals";
 
 /**
@@ -31,9 +37,12 @@ function replaceArrayField<T>(
 /**
  * Diff the desired system configuration against the server's current state.
  *
- * Scalar/enum/boolean fields (ServerName, EnableMetrics, PluginRepositories and
- * the scalar TrickplayOptions fields) are diffed through json-diff-ts with the
- * `withoutRemoves` chain that preserves fields the partial config omits.
+ * ALL scalar/enum/boolean fields (ServerName, EnableMetrics, every
+ * ServerConfiguration scalar such as ImageSavingConvention, CachePath,
+ * EnableFolderView, LibraryMonitorDelay, UICulture, ... the PluginRepositories
+ * object array, and the scalar TrickplayOptions fields) are diffed generically
+ * through json-diff-ts - no per-key allowlist - with the `withoutRemoves` chain
+ * that preserves fields the partial config omits.
  *
  * Primitive arrays - `TrickplayOptions.WidthResolutions` (a `number[]`) and the
  * top-level string arrays `SortReplaceCharacters`, `SortRemoveCharacters`,
@@ -72,47 +81,24 @@ export function calculateSystemDiff(
     ...stringArrayKeys,
   ];
 
-  const patch: IChange[] = new AtomicChangeSetBuilder([
-    ...new ChangeSetBuilder(
-      diff(current, next, { keysToSkip, treatTypeChangeAsReplace: false }),
-    )
-      .withKey("ServerName")
-      .withoutRemoves()
-      .atomize()
-      .toArray(),
+  const keepRemove: (c: IAtomicChange) => boolean = (
+    c: IAtomicChange,
+  ): boolean =>
+    c.type !== Operation.REMOVE || c.path.startsWith("$.PluginRepositories");
 
-    ...new ChangeSetBuilder(
-      diff(current, next, { keysToSkip, treatTypeChangeAsReplace: false }),
-    )
-      .withKey("EnableMetrics")
-      .withoutRemoves()
-      .atomize()
-      .toArray(),
-
-    ...new ChangeSetBuilder(
+  const patch: IChange[] = new AtomicChangeSetBuilder(
+    new ChangeSetBuilder(
       diff(current, next, {
-        embeddedObjKeys: { ".": "Name" },
+        embeddedObjKeys: { PluginRepositories: "Name", ".": "Name" },
         keysToSkip,
         treatTypeChangeAsReplace: false,
       }),
     )
-      .withKey("PluginRepositories")
       .withoutRemoves()
       .atomize()
-      .toArray(),
-
-    ...new ChangeSetBuilder(
-      diff(current, next, {
-        keysToSkip,
-        treatTypeChangeAsReplace: false,
-      }),
-    )
-      .withKey("TrickplayOptions")
-      .withoutRemoves()
-      .atomize()
-      .withoutRemoves()
-      .toArray(),
-  ])
+      .toArray()
+      .filter(keepRemove),
+  )
     .unatomize()
     .toArray();
 
