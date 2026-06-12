@@ -414,14 +414,12 @@ api_keys:
   - name: "my-integration"
 ```
 
-Jellarr creates any API key whose name (`AppName`) doesn't already exist.
-Matching is by app name — the operation is additive and idempotent; it never
-deletes or modifies existing keys.
+Jellarr creates any API key whose name (`AppName`) doesn't already exist. It's
+additive and idempotent: existing keys are never modified or deleted.
 
-**Caveat:** creating keys requires an existing API token to call `/Auth/Keys`,
-so this provisions **additional** keys. The very first credential still needs
-the API-key bootstrap (or manual creation via the Jellyfin dashboard) before
-jellarr can authenticate.
+**Caveat:** calling `/Auth/Keys` needs an existing token, so this only adds
+keys. Provision the first credential via the API-key bootstrap or the Jellyfin
+dashboard.
 
 ### Plugin Management
 
