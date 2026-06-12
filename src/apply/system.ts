@@ -8,20 +8,43 @@ import { diff, applyChangeset, type IChange } from "json-diff-ts";
 import { deepEqual } from "fast-equals";
 
 /**
+ * Whole-array replacement for a primitive array field that bypasses the
+ * corrupting json-diff-ts atomize pipeline. Returns `true` when the desired
+ * value is present and differs from the server's (and thus was assigned).
+ */
+function replaceArrayField<T>(
+  currentValue: readonly T[] | null | undefined,
+  desiredValue: readonly T[] | null | undefined,
+  assign: (value: T[]) => void,
+): boolean {
+  if (
+    desiredValue !== undefined &&
+    desiredValue !== null &&
+    !deepEqual(currentValue, desiredValue)
+  ) {
+    assign([...desiredValue]);
+    return true;
+  }
+  return false;
+}
+
+/**
  * Diff the desired system configuration against the server's current state.
  *
  * Scalar/enum/boolean fields (ServerName, EnableMetrics, PluginRepositories and
  * the scalar TrickplayOptions fields) are diffed through json-diff-ts with the
  * `withoutRemoves` chain that preserves fields the partial config omits.
  *
- * `TrickplayOptions.WidthResolutions` (a `number[]`) is excluded from
+ * Primitive arrays — `TrickplayOptions.WidthResolutions` (a `number[]`) and the
+ * top-level string arrays `SortReplaceCharacters`, `SortRemoveCharacters`,
+ * `SortRemoveWords`, `CodecsUsed` and `CorsHosts` — are excluded from
  * json-diff-ts (via `keysToSkip`) and handled by direct whole-array
  * assignment. The changeset pipeline's atomize/unatomize splits index-based
  * array REMOVE ops into siblings applied sequentially, which corrupts
  * multi-element removals through index shifting. Replacing the array wholesale
  * is order-exact for grow/shrink/swap/multi-element/add-to-absent: if the user
- * specified `widthResolutions` and it differs from the server's value, the
- * result equals exactly that array; otherwise the server's value is untouched.
+ * specified the field and it differs from the server's value, the result equals
+ * exactly that array; otherwise the server's value is untouched.
  */
 export function calculateSystemDiff(
   current: ServerConfigurationSchema,
@@ -30,9 +53,28 @@ export function calculateSystemDiff(
   const next: ServerConfigurationSchema =
     mapSystemConfigurationConfigToSchema(desired);
 
+  type StringArrayKey =
+    | "SortReplaceCharacters"
+    | "SortRemoveCharacters"
+    | "SortRemoveWords"
+    | "CodecsUsed"
+    | "CorsHosts";
+  const stringArrayKeys: readonly StringArrayKey[] = [
+    "SortReplaceCharacters",
+    "SortRemoveCharacters",
+    "SortRemoveWords",
+    "CodecsUsed",
+    "CorsHosts",
+  ];
+
+  const keysToSkip: string[] = [
+    "TrickplayOptions.WidthResolutions",
+    ...stringArrayKeys,
+  ];
+
   const patch: IChange[] = new AtomicChangeSetBuilder([
     ...new ChangeSetBuilder(
-      diff(current, next, { treatTypeChangeAsReplace: false }),
+      diff(current, next, { keysToSkip, treatTypeChangeAsReplace: false }),
     )
       .withKey("ServerName")
       .withoutRemoves()
@@ -40,7 +82,7 @@ export function calculateSystemDiff(
       .toArray(),
 
     ...new ChangeSetBuilder(
-      diff(current, next, { treatTypeChangeAsReplace: false }),
+      diff(current, next, { keysToSkip, treatTypeChangeAsReplace: false }),
     )
       .withKey("EnableMetrics")
       .withoutRemoves()
@@ -50,6 +92,7 @@ export function calculateSystemDiff(
     ...new ChangeSetBuilder(
       diff(current, next, {
         embeddedObjKeys: { ".": "Name" },
+        keysToSkip,
         treatTypeChangeAsReplace: false,
       }),
     )
@@ -60,7 +103,7 @@ export function calculateSystemDiff(
 
     ...new ChangeSetBuilder(
       diff(current, next, {
-        keysToSkip: ["TrickplayOptions.WidthResolutions"],
+        keysToSkip,
         treatTypeChangeAsReplace: false,
       }),
     )
@@ -81,19 +124,32 @@ export function calculateSystemDiff(
         ) as ServerConfigurationSchema)
       : structuredClone(current);
 
-  let wrChanged: boolean = false;
-  const desiredWR: number[] | undefined =
-    next.TrickplayOptions?.WidthResolutions;
+  let anyArrayChanged: boolean = false;
+
   if (
-    desiredWR !== undefined &&
-    !deepEqual(current.TrickplayOptions?.WidthResolutions, desiredWR)
+    replaceArrayField(
+      current.TrickplayOptions?.WidthResolutions,
+      next.TrickplayOptions?.WidthResolutions,
+      (value: number[]): void => {
+        updated.TrickplayOptions ??= {};
+        updated.TrickplayOptions.WidthResolutions = value;
+      },
+    )
   ) {
-    updated.TrickplayOptions ??= {};
-    updated.TrickplayOptions.WidthResolutions = [...desiredWR];
-    wrChanged = true;
+    anyArrayChanged = true;
   }
 
-  if (patch.length === 0 && !wrChanged) {
+  for (const key of stringArrayKeys) {
+    if (
+      replaceArrayField(current[key], next[key], (value: string[]): void => {
+        updated[key] = value;
+      })
+    ) {
+      anyArrayChanged = true;
+    }
+  }
+
+  if (patch.length === 0 && !anyArrayChanged) {
     return undefined;
   }
 

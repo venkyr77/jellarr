@@ -1044,6 +1044,303 @@ describe("apply/system", () => {
         expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320]);
         expect(result?.TrickplayOptions?.EnableHwAcceleration).toBe(false);
       });
+
+      it("should create TrickplayOptions and set WidthResolutions when server has no TrickplayOptions at all", () => {
+        // Arrange — server has no TrickplayOptions; desired sets ONLY widthResolutions.
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          TrickplayOptions: undefined,
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = {
+          trickplayOptions: { widthResolutions: [320] },
+        };
+
+        // Act — first apply
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        // Assert — TrickplayOptions is lazily created and WidthResolutions is set exactly
+        expect(result?.TrickplayOptions?.WidthResolutions).toEqual([320]);
+
+        // Act — second apply (idempotency: re-run with result as current)
+        expect(result).toBeDefined();
+        const result2: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(result as ServerConfigurationSchema, desired);
+
+        // Assert — no further diff
+        expect(result2).toBeUndefined();
+      });
+    });
+
+    describe("top-level string arrays (whole-array replacement)", () => {
+      describe("corsHosts (exhaustive)", () => {
+        it("should return undefined when CorsHosts is identical (no phantom diff)", () => {
+          const current: ServerConfigurationSchema = {
+            EnableMetrics: false,
+            PluginRepositories: [],
+            CorsHosts: ["a", "b"],
+          } as ServerConfigurationSchema;
+
+          const desired: SystemConfig = { corsHosts: ["a", "b"] };
+
+          const result: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(current, desired);
+
+          expect(result).toBeUndefined();
+        });
+
+        it("should grow CorsHosts ([a] → [a, b, c]) and converge on re-run", () => {
+          const current: ServerConfigurationSchema = {
+            EnableMetrics: false,
+            PluginRepositories: [],
+            CorsHosts: ["a"],
+          } as ServerConfigurationSchema;
+
+          const desired: SystemConfig = { corsHosts: ["a", "b", "c"] };
+
+          const result: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(current, desired);
+
+          expect(result?.CorsHosts).toEqual(["a", "b", "c"]);
+
+          expect(result).toBeDefined();
+          const result2: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(result as ServerConfigurationSchema, desired);
+          expect(result2).toBeUndefined();
+        });
+
+        it("should shrink CorsHosts across multiple elements ([a, b, c, d] → [a, b]) and converge", () => {
+          const current: ServerConfigurationSchema = {
+            EnableMetrics: false,
+            PluginRepositories: [],
+            CorsHosts: ["a", "b", "c", "d"],
+          } as ServerConfigurationSchema;
+
+          const desired: SystemConfig = { corsHosts: ["a", "b"] };
+
+          const result: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(current, desired);
+
+          expect(result?.CorsHosts).toEqual(["a", "b"]);
+
+          expect(result).toBeDefined();
+          const result2: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(result as ServerConfigurationSchema, desired);
+          expect(result2).toBeUndefined();
+        });
+
+        it("should swap CorsHosts ([a] → [b]) and converge", () => {
+          const current: ServerConfigurationSchema = {
+            EnableMetrics: false,
+            PluginRepositories: [],
+            CorsHosts: ["a"],
+          } as ServerConfigurationSchema;
+
+          const desired: SystemConfig = { corsHosts: ["b"] };
+
+          const result: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(current, desired);
+
+          expect(result?.CorsHosts).toEqual(["b"]);
+
+          const result2: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(result as ServerConfigurationSchema, desired);
+          expect(result2).toBeUndefined();
+        });
+
+        it("should apply a scalar change AND a CorsHosts shrink together", () => {
+          const current: ServerConfigurationSchema = {
+            EnableMetrics: false,
+            PluginRepositories: [],
+            CorsHosts: ["a", "b", "c", "d"],
+          } as ServerConfigurationSchema;
+
+          const desired: SystemConfig = {
+            enableMetrics: true,
+            corsHosts: ["a", "b"],
+          };
+
+          const result: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(current, desired);
+
+          expect(result?.EnableMetrics).toBe(true);
+          expect(result?.CorsHosts).toEqual(["a", "b"]);
+
+          const result2: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(result as ServerConfigurationSchema, desired);
+          expect(result2).toBeUndefined();
+        });
+
+        it("should preserve CorsHosts when only a scalar is set (partial-config)", () => {
+          const current: ServerConfigurationSchema = {
+            EnableMetrics: false,
+            PluginRepositories: [],
+            CorsHosts: ["keep1", "keep2"],
+          } as ServerConfigurationSchema;
+
+          const desired: SystemConfig = { enableMetrics: true };
+
+          const result: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(current, desired);
+
+          expect(result?.EnableMetrics).toBe(true);
+          expect(result?.CorsHosts).toEqual(["keep1", "keep2"]);
+        });
+
+        it("should preserve CorsHosts when corsHosts is undefined (no-op)", () => {
+          const current: ServerConfigurationSchema = {
+            EnableMetrics: false,
+            PluginRepositories: [],
+            CorsHosts: ["a", "b"],
+          } as ServerConfigurationSchema;
+
+          const desired: SystemConfig = {};
+
+          const result: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(current, desired);
+
+          expect(result).toBeUndefined();
+        });
+      });
+
+      describe("sortReplaceCharacters (representative)", () => {
+        it("should multi-element shrink ([a, b, c, d] → [a, b]) and converge", () => {
+          const current: ServerConfigurationSchema = {
+            EnableMetrics: false,
+            PluginRepositories: [],
+            SortReplaceCharacters: ["a", "b", "c", "d"],
+          } as ServerConfigurationSchema;
+
+          const desired: SystemConfig = {
+            sortReplaceCharacters: ["a", "b"],
+          };
+
+          const result: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(current, desired);
+
+          expect(result?.SortReplaceCharacters).toEqual(["a", "b"]);
+
+          const result2: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(result as ServerConfigurationSchema, desired);
+          expect(result2).toBeUndefined();
+        });
+
+        it("should grow and swap exactly", () => {
+          const current: ServerConfigurationSchema = {
+            EnableMetrics: false,
+            PluginRepositories: [],
+            SortReplaceCharacters: ["."],
+          } as ServerConfigurationSchema;
+
+          expect(
+            calculateSystemDiff(current, {
+              sortReplaceCharacters: [".", "-", "_"],
+            })?.SortReplaceCharacters,
+          ).toEqual([".", "-", "_"]);
+
+          expect(
+            calculateSystemDiff(current, { sortReplaceCharacters: ["-"] })
+              ?.SortReplaceCharacters,
+          ).toEqual(["-"]);
+        });
+      });
+
+      describe("sortRemoveCharacters (representative)", () => {
+        it("should multi-element shrink and converge", () => {
+          const current: ServerConfigurationSchema = {
+            EnableMetrics: false,
+            PluginRepositories: [],
+            SortRemoveCharacters: ["a", "b", "c", "d"],
+          } as ServerConfigurationSchema;
+
+          const desired: SystemConfig = {
+            sortRemoveCharacters: ["a", "b"],
+          };
+
+          const result: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(current, desired);
+
+          expect(result?.SortRemoveCharacters).toEqual(["a", "b"]);
+          expect(
+            calculateSystemDiff(result as ServerConfigurationSchema, desired),
+          ).toBeUndefined();
+        });
+      });
+
+      describe("sortRemoveWords (representative)", () => {
+        it("should multi-element shrink and converge", () => {
+          const current: ServerConfigurationSchema = {
+            EnableMetrics: false,
+            PluginRepositories: [],
+            SortRemoveWords: ["the", "a", "an", "of"],
+          } as ServerConfigurationSchema;
+
+          const desired: SystemConfig = {
+            sortRemoveWords: ["the", "a"],
+          };
+
+          const result: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(current, desired);
+
+          expect(result?.SortRemoveWords).toEqual(["the", "a"]);
+          expect(
+            calculateSystemDiff(result as ServerConfigurationSchema, desired),
+          ).toBeUndefined();
+        });
+      });
+
+      describe("codecsUsed (representative)", () => {
+        it("should multi-element shrink and converge", () => {
+          const current: ServerConfigurationSchema = {
+            EnableMetrics: false,
+            PluginRepositories: [],
+            CodecsUsed: ["h264", "hevc", "av1", "vp9"],
+          } as ServerConfigurationSchema;
+
+          const desired: SystemConfig = {
+            codecsUsed: ["h264", "hevc"],
+          };
+
+          const result: ServerConfigurationSchema | undefined =
+            calculateSystemDiff(current, desired);
+
+          expect(result?.CodecsUsed).toEqual(["h264", "hevc"]);
+          expect(
+            calculateSystemDiff(result as ServerConfigurationSchema, desired),
+          ).toBeUndefined();
+        });
+
+        it("should return undefined when identical", () => {
+          const current: ServerConfigurationSchema = {
+            EnableMetrics: false,
+            PluginRepositories: [],
+            CodecsUsed: ["h264", "hevc"],
+          } as ServerConfigurationSchema;
+
+          expect(
+            calculateSystemDiff(current, { codecsUsed: ["h264", "hevc"] }),
+          ).toBeUndefined();
+        });
+      });
+
+      it("should preserve a server array untouched while replacing a different one", () => {
+        const current: ServerConfigurationSchema = {
+          EnableMetrics: false,
+          PluginRepositories: [],
+          CorsHosts: ["x", "y", "z"],
+          CodecsUsed: ["h264", "hevc"],
+        } as ServerConfigurationSchema;
+
+        const desired: SystemConfig = { corsHosts: ["x"] };
+
+        const result: ServerConfigurationSchema | undefined =
+          calculateSystemDiff(current, desired);
+
+        expect(result?.CorsHosts).toEqual(["x"]);
+        expect(result?.CodecsUsed).toEqual(["h264", "hevc"]);
+      });
     });
 
     describe("multi-field scenarios", () => {
