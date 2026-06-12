@@ -182,6 +182,15 @@ version: 1
 base_url: "http://localhost:8096"
 system:
   enableMetrics: true # Enable Prometheus metrics endpoint
+  serverName: "Jellyfin"
+  preferredMetadataLanguage: "en"
+  metadataCountryCode: "US"
+  uiCulture: "en-US"
+  corsHosts: ["*"] # CORS allowed origins; configure here, not under networking
+  imageSavingConvention: "Legacy" # Legacy | Compatible
+  enableFolderView: false
+  quickConnectAvailable: true
+  libraryMonitorDelay: 60
   pluginRepositories:
     - name: "Jellyfin Official"
       url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
@@ -201,7 +210,9 @@ system:
     processThreads: 1
 ```
 
-The full field set mirrors Jellyfin's `TrickplayOptions` object.
+The full field set mirrors Jellyfin's `ServerConfiguration` object (46 scalar
+fields including `corsHosts`). CORS allowed origins are configured under
+`system`, not under a separate networking key.
 
 ### Encoding Configuration
 
