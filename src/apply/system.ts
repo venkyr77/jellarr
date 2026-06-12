@@ -81,10 +81,19 @@ export function calculateSystemDiff(
     ...stringArrayKeys,
   ];
 
+  /**
+   * Keep only PluginRepositories array-element removes (so a repo dropped from
+   * the desired list is deleted); strip every other remove so omitted scalar
+   * and nested-object fields are preserved. Matching the array-index path
+   * boundary, not a bare prefix, avoids catching a hypothetical sibling field
+   * whose name merely starts with "PluginRepositories".
+   */
   const keepRemove: (c: IAtomicChange) => boolean = (
     c: IAtomicChange,
   ): boolean =>
-    c.type !== Operation.REMOVE || c.path.startsWith("$.PluginRepositories");
+    c.type !== Operation.REMOVE ||
+    c.path === "$.PluginRepositories" ||
+    c.path.startsWith("$.PluginRepositories[");
 
   const patch: IChange[] = new AtomicChangeSetBuilder(
     new ChangeSetBuilder(
