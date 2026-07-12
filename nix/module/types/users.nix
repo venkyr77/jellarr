@@ -30,10 +30,20 @@
         default = null;
         description = "Allow user to manage collections.";
       };
+      enableContentDownloading = mkOption {
+        type = nullOr types.bool;
+        default = null;
+        description = "Allow user to download media content.";
+      };
       maxActiveSessions = mkOption {
         type = nullOr types.int;
         default = null;
         description = "Maximum concurrent active sessions for the user.";
+      };
+      remoteClientBitrateLimit = mkOption {
+        type = nullOr types.int;
+        default = null;
+        description = "Internet streaming bitrate limit for remote clients (bits per second).";
       };
     };
   };
@@ -92,6 +102,8 @@
     )
     // optionalAttrs (c ? enableAllFolders && c.enableAllFolders != null) {inherit (c) enableAllFolders;}
     // optionalAttrs (c ? enableCollectionManagement && c.enableCollectionManagement != null) {inherit (c) enableCollectionManagement;}
+    // optionalAttrs (c ? enableContentDownloading && c.enableContentDownloading != null) {inherit (c) enableContentDownloading;}
+    // optionalAttrs (c ? remoteClientBitrateLimit && c.remoteClientBitrateLimit != null) {inherit (c) remoteClientBitrateLimit;}
     // optionalAttrs (c ? maxActiveSessions && c.maxActiveSessions != null) {inherit (c) maxActiveSessions;};
 
   mkUsersConfig = cfg:

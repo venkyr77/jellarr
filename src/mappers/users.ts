@@ -46,12 +46,20 @@ export function mapUserPolicyConfigToSchema(
     out.MaxActiveSessions = desired.maxActiveSessions;
   }
 
+  if (typeof desired.remoteClientBitrateLimit !== "undefined") {
+    out.RemoteClientBitrateLimit = desired.remoteClientBitrateLimit;
+  }
+
   if (typeof desired.enableAllFolders !== "undefined") {
     out.EnableAllFolders = desired.enableAllFolders;
   }
 
   if (typeof desired.enableCollectionManagement !== "undefined") {
     out.EnableCollectionManagement = desired.enableCollectionManagement;
+  }
+
+  if (typeof desired.enableContentDownloading !== "undefined") {
+    out.EnableContentDownloading = desired.enableContentDownloading;
   }
 
   if (

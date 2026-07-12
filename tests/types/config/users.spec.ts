@@ -382,7 +382,9 @@ describe("UserPolicyConfig", () => {
       loginAttemptsBeforeLockout: 5,
       enableAllFolders: true,
       enableCollectionManagement: false,
+      enableContentDownloading: false,
       enabledLibraries: ["Movies", "TV Shows"],
+      remoteClientBitrateLimit: 5_000_000,
     };
 
     // Act
@@ -402,6 +404,9 @@ describe("UserPolicyConfig", () => {
       { isAdministrator: true },
       { isAdministrator: false },
       { loginAttemptsBeforeLockout: 10 },
+      { remoteClientBitrateLimit: 1_500_000 },
+      { enableContentDownloading: true },
+      { enableContentDownloading: false },
     ];
 
     validConfigs.forEach(
@@ -518,6 +523,8 @@ describe("UserPolicyConfig", () => {
     const invalidConfigs: Array<z.input<typeof UserPolicyConfigType>> = [
       // @ts-expect-error intentional bad types for test
       { isAdministrator: "true" },
+      // @ts-expect-error intentional bad types for test
+      { enableContentDownloading: "false" },
     ];
 
     invalidConfigs.forEach(
