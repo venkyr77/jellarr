@@ -395,6 +395,40 @@ describe("getPluginConfigurationSchemaByName", () => {
     });
     expect(getPluginConfigurationSpy).toHaveBeenCalledTimes(1);
   });
+
+  it("should ignore missing plugin configuration responses", async () => {
+    // Arrange
+    const installedPlugins: PluginInfoSchema[] = [
+      { Name: "Fanart", Id: "fanart-id" } as PluginInfoSchema,
+    ];
+    getPluginConfigurationSpy.mockRejectedValueOnce(
+      new Error("GET /Plugins/fanart-id/Configuration failed: 404"),
+    );
+
+    // Act
+    const result: Map<string, PluginConfigurationSchema> =
+      await getPluginConfigurationSchemaByName(mockClient, installedPlugins);
+
+    // Assert
+    expect(result.size).toBe(0);
+    expect(getPluginConfigurationSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("should rethrow plugin configuration errors other than 404", async () => {
+    // Arrange
+    const installedPlugins: PluginInfoSchema[] = [
+      { Name: "Fanart", Id: "fanart-id" } as PluginInfoSchema,
+    ];
+    const error: Error = new Error(
+      "GET /Plugins/fanart-id/Configuration failed: 500",
+    );
+    getPluginConfigurationSpy.mockRejectedValueOnce(error);
+
+    // Act & Assert
+    await expect(
+      getPluginConfigurationSchemaByName(mockClient, installedPlugins),
+    ).rejects.toThrow(error);
+  });
 });
 
 describe("calculatePluginConfigurationDiff", () => {

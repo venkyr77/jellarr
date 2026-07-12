@@ -13,6 +13,19 @@ import type {
 import { ChangeSetBuilder } from "../lib/changeset";
 import { applyChangeset, diff, type IChange } from "json-diff-ts";
 
+function isPluginConfigurationMissingError(error: unknown): boolean {
+  if (typeof error === "object" && error !== null && "response" in error) {
+    const responseStatus: number | undefined = (
+      error as {
+        response?: { status?: number };
+      }
+    ).response?.status;
+    if (responseStatus === 404) return true;
+  }
+
+  return error instanceof Error && /failed:\s*404$/.test(error.message);
+}
+
 export function calculatePluginsToInstall(
   installedPlugins: PluginInfoSchema[],
   desired: PluginConfigList,
@@ -55,10 +68,15 @@ export async function getPluginConfigurationSchemaByName(
 
   for (const pluginInfo of current) {
     if (pluginInfo.Id && pluginInfo.Name) {
-      pluginConfigurationSchemaByName.set(pluginInfo.Name, {
-        id: pluginInfo.Id,
-        configuration: await client.getPluginConfiguration(pluginInfo.Id),
-      });
+      try {
+        pluginConfigurationSchemaByName.set(pluginInfo.Name, {
+          id: pluginInfo.Id,
+          configuration: await client.getPluginConfiguration(pluginInfo.Id),
+        });
+      } catch (error) {
+        if (isPluginConfigurationMissingError(error)) continue;
+        throw error;
+      }
     }
   }
 
