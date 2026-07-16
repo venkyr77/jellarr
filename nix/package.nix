@@ -2,9 +2,9 @@
   lib,
   makeBinaryWrapper,
   nodejs_24,
-  pnpm,
-  pnpmConfigHook ? pnpm.configHook,
-  fetchPnpmDeps ? pnpm.fetchDeps,
+  pnpm_10,
+  pnpmConfigHook ? pnpm_10.configHook,
+  fetchPnpmDeps ? pnpm_10.fetchDeps,
   stdenvNoCC,
   ...
 }:
@@ -42,15 +42,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     makeBinaryWrapper
     nodejs_24
-    pnpm
+    pnpm_10
     pnpmConfigHook
   ];
 
   pname = "jellarr";
 
   pnpmDeps = fetchPnpmDeps {
+    pnpm = pnpm_10;
     fetcherVersion = 3;
-    hash = "sha256-n0Msdv5pdnM6KVG/j3ixzZM81LK3gKHsdKLH7A1EqHQ=";
+    hash = "sha256-DA4PFpH+CZRHtreOlRHz0S3/93LdqlHVvsUyw9WAwII=";
     inherit (finalAttrs) pname src version;
   };
 
