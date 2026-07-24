@@ -65,15 +65,15 @@ docker pull ghcr.io/venkyr77/jellarr:v0.0.1
 version: 1
 base_url: "http://localhost:8096"
 system:
-  enableMetrics: true
-  pluginRepositories:
-    - name: "Jellyfin Official"
-      url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
-      enabled: true
+    enableMetrics: true
+    pluginRepositories:
+        - name: "Jellyfin Official"
+          url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
+          enabled: true
 encoding:
-  enableHardwareEncoding: true
-  hardwareAccelerationType: "vaapi"
-  vaapiDevice: "/dev/dri/renderD128"
+    enableHardwareEncoding: true
+    hardwareAccelerationType: "vaapi"
+    vaapiDevice: "/dev/dri/renderD128"
 ```
 
 ---
@@ -126,15 +126,15 @@ docker pull ghcr.io/venkyr77/jellarr:v0.0.1
 
 ```yaml
 services:
-  jellarr:
-    image: ghcr.io/venkyr77/jellarr:v0.0.1
-    container_name: jellarr
-    environment:
-      - JELLARR_API_KEY=${JELLARR_API_KEY}
-      - TZ=Etc/UTC
-    volumes:
-      - ./config:/config
-    restart: "no"
+    jellarr:
+        image: ghcr.io/venkyr77/jellarr:v0.0.1
+        container_name: jellarr
+        environment:
+            - JELLARR_API_KEY=${JELLARR_API_KEY}
+            - TZ=Etc/UTC
+        volumes:
+            - ./config:/config
+        restart: "no"
 ```
 
 ### Bundle Download
@@ -181,14 +181,14 @@ Jellarr uses a YAML configuration file (default: `config/config.yml`).
 version: 1
 base_url: "http://localhost:8096"
 system:
-  enableMetrics: true # Enable Prometheus metrics endpoint
-  pluginRepositories:
-    - name: "Jellyfin Official"
-      url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
-      enabled: true
-  trickplayOptions:
-    enableHwAcceleration: true
-    enableHwEncoding: true
+    enableMetrics: true # Enable Prometheus metrics endpoint
+    pluginRepositories:
+        - name: "Jellyfin Official"
+          url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
+          enabled: true
+    trickplayOptions:
+        enableHwAcceleration: true
+        enableHwEncoding: true
 ```
 
 ### Encoding Configuration
@@ -197,25 +197,25 @@ system:
 version: 1
 base_url: "http://localhost:8096"
 encoding:
-  enableHardwareEncoding: true
-  hardwareAccelerationType: "vaapi" # none, amf, qsv, nvenc, v4l2m2m, vaapi, videotoolbox, rkmpp
-  vaapiDevice: "/dev/dri/renderD128"
-  # or qsv device
-  qsvDevice: "/dev/dri/renderD128"
-  hardwareDecodingCodecs:
-    - h264
-    - hevc
-    - mpeg2video
-    - vc1
-    - vp8
-    - vp9
-    - av1
-  enableDecodingColorDepth10Hevc: true
-  enableDecodingColorDepth10HevcRext: true
-  enableDecodingColorDepth12HevcRext: true
-  enableDecodingColorDepth10Vp9: true
-  allowHevcEncoding: false
-  allowAv1Encoding: false
+    enableHardwareEncoding: true
+    hardwareAccelerationType: "vaapi" # none, amf, qsv, nvenc, v4l2m2m, vaapi, videotoolbox, rkmpp
+    vaapiDevice: "/dev/dri/renderD128"
+    # or qsv device
+    qsvDevice: "/dev/dri/renderD128"
+    hardwareDecodingCodecs:
+        - h264
+        - hevc
+        - mpeg2video
+        - vc1
+        - vp8
+        - vp9
+        - av1
+    enableDecodingColorDepth10Hevc: true
+    enableDecodingColorDepth10HevcRext: true
+    enableDecodingColorDepth12HevcRext: true
+    enableDecodingColorDepth10Vp9: true
+    allowHevcEncoding: false
+    allowAv1Encoding: false
 ```
 
 ### Library Configuration
@@ -224,17 +224,17 @@ encoding:
 version: 1
 base_url: "http://localhost:8096"
 library:
-  virtualFolders:
-    - name: "Movies"
-      collectionType: "movies"
-      libraryOptions:
-        pathInfos:
-          - path: "/data/movies"
-    - name: "TV Shows"
-      collectionType: "tvshows"
-      libraryOptions:
-        pathInfos:
-          - path: "/data/tv"
+    virtualFolders:
+        - name: "Movies"
+          collectionType: "movies"
+          libraryOptions:
+              pathInfos:
+                  - path: "/data/movies"
+        - name: "TV Shows"
+          collectionType: "tvshows"
+          libraryOptions:
+              pathInfos:
+                  - path: "/data/tv"
 ```
 
 ### Branding Configuration
@@ -243,11 +243,11 @@ library:
 version: 1
 base_url: "http://localhost:8096"
 branding:
-  loginDisclaimer: |
-    Configured by <a href="https://github.com/venkyr77/jellarr">Jellarr</a>
-  customCss: |
-    @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");
-  splashscreenEnabled: false
+    loginDisclaimer: |
+        Configured by <a href="https://github.com/venkyr77/jellarr">Jellarr</a>
+    customCss: |
+        @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");
+    splashscreenEnabled: false
 ```
 
 ### User Management
@@ -256,23 +256,23 @@ branding:
 version: 1
 base_url: "http://localhost:8096"
 users:
-  # Regular user with plaintext password (development only)
-  - name: "regular-user"
-    password: "secure-password"
+    # Regular user with plaintext password (development only)
+    - name: "regular-user"
+      password: "secure-password"
 
-  # Regular user with password file (production recommended)
-  - name: "viewer-user"
-    passwordFile: "/run/secrets/viewer-password"
+    # Regular user with password file (production recommended)
+    - name: "viewer-user"
+      passwordFile: "/run/secrets/viewer-password"
 
-  # Admin user with policy configuration
-  - name: "admin-user"
-    passwordFile: "/run/secrets/admin-password"
-    policy:
-      isAdministrator: true
-      loginAttemptsBeforeLockout: 3
-      enabledLibraries:
-        - "Movies"
-        - "Shows"
+    # Admin user with policy configuration
+    - name: "admin-user"
+      passwordFile: "/run/secrets/admin-password"
+      policy:
+          isAdministrator: true
+          loginAttemptsBeforeLockout: 3
+          enabledLibraries:
+              - "Movies"
+              - "Shows"
 ```
 
 `policy.enabledLibraries` accepts library names; jellarr resolves them to folder
@@ -323,7 +323,7 @@ version: 1
 base_url: "http://localhost:8096"
 system: {}
 startup:
-  completeStartupWizard: true # Mark startup wizard as complete
+    completeStartupWizard: true # Mark startup wizard as complete
 ```
 
 Useful for automated deployments where you want to skip the interactive startup
@@ -335,20 +335,20 @@ wizard.
 version: 1
 base_url: "http://localhost:8096"
 plugins:
-  # Install plugin by name (from configured repositories)
-  - name: "Trakt"
+    # Install plugin by name (from configured repositories)
+    - name: "Trakt"
 
-  # Install and configure plugin
-  - name: "Trakt"
-    configuration:
-      TraktUsers:
-        - ExtraLogging: true
+    # Install and configure plugin
+    - name: "Trakt"
+      configuration:
+          TraktUsers:
+              - ExtraLogging: true
 
-  # Multiple plugins
-  - name: "Playback Reporting"
-  - name: "Fanart"
-    configuration:
-      EnableImages: true
+    # Multiple plugins
+    - name: "Playback Reporting"
+    - name: "Fanart"
+      configuration:
+          EnableImages: true
 ```
 
 **How it works:**
@@ -480,60 +480,60 @@ Full configuration example with VAAPI hardware acceleration:
 version: 1
 base_url: "http://localhost:8096"
 system:
-  enableMetrics: true
-  pluginRepositories:
-    - name: "Jellyfin Official"
-      url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
-      enabled: true
-  trickplayOptions:
-    enableHwAcceleration: true
-    enableHwEncoding: true
+    enableMetrics: true
+    pluginRepositories:
+        - name: "Jellyfin Official"
+          url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
+          enabled: true
+    trickplayOptions:
+        enableHwAcceleration: true
+        enableHwEncoding: true
 encoding:
-  enableHardwareEncoding: true
-  hardwareAccelerationType: "vaapi"
-  vaapiDevice: "/dev/dri/renderD128"
-  hardwareDecodingCodecs:
-    ["h264", "hevc", "mpeg2video", "vc1", "vp8", "vp9", "av1"]
-  enableDecodingColorDepth10Hevc: true
-  enableDecodingColorDepth10Vp9: true
-  enableDecodingColorDepth10HevcRext: true
-  enableDecodingColorDepth12HevcRext: true
-  allowHevcEncoding: false
-  allowAv1Encoding: false
+    enableHardwareEncoding: true
+    hardwareAccelerationType: "vaapi"
+    vaapiDevice: "/dev/dri/renderD128"
+    hardwareDecodingCodecs:
+        ["h264", "hevc", "mpeg2video", "vc1", "vp8", "vp9", "av1"]
+    enableDecodingColorDepth10Hevc: true
+    enableDecodingColorDepth10Vp9: true
+    enableDecodingColorDepth10HevcRext: true
+    enableDecodingColorDepth12HevcRext: true
+    allowHevcEncoding: false
+    allowAv1Encoding: false
 library:
-  virtualFolders:
-    - name: "Movies"
-      collectionType: "movies"
-      libraryOptions:
-        pathInfos:
-          - path: "/mnt/movies/English"
+    virtualFolders:
+        - name: "Movies"
+          collectionType: "movies"
+          libraryOptions:
+              pathInfos:
+                  - path: "/mnt/movies/English"
 branding:
-  loginDisclaimer: |
-    Configured by <a href="https://github.com/venkyr77/jellarr">Jellarr</a>
-  customCss: |
-    @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");
-  splashscreenEnabled: false
+    loginDisclaimer: |
+        Configured by <a href="https://github.com/venkyr77/jellarr">Jellarr</a>
+    customCss: |
+        @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");
+    splashscreenEnabled: false
 users:
-  - name: "regular-user"
-    password: "secure-password"
-  - name: "viewer-user"
-    passwordFile: "/run/secrets/viewer-password"
-  - name: "admin-user"
-    passwordFile: "/run/secrets/admin-password"
-    policy:
-      isAdministrator: true
-      loginAttemptsBeforeLockout: 3
-      enabledLibraries:
-        - "Movies"
-        - "Shows"
+    - name: "regular-user"
+      password: "secure-password"
+    - name: "viewer-user"
+      passwordFile: "/run/secrets/viewer-password"
+    - name: "admin-user"
+      passwordFile: "/run/secrets/admin-password"
+      policy:
+          isAdministrator: true
+          loginAttemptsBeforeLockout: 3
+          enabledLibraries:
+              - "Movies"
+              - "Shows"
 plugins:
-  - name: "Trakt"
-    configuration:
-      TraktUsers:
-        - ExtraLogging: true
-  - name: "Playback Reporting"
+    - name: "Trakt"
+      configuration:
+          TraktUsers:
+              - ExtraLogging: true
+    - name: "Playback Reporting"
 startup:
-  completeStartupWizard: true
+    completeStartupWizard: true
 ```
 
 ---
