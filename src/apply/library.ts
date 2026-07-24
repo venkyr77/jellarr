@@ -27,6 +27,7 @@ export type LibraryDiff = {
 type ChangeWithValue = IChange & {
   embeddedKey?: string | number;
   value?: unknown;
+  path?: string;
 };
 
 function resolveFolderId(
@@ -40,7 +41,24 @@ function resolveFolderId(
   );
 }
 
+/**
+ * Resolve the folder Name a change belongs to. For atomized nested changes the
+ * leaf key is the changed field (e.g. "Path"), while the owning folder Name
+ * lives in the JSONPath as a `[?(@.Name=='<name>')]` filter segment, so the
+ * path is consulted first before falling back to key/embeddedKey/value.Name.
+ *
+ * The capture uses a non-greedy `.+?` anchored on the closing `'")]` or `")]`
+ * delimiter so that folder names containing apostrophes (e.g. `Kids' Movies`)
+ * are captured in full rather than truncated at the inner quote.
+ */
 function resolveChangeName(change: ChangeWithValue): string | undefined {
+  const path: string | undefined = change.path;
+  if (typeof path === "string") {
+    const match: RegExpExecArray | null = /@\.Name==['"](.+?)['"]\)\]/.exec(
+      path,
+    );
+    if (match) return match[1];
+  }
   const key: string = change.key;
   if (key !== "" && Number.isNaN(Number(key))) return key;
   const embeddedKey: string | number | undefined = change.embeddedKey;
@@ -120,12 +138,27 @@ export function calculateLibraryDiff(
 
   logger.info(JSON.stringify(changeSet));
 
-  const addChanges: IChange[] = changeSet.filter(
-    (change: IChange) => change.type === Operation.ADD,
-  );
-  const updateChanges: ChangeWithValue[] = changeSet.filter(
-    (change: IChange) => change.type === Operation.UPDATE,
-  ) as ChangeWithValue[];
+  /**
+   * An ADD whose resolved folder Name already exists is a nested field added to
+   * an existing folder (e.g. TypeOptions or a new MetadataSavers entry) and must
+   * drive an update, not a create. Only ADDs for folder names absent from the
+   * current state are genuine creates.
+   */
+  const addChanges: IChange[] = [];
+  const updateChanges: ChangeWithValue[] = [];
+
+  for (const change of changeSet as ChangeWithValue[]) {
+    if (change.type === Operation.ADD) {
+      const name: string | undefined = resolveChangeName(change);
+      if (name && currentByName.has(name)) {
+        updateChanges.push(change);
+      } else {
+        addChanges.push(change);
+      }
+    } else if (change.type === Operation.UPDATE) {
+      updateChanges.push(change);
+    }
+  }
 
   const toCreate: VirtualFolderInfoSchema[] | undefined =
     addChanges.length > 0

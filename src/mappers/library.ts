@@ -4,40 +4,51 @@ import type {
   VirtualFolderInfoSchema,
 } from "../types/schema/library";
 
+/**
+ * Drop keys whose value is `undefined`. The library diff runs against the live
+ * server config, so an omitted option must be absent rather than an explicit
+ * `undefined`, which json-diff-ts would otherwise report as a spurious change.
+ */
+function withoutUndefined<T extends Record<string, unknown>>(
+  obj: T,
+): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(
+      ([, value]: [string, unknown]) => value !== undefined,
+    ),
+  ) as Partial<T>;
+}
+
 export function mapVirtualFolderConfigToSchema(
   config: VirtualFolderConfig,
 ): Partial<VirtualFolderInfoSchema> {
+  const opts: VirtualFolderConfig["libraryOptions"] = config.libraryOptions;
+
+  const libraryOptions: Partial<LibraryOptionsSchema> = withoutUndefined({
+    PathInfos: opts.pathInfos.map((pathInfo: { path: string }) => ({
+      Path: pathInfo.path,
+    })),
+    TypeOptions: opts.typeOptions as LibraryOptionsSchema["TypeOptions"],
+    AutomaticallyAddToCollection: opts.automaticallyAddToCollection,
+    EnableChapterImageExtraction: opts.enableChapterImageExtraction,
+    ExtractChapterImagesDuringLibraryScan:
+      opts.extractChapterImagesDuringLibraryScan,
+    ExtractTrickplayImagesDuringLibraryScan:
+      opts.extractTrickplayImagesDuringLibraryScan,
+    EnableEmbeddedEpisodeInfos: opts.enableEmbeddedEpisodeInfos,
+    EnableEmbeddedExtrasTitles: opts.enableEmbeddedExtraTitles,
+    EnableTrickplayImageExtraction: opts.enableTrickplayImageExtraction,
+    SaveTrickplayWithMedia: opts.saveTrickplayWithMedia,
+    MetadataSavers: opts.metadataSavers,
+    SaveLocalMetadata: opts.saveLocalMetadata,
+    AutomaticRefreshIntervalDays: opts.automaticRefreshIntervalDays,
+    EnableRealtimeMonitor: opts.enableRealtimeMonitor,
+  });
+
   return {
     Name: config.name,
     CollectionType: config.collectionType,
-    LibraryOptions: {
-      PathInfos: config.libraryOptions.pathInfos.map(
-        (pathInfo: { path: string }) => ({
-          Path: pathInfo.path,
-        }),
-      ),
-      TypeOptions: config.libraryOptions.typeOptions,
-      AutomaticallyAddToCollection:
-        config.libraryOptions.automaticallyAddToCollection,
-      EnableChapterImageExtraction:
-        config.libraryOptions.enableChapterImageExtraction,
-      ExtractChapterImagesDuringLibraryScan:
-        config.libraryOptions.extractChapterImagesDuringLibraryScan,
-      ExtractTrickplayImagesDuringLibraryScan:
-        config.libraryOptions.extractTrickplayImagesDuringLibraryScan,
-      EnableEmbeddedEpisodeInfos:
-        config.libraryOptions.enableEmbeddedEpisodeInfos,
-      EnableEmbeddedExtrasTitles:
-        config.libraryOptions.enableEmbeddedExtraTitles,
-      EnableTrickplayImageExtraction:
-        config.libraryOptions.enableTrickplayImageExtraction,
-      SaveTrickplayWithMedia: config.libraryOptions.saveTrickplayWithMedia,
-      MetadataSavers: config.libraryOptions.metadataSavers,
-      SaveLocalMetadata: config.libraryOptions.saveLocalMetadata,
-      AutomaticRefreshIntervalDays:
-        config.libraryOptions.automaticRefreshIntervalDays,
-      EnableRealtimeMonitor: config.libraryOptions.enableRealtimeMonitor,
-    } as LibraryOptionsSchema,
+    LibraryOptions: libraryOptions as LibraryOptionsSchema,
   };
 }
 

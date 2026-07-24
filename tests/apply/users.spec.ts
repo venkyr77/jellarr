@@ -34,6 +34,7 @@ vi.mock("../../src/mappers/users", () => ({
         isAdministrator?: boolean;
         loginAttemptsBeforeLockout?: number;
         maxActiveSessions?: number;
+        enableAllFolders?: boolean;
         enabledLibraries?: string[];
       },
       folderNameToIdMap?: Map<string, string>,
@@ -48,12 +49,36 @@ vi.mock("../../src/mappers/users", () => ({
       if (policy.maxActiveSessions !== undefined) {
         result.MaxActiveSessions = policy.maxActiveSessions;
       }
-      if (policy.enabledLibraries !== undefined) {
+      if (policy.enableAllFolders !== undefined) {
+        result.EnableAllFolders = policy.enableAllFolders;
+      }
+      if (
+        policy.enabledLibraries !== undefined &&
+        policy.enabledLibraries.length > 0
+      ) {
+        if (policy.enableAllFolders === undefined) {
+          result.EnableAllFolders = false;
+        }
         result.EnabledFolders = policy.enabledLibraries.map((name: string) => {
           const id: string | undefined = folderNameToIdMap?.get(name);
           if (!id) throw new Error(`Missing id for ${name}`);
           return id;
         });
+      }
+      return result;
+    },
+  ),
+  mapUserConfigToConfiguration: vi.fn(
+    (config: {
+      displayMissingEpisodes?: boolean;
+      subtitleLanguagePreference?: string;
+    }) => {
+      const result: Record<string, boolean | string> = {};
+      if (config.displayMissingEpisodes !== undefined) {
+        result.DisplayMissingEpisodes = config.displayMissingEpisodes;
+      }
+      if (config.subtitleLanguagePreference !== undefined) {
+        result.SubtitleLanguagePreference = config.subtitleLanguagePreference;
       }
       return result;
     },
