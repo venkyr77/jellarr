@@ -382,6 +382,90 @@ curl -s -H "X-Emby-Token: $API_KEY" \
 
 ## Secret Management
 
+### Variable Substitution
+
+Any `${VAR}` reference in the config file is replaced with the value of the
+environment variable `VAR` before the YAML is parsed. Because substitution runs
+on the raw text, it works for any value at any depth, including arbitrary plugin
+configuration. This keeps secrets (such as SSO client secrets) out of the config
+file and, for Nix users, out of the world-readable Nix store.
+
+- An **undefined** variable is a hard error: a missing secret fails loudly
+  instead of silently substituting an empty string.
+- Write `$$` for a literal dollar sign; `$${VAR}` therefore yields the literal
+  text `${VAR}` (no expansion).
+- This applies to every config load: an existing config that contains a literal
+  `${...}` or `$$` must escape it (write `$$` for a literal `$`) after enabling
+  this feature.
+
+```yaml
+plugins:
+  - name: "SSO Authentication"
+    configuration:
+      OidConfigs:
+        kanidm:
+          OidSecret: ${SSO_KANIDM_SECRET} # expanded from the environment at load
+```
+
+Provide the variables via the service's environment. With the NixOS module and
+sops-nix, render an env file with a template and point `environmentFile` at it:
+
+```nix
+sops = {
+  secrets.jellyfin-sso-kanidm = { };
+  templates.jellarr-env = {
+    content = ''
+      JELLARR_API_KEY=${config.sops.placeholder.jellarr-api-key}
+      SSO_KANIDM_SECRET=${config.sops.placeholder.jellyfin-sso-kanidm}
+    '';
+    owner = config.services.jellarr.user;
+    inherit (config.services.jellarr) group;
+  };
+};
+
+services.jellarr = {
+  enable = true;
+  environmentFile = config.sops.templates.jellarr-env.path;
+  config = {
+    base_url = "http://localhost:8096";
+    plugins = [
+      {
+        name = "SSO Authentication";
+        configuration.OidConfigs.kanidm.OidSecret = "\${SSO_KANIDM_SECRET}";
+      }
+    ];
+  };
+};
+```
+
+#### Stronger isolation with systemd credentials (optional)
+
+`environmentFile` places the secret in the service's environment, readable via
+`/proc/<pid>/environ` by privileged processes. For stronger isolation, source
+the variable from a systemd credential (materialized into a per-service ramfs at
+`$CREDENTIALS_DIRECTORY`, never on disk or in the global environment) and export
+it just for jellarr via a small wrapper. The `jellarr` package comes from the
+flake input:
+
+```nix
+let
+  jellarrPkg = inputs.jellarr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+in
+{
+  systemd.services.jellarr.serviceConfig = {
+    LoadCredential = [ "sso-kanidm:${config.sops.secrets.jellyfin-sso-kanidm.path}" ];
+    ExecStart = lib.mkForce (pkgs.writeShellScript "jellarr-start" ''
+      export SSO_KANIDM_SECRET="$(cat "$CREDENTIALS_DIRECTORY/sso-kanidm")"
+      exec ${lib.getExe jellarrPkg}
+    '');
+  };
+}
+```
+
+jellarr itself only ever reads environment variables; whether they come from an
+`environmentFile` or a credential wrapper is the operator's choice, so this
+works identically on Docker and bare metal.
+
 ### With sops-nix (nix only)
 
 ```nix
