@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: let
   types = import ./types {inherit lib;};
@@ -77,6 +78,13 @@ in {
         Environment file as defined in {manpage}`systemd.exec(5)`.
       '';
       type = lib.types.nullOr lib.types.path;
+    };
+
+    package = lib.mkOption {
+      default = pkgs.callPackage ../package.nix {};
+      defaultText = lib.literalExpression "pkgs.callPackage ../package.nix {}";
+      description = "Package to run for the jellarr service.";
+      type = lib.types.package;
     };
 
     group = lib.mkOption {
