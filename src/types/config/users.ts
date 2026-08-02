@@ -4,15 +4,19 @@ export const UserPolicyConfigType: z.ZodObject<{
   isAdministrator: z.ZodOptional<z.ZodBoolean>;
   loginAttemptsBeforeLockout: z.ZodOptional<z.ZodNumber>;
   maxActiveSessions: z.ZodOptional<z.ZodNumber>;
+  remoteClientBitrateLimit: z.ZodOptional<z.ZodNumber>;
   enableAllFolders: z.ZodOptional<z.ZodBoolean>;
   enableCollectionManagement: z.ZodOptional<z.ZodBoolean>;
+  enableContentDownloading: z.ZodOptional<z.ZodBoolean>;
   enabledLibraries: z.ZodOptional<z.ZodArray<z.ZodString>>;
 }> = z.object({
   isAdministrator: z.boolean().optional(),
   loginAttemptsBeforeLockout: z.number().int().min(1).optional(),
   maxActiveSessions: z.number().int().min(1).optional(),
+  remoteClientBitrateLimit: z.number().int().min(0).optional(),
   enableAllFolders: z.boolean().optional(),
   enableCollectionManagement: z.boolean().optional(),
+  enableContentDownloading: z.boolean().optional(),
   enabledLibraries: z
     .array(z.string().min(1, "Library name is required"))
     .optional(),
