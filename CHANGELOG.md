@@ -97,17 +97,17 @@ and this project adheres to
 version: 1
 base_url: "http://localhost:8096"
 system:
-  enableMetrics: true
-  pluginRepositories:
-    - name: "Jellyfin Official"
-      url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
-      enabled: true
+    enableMetrics: true
+    pluginRepositories:
+        - name: "Jellyfin Official"
+          url: "https://repo.jellyfin.org/releases/plugin/manifest.json"
+          enabled: true
 plugins:
-  - name: "Trakt"
-    configuration:
-      TraktUsers:
-        - ExtraLogging: true
-  - name: "Playback Reporting"
+    - name: "Trakt"
+      configuration:
+          TraktUsers:
+              - ExtraLogging: true
+    - name: "Playback Reporting"
 ```
 
 ### Breaking Changes
@@ -186,15 +186,15 @@ version: 1
 base_url: "http://localhost:8096"
 system: {}
 users:
-  - name: "admin-user"
-    passwordFile: "/run/secrets/admin-password"
-    policy:
-      isAdministrator: true
-      loginAttemptsBeforeLockout: 3
-  - name: "viewer-user"
-    passwordFile: "/run/secrets/viewer-password"
+    - name: "admin-user"
+      passwordFile: "/run/secrets/admin-password"
+      policy:
+          isAdministrator: true
+          loginAttemptsBeforeLockout: 3
+    - name: "viewer-user"
+      passwordFile: "/run/secrets/viewer-password"
 startup:
-  completeStartupWizard: true
+    completeStartupWizard: true
 ```
 
 ### Breaking Changes
@@ -263,11 +263,11 @@ base_url: "https://jellyfin.example.com"
 system:
 # ... system config
 branding:
-  loginDisclaimer: |
-    Welcome! Configured by <a href="https://github.com/venkyr77/jellarr">Jellarr</a>
-  customCss: |
-    @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");
-  splashscreenEnabled: false
+    loginDisclaimer: |
+        Welcome! Configured by <a href="https://github.com/venkyr77/jellarr">Jellarr</a>
+    customCss: |
+        @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");
+    splashscreenEnabled: false
 ```
 
 ### Breaking Changes
