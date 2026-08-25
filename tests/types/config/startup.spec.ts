@@ -98,4 +98,156 @@ describe("StartupConfig", () => {
       expect(strictError?.code).toBe("unrecognized_keys");
     }
   });
+
+  it("should validate full startup config with all fields", () => {
+    // Arrange
+    const validConfig: z.input<typeof StartupConfigType> = {
+      serverName: "My Jellyfin",
+      preferredMetadataLanguage: "en",
+      metadataCountryCode: "US",
+      uiCulture: "en-US",
+      remoteAccess: {
+        enableRemoteAccess: true,
+        enableAutomaticPortMapping: false,
+      },
+      user: {
+        name: "admin",
+        password: "secret",
+      },
+      apiKeyApp: "jellarr",
+      apiKeyFile: "/run/jellarr/api-key",
+      completeStartupWizard: true,
+    };
+
+    // Act
+    const result: ZodSafeParseResult<StartupConfig> =
+      StartupConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.serverName).toBe("My Jellyfin");
+      expect(result.data.preferredMetadataLanguage).toBe("en");
+      expect(result.data.metadataCountryCode).toBe("US");
+      expect(result.data.uiCulture).toBe("en-US");
+      expect(result.data.remoteAccess?.enableRemoteAccess).toBe(true);
+      expect(result.data.remoteAccess?.enableAutomaticPortMapping).toBe(false);
+      expect(result.data.user?.name).toBe("admin");
+      expect(result.data.user?.password).toBe("secret");
+      expect(result.data.apiKeyApp).toBe("jellarr");
+      expect(result.data.apiKeyFile).toBe("/run/jellarr/api-key");
+      expect(result.data.completeStartupWizard).toBe(true);
+    }
+  });
+
+  it("should validate startup user with passwordFile", () => {
+    // Arrange
+    const validConfig: z.input<typeof StartupConfigType> = {
+      user: {
+        name: "admin",
+        passwordFile: "/run/secrets/admin-pw",
+      },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<StartupConfig> =
+      StartupConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.user?.name).toBe("admin");
+      expect(result.data.user?.passwordFile).toBe("/run/secrets/admin-pw");
+    }
+  });
+
+  it("should reject startup user with both password and passwordFile", () => {
+    // Arrange
+    const invalidConfig: z.input<typeof StartupConfigType> = {
+      user: {
+        name: "admin",
+        password: "secret",
+        passwordFile: "/run/secrets/admin-pw",
+      },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<StartupConfig> =
+      StartupConfigType.safeParse(invalidConfig);
+
+    // Assert
+    expect(result.success).toBe(false);
+  });
+
+  it("should reject startup user with neither password nor passwordFile", () => {
+    // Arrange
+    const invalidConfig: z.input<typeof StartupConfigType> = {
+      user: {
+        name: "admin",
+      },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<StartupConfig> =
+      StartupConfigType.safeParse(invalidConfig);
+
+    // Assert
+    expect(result.success).toBe(false);
+  });
+
+  it("should reject startup user with empty name", () => {
+    // Arrange
+    const invalidConfig: z.input<typeof StartupConfigType> = {
+      user: {
+        name: "",
+        password: "secret",
+      },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<StartupConfig> =
+      StartupConfigType.safeParse(invalidConfig);
+
+    // Assert
+    expect(result.success).toBe(false);
+  });
+
+  it("should reject remoteAccess with extra fields", () => {
+    // Arrange
+    const invalidConfig = {
+      remoteAccess: {
+        enableRemoteAccess: true,
+        enableAutomaticPortMapping: false,
+        extraField: "not allowed",
+      },
+    };
+
+    // Act
+    const result: ZodSafeParseResult<StartupConfig> =
+      StartupConfigType.safeParse(invalidConfig);
+
+    // Assert
+    expect(result.success).toBe(false);
+  });
+
+  it("should validate config with only server settings", () => {
+    // Arrange
+    const validConfig: z.input<typeof StartupConfigType> = {
+      serverName: "Test Server",
+      uiCulture: "de-DE",
+    };
+
+    // Act
+    const result: ZodSafeParseResult<StartupConfig> =
+      StartupConfigType.safeParse(validConfig);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.serverName).toBe("Test Server");
+      expect(result.data.uiCulture).toBe("de-DE");
+      expect(result.data.user).toBeUndefined();
+      expect(result.data.remoteAccess).toBeUndefined();
+    }
+  });
 });

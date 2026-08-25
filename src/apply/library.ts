@@ -1,5 +1,4 @@
 import { logger } from "../lib/logger";
-import { ChangeSetBuilder } from "../lib/changeset";
 import type { JellyfinClient } from "../api/jellyfin.types";
 import type { VirtualFolderConfig } from "../types/config/library";
 import type {
@@ -11,7 +10,6 @@ import {
   mapVirtualFolderConfigToSchema,
   mapVirtualFolderInfoSchemaToAddVirtualFolderDtoSchema,
 } from "../mappers/library";
-import { applyChangeset, diff, type IChange } from "json-diff-ts";
 
 export function calculateLibraryDiff(
   current: VirtualFolderInfoSchema[],
@@ -21,27 +19,29 @@ export function calculateLibraryDiff(
     return undefined;
   }
 
-  const next: VirtualFolderInfoSchema[] = desired.map(
-    mapVirtualFolderConfigToSchema,
+  const currentNames: Set<string> = new Set(
+    current
+      .map((f: VirtualFolderInfoSchema) => f.Name)
+      .filter((n): n is string => n !== undefined && n !== null),
   );
 
-  const patch: IChange[] = new ChangeSetBuilder(
-    diff(current, next, {
-      embeddedObjKeys: { ".": "Name" },
-      treatTypeChangeAsReplace: false,
-    }),
-  )
-    .atomize()
-    .withoutRemoves()
-    .withoutUpdates()
-    .toArray();
+  const foldersToCreate: VirtualFolderInfoSchema[] = desired
+    .filter(
+      (d: VirtualFolderConfig) => !currentNames.has(d.name),
+    )
+    .map(mapVirtualFolderConfigToSchema);
 
-  if (patch.length !== 0) {
-    logger.info(JSON.stringify(patch));
-    return applyChangeset([], patch) as VirtualFolderInfoSchema[];
+  if (foldersToCreate.length === 0) {
+    return undefined;
   }
 
-  return undefined;
+  logger.info(
+    JSON.stringify(
+      foldersToCreate.map((f: VirtualFolderInfoSchema) => f.Name),
+    ),
+  );
+
+  return foldersToCreate;
 }
 
 export async function applyLibrary(

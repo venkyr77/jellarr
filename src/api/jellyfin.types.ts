@@ -15,6 +15,13 @@ import {
   type PluginInfoSchema,
   type BasePluginConfigurationSchema,
 } from "../types/schema/plugins";
+import type {
+  StartupConfigurationDtoSchema,
+  StartupUserDtoSchema,
+  StartupRemoteAccessDtoSchema,
+  AuthenticationResultSchema,
+  AuthenticationInfoSchema,
+} from "../types/schema/startup";
 
 export interface ApiResponse<T = unknown> {
   data?: T;
@@ -35,6 +42,20 @@ export type GetUsersResponse = ApiResponse<UserDtoSchema[]>;
 export type PostNewUserResponse = ApiResponse<UserDtoSchema>;
 export type PostUserPolicyResponse = ApiResponse<void>;
 export type PostStartupCompleteResponse = ApiResponse<void>;
+export type GetStartupUserResponse = ApiResponse<{
+  Name?: string | null;
+}>;
+export type PostStartupConfigurationResponse = ApiResponse<void>;
+export type PostStartupUserResponse = ApiResponse<void>;
+export type PostStartupRemoteAccessResponse = ApiResponse<void>;
+export type PostAuthenticateByNameResponse =
+  ApiResponse<AuthenticationResultSchema>;
+export type PostCreateKeyResponse = ApiResponse<void>;
+export type GetKeysResponse = ApiResponse<{
+  Items?: AuthenticationInfoSchema[];
+  TotalRecordCount?: number;
+  StartIndex?: number;
+}>;
 export type GetPluginsResponse = ApiResponse<PluginInfoSchema[]>;
 export type PostInstallPackageResponse = ApiResponse<void>;
 export type GetPluginConfigurationResponse =
@@ -64,6 +85,15 @@ export interface JellyfinClient {
   createUser(body: CreateUserByNameSchema): Promise<void>;
   updateUserPolicy(userId: string, body: UserPolicySchema): Promise<void>;
   completeStartupWizard(): Promise<void>;
+  getStartupUser(): Promise<void>;
+  updateStartupConfiguration(
+    body: StartupConfigurationDtoSchema,
+  ): Promise<void>;
+  updateStartupUser(body: StartupUserDtoSchema): Promise<void>;
+  setRemoteAccess(body: StartupRemoteAccessDtoSchema): Promise<void>;
+  authenticateByName(username: string, password: string): Promise<string>;
+  createApiKey(app: string): Promise<void>;
+  getApiKeys(): Promise<AuthenticationInfoSchema[]>;
   getPlugins(): Promise<PluginInfoSchema[]>;
   installPackage(name: string): Promise<void>;
   getPluginConfiguration(

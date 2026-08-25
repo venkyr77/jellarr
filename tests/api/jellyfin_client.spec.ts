@@ -956,3 +956,341 @@ describe("api/jf Plugins façade", () => {
     ).rejects.toThrow(/POST \/Plugins\/plugin-id-123\/Configuration failed/i);
   });
 });
+
+describe("api/jf Startup Configuration façade", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  afterEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("when POST /Startup/Configuration succeeds then it sends JSON body and resolves", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(204);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await jellyfinClient.updateStartupConfiguration({
+      ServerName: "My Jellyfin",
+      UICulture: "en-US",
+    });
+
+    // Assert
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/Startup\/Configuration$/);
+    expect(req.headers.get("content-type")).toBe("application/json");
+
+    const bodyText: string = await req.text();
+    expect(bodyText).toContain("My Jellyfin");
+    expect(bodyText).toContain("en-US");
+  });
+
+  it("when POST /Startup/Configuration fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 500 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(
+      jellyfinClient.updateStartupConfiguration({ ServerName: "test" }),
+    ).rejects.toThrow(/POST \/Startup\/Configuration failed/i);
+  });
+});
+
+describe("api/jf Startup User façade", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  afterEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("when POST /Startup/User succeeds then it sends JSON body and resolves", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(204);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await jellyfinClient.updateStartupUser({
+      Name: "admin",
+      Password: "secret",
+    });
+
+    // Assert
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/Startup\/User$/);
+    expect(req.headers.get("content-type")).toBe("application/json");
+
+    const bodyText: string = await req.text();
+    expect(bodyText).toContain("admin");
+    expect(bodyText).toContain("secret");
+  });
+
+  it("when POST /Startup/User fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 500 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(
+      jellyfinClient.updateStartupUser({ Name: "admin", Password: "secret" }),
+    ).rejects.toThrow(/POST \/Startup\/User failed/i);
+  });
+});
+
+describe("api/jf Remote Access façade", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  afterEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("when POST /Startup/RemoteAccess succeeds then it sends JSON body and resolves", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(204);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await jellyfinClient.setRemoteAccess({
+      EnableRemoteAccess: true,
+      EnableAutomaticPortMapping: false,
+    });
+
+    // Assert
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/Startup\/RemoteAccess$/);
+    expect(req.headers.get("content-type")).toBe("application/json");
+
+    const bodyText: string = await req.text();
+    expect(bodyText).toContain("EnableRemoteAccess");
+  });
+
+  it("when POST /Startup/RemoteAccess fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 500 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(
+      jellyfinClient.setRemoteAccess({
+        EnableRemoteAccess: true,
+        EnableAutomaticPortMapping: false,
+      }),
+    ).rejects.toThrow(/POST \/Startup\/RemoteAccess failed/i);
+  });
+});
+
+describe("api/jf Authenticate façade", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  afterEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("when POST /Users/AuthenticateByName succeeds then it returns the access token", async (): Promise<void> => {
+    // Arrange
+    mockFetchJson({
+      AccessToken: "returned-token-123",
+      User: { Id: "user-id", Name: "admin" },
+    });
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const token: string = await jellyfinClient.authenticateByName(
+      "admin",
+      "secret",
+    );
+
+    // Assert
+    expect(token).toBe("returned-token-123");
+
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/Users\/AuthenticateByName$/);
+    expect(req.headers.get("content-type")).toBe("application/json");
+
+    const bodyText: string = await req.text();
+    expect(bodyText).toContain("admin");
+    expect(bodyText).toContain("secret");
+  });
+
+  it("when POST /Users/AuthenticateByName fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 401 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(
+      jellyfinClient.authenticateByName("admin", "wrong"),
+    ).rejects.toThrow(/POST \/Users\/AuthenticateByName failed/i);
+  });
+
+  it("when POST /Users/AuthenticateByName returns no AccessToken then it throws", async (): Promise<void> => {
+    // Arrange
+    mockFetchJson({
+      User: { Id: "user-id", Name: "admin" },
+    });
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(
+      jellyfinClient.authenticateByName("admin", "secret"),
+    ).rejects.toThrow(/returned no AccessToken/i);
+  });
+});
+
+describe("api/jf API Keys façade", () => {
+  beforeEach((): void => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  afterEach((): void => {
+    vi.restoreAllMocks();
+  });
+
+  it("when POST /Auth/Keys succeeds then it sends app query param and resolves", async (): Promise<void> => {
+    // Arrange
+    mockFetchNoContent(204);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    await jellyfinClient.createApiKey("jellarr");
+
+    // Assert
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("POST");
+    expect(req.url).toMatch(/\/Auth\/Keys\?app=jellarr/);
+    expect(req.headers.get("X-Emby-Token")).toBe(apiKey);
+  });
+
+  it("when POST /Auth/Keys fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 401 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(jellyfinClient.createApiKey("jellarr")).rejects.toThrow(
+      /POST \/Auth\/Keys failed/i,
+    );
+  });
+
+  it("when GET /Auth/Keys returns JSON then it returns the items array", async (): Promise<void> => {
+    // Arrange
+    const payload = {
+      Items: [
+        {
+          Id: 1,
+          AccessToken: "token-abc",
+          AppName: "jellarr",
+        },
+      ],
+      TotalRecordCount: 1,
+      StartIndex: 0,
+    };
+    mockFetchJson(payload);
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+    const keys = await jellyfinClient.getApiKeys();
+
+    // Assert
+    expect(keys).toHaveLength(1);
+    expect(keys[0]?.AccessToken).toBe("token-abc");
+    expect(keys[0]?.AppName).toBe("jellarr");
+
+    const req: Request = getLastRequest();
+    expect(req.method).toBe("GET");
+    expect(req.url).toMatch(/\/Auth\/Keys$/);
+  });
+
+  it("when GET /Auth/Keys fails then it throws an error with status", async (): Promise<void> => {
+    // Arrange
+    fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("boom", { status: 403 }));
+
+    // Act
+    const jellyfinClient: JellyfinClient = createJellyfinClient(
+      baseUrl,
+      apiKey,
+    );
+
+    // Assert
+    await expect(jellyfinClient.getApiKeys()).rejects.toThrow(
+      /GET \/Auth\/Keys failed/i,
+    );
+  });
+});

@@ -38,6 +38,7 @@ import {
   getPluginConfigurationSchemaByName,
 } from "../apply/plugins";
 import type { PluginConfig } from "../types/config/plugins";
+import { applyStartupWizard } from "../apply/startup";
 
 export async function runPipeline(path: string): Promise<void> {
   const raw: string = await fs.readFile(path, "utf8");
@@ -53,7 +54,15 @@ export async function runPipeline(path: string): Promise<void> {
 
   const cfg: RootConfig = validationResult.data;
 
-  const apiKey: string | undefined = process.env.JELLARR_API_KEY;
+  const needsStartupWizard: boolean =
+    cfg.startup?.user !== undefined && cfg.startup?.apiKeyApp !== undefined;
+
+  let apiKey: string | undefined = process.env.JELLARR_API_KEY;
+
+  if (needsStartupWizard && cfg.startup) {
+    apiKey = await applyStartupWizard(cfg.base_url, cfg.startup);
+  }
+
   if (!apiKey) throw new Error("JELLARR_API_KEY required");
 
   const jellyfinClient: JellyfinClient = createJellyfinClient(
@@ -191,7 +200,7 @@ export async function runPipeline(path: string): Promise<void> {
     }
   }
 
-  if (cfg.startup?.completeStartupWizard) {
+  if (!needsStartupWizard && cfg.startup?.completeStartupWizard) {
     console.log("→ marking startup wizard as complete");
     await jellyfinClient.completeStartupWizard();
     console.log("✓ marked startup wizard as complete");

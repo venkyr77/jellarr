@@ -25,6 +25,13 @@ import type {
   PostNewUserResponse,
   PostUserPolicyResponse,
   PostStartupCompleteResponse,
+  GetStartupUserResponse,
+  PostStartupConfigurationResponse,
+  PostStartupUserResponse,
+  PostStartupRemoteAccessResponse,
+  PostAuthenticateByNameResponse,
+  PostCreateKeyResponse,
+  GetKeysResponse,
   GetPluginsResponse,
   PostInstallPackageResponse,
   GetPluginConfigurationResponse,
@@ -37,10 +44,16 @@ import {
   type PluginInfoSchema,
   type BasePluginConfigurationSchema,
 } from "../types/schema/plugins";
+import type {
+  StartupConfigurationDtoSchema,
+  StartupUserDtoSchema,
+  StartupRemoteAccessDtoSchema,
+  AuthenticationInfoSchema,
+} from "../types/schema/startup";
 
 export function createJellyfinClient(
   baseUrl: string,
-  apiKey: string,
+  apiKey?: string,
 ): JellyfinClient {
   const client: Client<paths> = makeClient(baseUrl, apiKey);
 
@@ -243,6 +256,115 @@ export function createJellyfinClient(
           `POST /Startup/Complete failed: ${res.response.status.toString()}`,
         );
       }
+    },
+
+    async getStartupUser(): Promise<void> {
+      const res: GetStartupUserResponse = await client.GET("/Startup/User");
+
+      if (res.error) {
+        throw new Error(
+          `GET /Startup/User failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async updateStartupConfiguration(
+      body: StartupConfigurationDtoSchema,
+    ): Promise<void> {
+      const res: PostStartupConfigurationResponse = await client.POST(
+        "/Startup/Configuration",
+        {
+          body,
+          headers: { "content-type": "application/json" },
+        },
+      );
+
+      if (res.error) {
+        throw new Error(
+          `POST /Startup/Configuration failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async updateStartupUser(body: StartupUserDtoSchema): Promise<void> {
+      const res: PostStartupUserResponse = await client.POST("/Startup/User", {
+        body,
+        headers: { "content-type": "application/json" },
+      });
+
+      if (res.error) {
+        throw new Error(
+          `POST /Startup/User failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async setRemoteAccess(body: StartupRemoteAccessDtoSchema): Promise<void> {
+      const res: PostStartupRemoteAccessResponse = await client.POST(
+        "/Startup/RemoteAccess",
+        {
+          body,
+          headers: { "content-type": "application/json" },
+        },
+      );
+
+      if (res.error) {
+        throw new Error(
+          `POST /Startup/RemoteAccess failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async authenticateByName(
+      username: string,
+      password: string,
+    ): Promise<string> {
+      const res: PostAuthenticateByNameResponse = await client.POST(
+        "/Users/AuthenticateByName",
+        {
+          body: { Username: username, Pw: password },
+          headers: { "content-type": "application/json" },
+        },
+      );
+
+      if (res.error) {
+        throw new Error(
+          `POST /Users/AuthenticateByName failed: ${res.response.status.toString()}`,
+        );
+      }
+
+      const accessToken: string | null | undefined = res.data?.AccessToken;
+      if (!accessToken) {
+        throw new Error(
+          "POST /Users/AuthenticateByName succeeded but returned no AccessToken",
+        );
+      }
+
+      return accessToken;
+    },
+
+    async createApiKey(app: string): Promise<void> {
+      const res: PostCreateKeyResponse = await client.POST("/Auth/Keys", {
+        params: { query: { app } },
+      });
+
+      if (res.error) {
+        throw new Error(
+          `POST /Auth/Keys failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getApiKeys(): Promise<AuthenticationInfoSchema[]> {
+      const res: GetKeysResponse = await client.GET("/Auth/Keys");
+
+      if (res.error) {
+        throw new Error(
+          `GET /Auth/Keys failed: ${res.response.status.toString()}`,
+        );
+      }
+
+      return (res.data?.Items ?? []) as AuthenticationInfoSchema[];
     },
 
     async getPlugins(): Promise<PluginInfoSchema[]> {
