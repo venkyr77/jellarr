@@ -87,6 +87,10 @@ describe("apply/library", () => {
           CollectionType: "movies",
           LibraryOptions: {
             PathInfos: [{ Path: "/data/movies" }],
+            SaveLyricsWithMedia: false,
+            SaveTrickplayWithMedia: false,
+            PreferNonstandardArtistsTag: false,
+            UseCustomTagDelimiters: false,
           },
         },
       ]);
@@ -100,6 +104,10 @@ describe("apply/library", () => {
           CollectionType: "movies",
           LibraryOptions: {
             PathInfos: [{ Path: "/data/movies" }],
+            SaveLyricsWithMedia: false,
+            SaveTrickplayWithMedia: false,
+            PreferNonstandardArtistsTag: false,
+            UseCustomTagDelimiters: false,
           } as LibraryOptionsSchema,
         },
       ];
@@ -138,6 +146,10 @@ describe("apply/library", () => {
               { Path: "/data/path1" },
               { Path: "/data/path3" },
             ],
+            SaveLyricsWithMedia: false,
+            SaveTrickplayWithMedia: false,
+            PreferNonstandardArtistsTag: false,
+            UseCustomTagDelimiters: false,
           } as LibraryOptionsSchema,
         },
       ];
@@ -176,6 +188,10 @@ describe("apply/library", () => {
           CollectionType: "movies",
           LibraryOptions: {
             PathInfos: [{ Path: "/path/old" }],
+            SaveLyricsWithMedia: false,
+            SaveTrickplayWithMedia: false,
+            PreferNonstandardArtistsTag: false,
+            UseCustomTagDelimiters: false,
           } as LibraryOptionsSchema,
         },
       ];
@@ -210,6 +226,10 @@ describe("apply/library", () => {
           CollectionType: "movies",
           LibraryOptions: {
             PathInfos: [{ Path: "/data/movies" }],
+            SaveLyricsWithMedia: false,
+            SaveTrickplayWithMedia: false,
+            PreferNonstandardArtistsTag: false,
+            UseCustomTagDelimiters: false,
           } as LibraryOptionsSchema,
         },
       ];
@@ -244,6 +264,10 @@ describe("apply/library", () => {
           CollectionType: "movies",
           LibraryOptions: {
             PathInfos: [{ Path: "/data/existing" }],
+            SaveLyricsWithMedia: false,
+            SaveTrickplayWithMedia: false,
+            PreferNonstandardArtistsTag: false,
+            UseCustomTagDelimiters: false,
           } as LibraryOptionsSchema,
         },
       ];
@@ -280,6 +304,10 @@ describe("apply/library", () => {
           CollectionType: "tvshows",
           LibraryOptions: {
             PathInfos: [{ Path: "/data/shows" }],
+            SaveLyricsWithMedia: false,
+            SaveTrickplayWithMedia: false,
+            PreferNonstandardArtistsTag: false,
+            UseCustomTagDelimiters: false,
           },
         },
       ]);
@@ -311,6 +339,10 @@ describe("apply/library", () => {
           CollectionType: "movies",
           LibraryOptions: {
             PathInfos: [{ Path: "/data/movies" }],
+            SaveLyricsWithMedia: false,
+            SaveTrickplayWithMedia: false,
+            PreferNonstandardArtistsTag: false,
+            UseCustomTagDelimiters: false,
           } as LibraryOptionsSchema,
         },
       ];
@@ -323,9 +355,9 @@ describe("apply/library", () => {
       // Assert
       expect(addVirtualFolderSpy).toHaveBeenCalledTimes(1);
       expect(addVirtualFolderSpy).toHaveBeenCalledWith("Movies", "movies", {
-        LibraryOptions: {
+        LibraryOptions: expect.objectContaining({
           PathInfos: [{ Path: "/data/movies" }],
-        },
+        }),
       });
       expect(loggerSpy).toHaveBeenCalledWith("Creating virtual folder: Movies");
       expect(loggerSpy).toHaveBeenCalledWith(
@@ -341,6 +373,10 @@ describe("apply/library", () => {
           CollectionType: "movies",
           LibraryOptions: {
             PathInfos: [{ Path: "/data/movies" }],
+            SaveLyricsWithMedia: false,
+            SaveTrickplayWithMedia: false,
+            PreferNonstandardArtistsTag: false,
+            UseCustomTagDelimiters: false,
           } as LibraryOptionsSchema,
         },
         {
@@ -348,6 +384,10 @@ describe("apply/library", () => {
           CollectionType: "tvshows",
           LibraryOptions: {
             PathInfos: [{ Path: "/data/shows" }],
+            SaveLyricsWithMedia: false,
+            SaveTrickplayWithMedia: false,
+            PreferNonstandardArtistsTag: false,
+            UseCustomTagDelimiters: false,
           } as LibraryOptionsSchema,
         },
       ];

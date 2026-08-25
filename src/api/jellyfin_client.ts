@@ -4,6 +4,7 @@ import type {
   VirtualFolderInfoSchema,
   AddVirtualFolderDtoSchema,
   CollectionTypeSchema,
+  LibraryOptionsSchema,
 } from "../types/schema/library";
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type {
@@ -19,6 +20,7 @@ import type {
   PostEncodingConfigurationResponse,
   GetVirtualFoldersResponse,
   PostVirtualFolderResponse,
+  PostLibraryOptionsResponse,
   GetBrandingConfigurationResponse,
   PostBrandingConfigurationResponse,
   GetUsersResponse,
@@ -29,6 +31,11 @@ import type {
   PostInstallPackageResponse,
   GetPluginConfigurationResponse,
   PostPluginConfigurationResponse,
+  GetNetworkingConfigurationResponse,
+  PostNetworkingConfigurationResponse,
+  GetApiKeysResponse,
+  PostApiKeyResponse,
+  DeleteVirtualFolderResponse,
 } from "./jellyfin.types";
 import { makeClient } from "./client";
 import type { paths } from "../../generated/schema";
@@ -37,6 +44,8 @@ import {
   type PluginInfoSchema,
   type BasePluginConfigurationSchema,
 } from "../types/schema/plugins";
+import type { NetworkConfigurationSchema } from "../types/schema/networking";
+import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 
 export function createJellyfinClient(
   baseUrl: string,
@@ -150,6 +159,48 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /Library/VirtualFolders failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async removeVirtualFolder(name: string): Promise<void> {
+      const res: DeleteVirtualFolderResponse = await client.DELETE(
+        "/Library/VirtualFolders",
+        {
+          params: {
+            query: {
+              name,
+              refreshLibrary: true,
+            },
+          },
+        },
+      );
+
+      if (res.error) {
+        throw new Error(
+          `DELETE /Library/VirtualFolders failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async updateLibraryOptions(
+      id: string,
+      libraryOptions: LibraryOptionsSchema,
+    ): Promise<void> {
+      const res: PostLibraryOptionsResponse = await client.POST(
+        "/Library/VirtualFolders/LibraryOptions",
+        {
+          body: {
+            Id: id,
+            LibraryOptions: libraryOptions,
+          },
+          headers: { "content-type": "application/json" },
+        },
+      );
+
+      if (res.error) {
+        throw new Error(
+          `POST /Library/VirtualFolders/LibraryOptions failed: ${res.response.status.toString()}`,
         );
       }
     },
@@ -300,6 +351,68 @@ export function createJellyfinClient(
       if (res.error) {
         throw new Error(
           `POST /Plugins/${pluginId}/Configuration failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getNetworkingConfiguration(): Promise<NetworkConfigurationSchema> {
+      const res: GetNetworkingConfigurationResponse = await client.GET(
+        "/System/Configuration/{key}",
+        {
+          params: { path: { key: "network" } },
+        },
+      );
+
+      if (res.error) {
+        throw new Error(
+          `GET /System/Configuration/network failed: ${res.response.status.toString()}`,
+        );
+      }
+
+      return res.data as NetworkConfigurationSchema;
+    },
+
+    async updateNetworkingConfiguration(
+      body: Partial<NetworkConfigurationSchema>,
+    ): Promise<void> {
+      const res: PostNetworkingConfigurationResponse = await client.POST(
+        "/System/Configuration/{key}",
+        {
+          params: { path: { key: "network" } },
+          body,
+          headers: { "content-type": "application/json" },
+        },
+      );
+
+      if (res.error) {
+        throw new Error(
+          `POST /System/Configuration/network failed: ${res.response.status.toString()}`,
+        );
+      }
+    },
+
+    async getApiKeys(): Promise<AuthenticationInfoSchema[]> {
+      const res: GetApiKeysResponse = await client.GET("/Auth/Keys");
+
+      if (res.error) {
+        throw new Error(
+          `GET /Auth/Keys failed: ${res.response.status.toString()}`,
+        );
+      }
+
+      return (
+        (res.data as { Items?: AuthenticationInfoSchema[] })?.Items ?? []
+      );
+    },
+
+    async createApiKey(appName: string): Promise<void> {
+      const res: PostApiKeyResponse = await client.POST("/Auth/Keys", {
+        params: { query: { app: appName } },
+      });
+
+      if (res.error) {
+        throw new Error(
+          `POST /Auth/Keys failed: ${res.response.status.toString()}`,
         );
       }
     },

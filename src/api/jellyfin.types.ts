@@ -4,6 +4,7 @@ import type {
   VirtualFolderInfoSchema,
   AddVirtualFolderDtoSchema,
   CollectionTypeSchema,
+  LibraryOptionsSchema,
 } from "../types/schema/library";
 import type { BrandingOptionsDtoSchema } from "../types/schema/branding-options";
 import type {
@@ -15,6 +16,8 @@ import {
   type PluginInfoSchema,
   type BasePluginConfigurationSchema,
 } from "../types/schema/plugins";
+import type { NetworkConfigurationSchema } from "../types/schema/networking";
+import type { AuthenticationInfoSchema } from "../types/schema/api-keys";
 
 export interface ApiResponse<T = unknown> {
   data?: T;
@@ -29,6 +32,7 @@ export type GetEncodingConfigurationResponse = ApiResponse;
 export type PostEncodingConfigurationResponse = ApiResponse<void>;
 export type GetVirtualFoldersResponse = ApiResponse<VirtualFolderInfoSchema[]>;
 export type PostVirtualFolderResponse = ApiResponse<void>;
+export type PostLibraryOptionsResponse = ApiResponse<void>;
 export type GetBrandingConfigurationResponse = ApiResponse;
 export type PostBrandingConfigurationResponse = ApiResponse<void>;
 export type GetUsersResponse = ApiResponse<UserDtoSchema[]>;
@@ -40,6 +44,14 @@ export type PostInstallPackageResponse = ApiResponse<void>;
 export type GetPluginConfigurationResponse =
   ApiResponse<BasePluginConfigurationSchema>;
 export type PostPluginConfigurationResponse = ApiResponse<void>;
+export type GetNetworkingConfigurationResponse = ApiResponse;
+export type PostNetworkingConfigurationResponse = ApiResponse<void>;
+export type GetApiKeysResponse = ApiResponse<{
+  Items?: AuthenticationInfoSchema[];
+}>;
+export type PostApiKeyResponse = ApiResponse<void>;
+export type DeleteApiKeyResponse = ApiResponse<void>;
+export type DeleteVirtualFolderResponse = ApiResponse<void>;
 
 export interface JellyfinClient {
   getSystemConfiguration(): Promise<ServerConfigurationSchema>;
@@ -55,6 +67,10 @@ export interface JellyfinClient {
     name: string,
     collectionType: CollectionTypeSchema | undefined,
     body: AddVirtualFolderDtoSchema,
+  ): Promise<void>;
+  updateLibraryOptions(
+    id: string,
+    libraryOptions: LibraryOptionsSchema,
   ): Promise<void>;
   getBrandingConfiguration(): Promise<BrandingOptionsDtoSchema>;
   updateBrandingConfiguration(
@@ -73,4 +89,11 @@ export interface JellyfinClient {
     pluginId: string,
     body: BasePluginConfigurationSchema,
   ): Promise<void>;
+  getNetworkingConfiguration(): Promise<NetworkConfigurationSchema>;
+  updateNetworkingConfiguration(
+    body: Partial<NetworkConfigurationSchema>,
+  ): Promise<void>;
+  removeVirtualFolder(name: string): Promise<void>;
+  getApiKeys(): Promise<AuthenticationInfoSchema[]>;
+  createApiKey(appName: string): Promise<void>;
 }

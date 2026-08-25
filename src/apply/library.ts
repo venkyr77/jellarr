@@ -6,10 +6,12 @@ import type {
   VirtualFolderInfoSchema,
   CollectionTypeSchema,
   AddVirtualFolderDtoSchema,
+  LibraryOptionsSchema,
 } from "../types/schema/library";
 import {
   mapVirtualFolderConfigToSchema,
   mapVirtualFolderInfoSchemaToAddVirtualFolderDtoSchema,
+  mapLibraryOptionsConfigToSchema,
 } from "../mappers/library";
 import { applyChangeset, diff, type IChange } from "json-diff-ts";
 
@@ -21,27 +23,83 @@ export function calculateLibraryDiff(
     return undefined;
   }
 
-  const next: VirtualFolderInfoSchema[] = desired.map(
-    mapVirtualFolderConfigToSchema,
+  const currentNames: Set<string> = new Set(
+    current
+      .map((f: VirtualFolderInfoSchema) => f.Name)
+      .filter((n): n is string => n !== undefined),
   );
 
-  const patch: IChange[] = new ChangeSetBuilder(
-    diff(current, next, {
-      embeddedObjKeys: { ".": "Name" },
-      treatTypeChangeAsReplace: false,
-    }),
-  )
-    .atomize()
-    .withoutRemoves()
-    .withoutUpdates()
-    .toArray();
+  const toCreate: VirtualFolderInfoSchema[] = desired
+    .filter(
+      (d: VirtualFolderConfig) => !currentNames.has(d.name),
+    )
+    .map(mapVirtualFolderConfigToSchema);
 
-  if (patch.length !== 0) {
-    logger.info(JSON.stringify(patch));
-    return applyChangeset([], patch) as VirtualFolderInfoSchema[];
+  if (toCreate.length > 0) {
+    return toCreate;
   }
 
   return undefined;
+}
+
+export interface LibraryOptionsUpdate {
+  id: string;
+  name: string;
+  libraryOptions: LibraryOptionsSchema;
+}
+
+export function calculateLibraryOptionsDiff(
+  current: VirtualFolderInfoSchema[],
+  desired: VirtualFolderConfig[],
+): LibraryOptionsUpdate[] | undefined {
+  const updates: LibraryOptionsUpdate[] = [];
+
+  for (const desiredFolder of desired) {
+    const currentFolder = current.find(
+      (f: VirtualFolderInfoSchema) => f.Name === desiredFolder.name,
+    );
+    if (!currentFolder?.ItemId || !currentFolder.LibraryOptions) continue;
+
+    const desiredOptions: LibraryOptionsSchema =
+      mapLibraryOptionsConfigToSchema(desiredFolder.libraryOptions);
+
+    const patch: IChange[] = new ChangeSetBuilder(
+      diff(currentFolder.LibraryOptions, desiredOptions, {
+        treatTypeChangeAsReplace: false,
+      }),
+    )
+      .withoutRemoves()
+      .toArray();
+
+    if (patch.length !== 0) {
+      logger.info(
+        `Library options diff for "${desiredFolder.name}": ${JSON.stringify(patch)}`,
+      );
+      const updated = applyChangeset(
+        currentFolder.LibraryOptions,
+        patch,
+      ) as LibraryOptionsSchema;
+      updates.push({
+        id: currentFolder.ItemId,
+        name: desiredFolder.name,
+        libraryOptions: updated,
+      });
+    }
+  }
+
+  return updates.length > 0 ? updates : undefined;
+}
+
+export async function purgeLibraries(
+  client: JellyfinClient,
+  current: VirtualFolderInfoSchema[],
+): Promise<void> {
+  for (const folder of current) {
+    const name: string = folder.Name as string;
+    logger.info(`Removing virtual folder: ${name}`);
+    await client.removeVirtualFolder(name);
+    logger.info(`✓ Removed virtual folder: ${name}`);
+  }
 }
 
 export async function applyLibrary(
@@ -64,5 +122,18 @@ export async function applyLibrary(
     await client.addVirtualFolder(name, collectionType, addVirtualFolderDto);
 
     logger.info(`✓ Created virtual folder: ${name} (${collectionType})`);
+  }
+}
+
+export async function applyLibraryOptions(
+  client: JellyfinClient,
+  updates: LibraryOptionsUpdate[] | undefined,
+): Promise<void> {
+  if (!updates) return;
+
+  for (const update of updates) {
+    logger.info(`Updating library options for: ${update.name}`);
+    await client.updateLibraryOptions(update.id, update.libraryOptions);
+    logger.info(`✓ Updated library options for: ${update.name}`);
   }
 }
